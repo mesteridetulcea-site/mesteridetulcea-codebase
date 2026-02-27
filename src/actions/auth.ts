@@ -55,7 +55,7 @@ export async function signUp(formData: FormData) {
       full_name: fullName,
       phone: phone,
       role: "client",
-    })
+    } as never)
 
     if (profileError) {
       console.error("Profile creation error:", profileError)

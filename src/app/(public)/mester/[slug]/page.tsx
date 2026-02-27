@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { SubscriptionBadge } from "@/components/mester/subscription-badge"
 import { PhotoGallery } from "@/components/mester/photo-gallery"
-import { ReviewsSection } from "@/components/mester/reviews-section"
+import { ReviewsWithForm } from "@/components/mester/reviews-with-form"
 import { WhatsAppButton } from "@/components/mester/whatsapp-button"
 import { FavoriteButton } from "@/components/mester/favorite-button"
 import { checkIsFavorited } from "@/actions/favorites"
@@ -213,7 +213,8 @@ export default async function MesterProfilePage({ params }: PageProps) {
               <PhotoGallery photos={photos} />
             </TabsContent>
             <TabsContent value="reviews" className="mt-6">
-              <ReviewsSection
+              <ReviewsWithForm
+                mesterId={mester.id}
                 reviews={reviews}
                 averageRating={mester.average_rating}
                 totalReviews={mester.total_reviews}

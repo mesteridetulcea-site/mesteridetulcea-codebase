@@ -19,7 +19,7 @@ export async function uploadPhoto(formData: FormData) {
     .from("mesters")
     .select("id")
     .eq("profile_id", user.id)
-    .single()
+    .single() as { data: { id: string } | null }
 
   if (!mester) {
     return { error: "Nu ai un profil de meșter" }
@@ -58,7 +58,7 @@ export async function uploadPhoto(formData: FormData) {
     .select("order_index")
     .eq("mester_id", mester.id)
     .order("order_index", { ascending: false })
-    .limit(1)
+    .limit(1) as { data: { order_index: number }[] | null }
 
   const nextOrderIndex = (photos?.[0]?.order_index || 0) + 1
 
@@ -66,7 +66,7 @@ export async function uploadPhoto(formData: FormData) {
   if (isCover) {
     await supabase
       .from("mester_photos")
-      .update({ is_cover: false })
+      .update({ is_cover: false } as never)
       .eq("mester_id", mester.id)
   }
 
@@ -78,7 +78,7 @@ export async function uploadPhoto(formData: FormData) {
     is_cover: isCover,
     approval_status: "pending",
     order_index: nextOrderIndex,
-  })
+  } as never)
 
   if (insertError) {
     console.error("Insert error:", insertError)
@@ -105,7 +105,7 @@ export async function deletePhoto(photoId: string) {
     .from("mesters")
     .select("id")
     .eq("profile_id", user.id)
-    .single()
+    .single() as { data: { id: string } | null }
 
   if (!mester) {
     return { error: "Nu ai un profil de meșter" }
@@ -117,7 +117,7 @@ export async function deletePhoto(photoId: string) {
     .select("*")
     .eq("id", photoId)
     .eq("mester_id", mester.id)
-    .single()
+    .single() as { data: { url: string } | null }
 
   if (!photo) {
     return { error: "Fotografia nu a fost găsită" }
@@ -159,7 +159,7 @@ export async function setPhotoCover(photoId: string) {
     .from("mesters")
     .select("id")
     .eq("profile_id", user.id)
-    .single()
+    .single() as { data: { id: string } | null }
 
   if (!mester) {
     return { error: "Nu ai un profil de meșter" }
@@ -168,13 +168,13 @@ export async function setPhotoCover(photoId: string) {
   // Unset all covers
   await supabase
     .from("mester_photos")
-    .update({ is_cover: false })
+    .update({ is_cover: false } as never)
     .eq("mester_id", mester.id)
 
   // Set new cover
   const { error } = await supabase
     .from("mester_photos")
-    .update({ is_cover: true })
+    .update({ is_cover: true } as never)
     .eq("id", photoId)
     .eq("mester_id", mester.id)
 
@@ -199,7 +199,7 @@ export async function getMesterPhotos() {
     .from("mesters")
     .select("id")
     .eq("profile_id", user.id)
-    .single()
+    .single() as { data: { id: string } | null }
 
   if (!mester) return []
 

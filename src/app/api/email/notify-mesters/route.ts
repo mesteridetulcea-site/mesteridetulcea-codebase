@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
 
-    const supabase = createAdminClient()
+    const supabase = await createAdminClient()
 
     // Get top 3 mesters in the category (by tier and rating)
     let mesterQuery = supabase
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         user_id: userId || null,
         notified_mesters: mesters.map((m) => m.id),
         status: "pending",
-      })
+      } as never)
       .select()
       .single()
 

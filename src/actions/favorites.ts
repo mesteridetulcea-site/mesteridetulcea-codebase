@@ -20,7 +20,7 @@ export async function toggleFavorite(mesterId: string) {
     .select("id")
     .eq("user_id", user.id)
     .eq("mester_id", mesterId)
-    .single()
+    .single() as { data: { id: string } | null }
 
   if (existing) {
     // Remove favorite
@@ -40,7 +40,7 @@ export async function toggleFavorite(mesterId: string) {
     const { error } = await supabase.from("favorites").insert({
       user_id: user.id,
       mester_id: mesterId,
-    })
+    } as never)
 
     if (error) {
       return { error: "Nu s-a putut adăuga la favorite" }

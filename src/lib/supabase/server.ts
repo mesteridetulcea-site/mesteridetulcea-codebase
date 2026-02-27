@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr"
+import { createClient as createJsClient, SupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/database"
 
@@ -30,17 +31,21 @@ export async function createClient() {
 }
 
 // Admin client with service role key (bypass RLS)
-export function createAdminClient() {
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return []
+// Uses the direct JS client since admin operations don't need cookies
+let adminClientInstance: SupabaseClient<Database> | null = null
+
+export async function createAdminClient(): Promise<SupabaseClient<Database>> {
+  if (!adminClientInstance) {
+    adminClientInstance = createJsClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
         },
-        setAll() {},
-      },
-    }
-  )
+      }
+    )
+  }
+  return adminClientInstance
 }

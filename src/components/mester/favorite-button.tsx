@@ -47,7 +47,7 @@ export function FavoriteButton({
           variant: "destructive",
         })
       } else {
-        setIsFavorited(result.isFavorited)
+        setIsFavorited(result.isFavorited ?? false)
         toast({
           title: result.isFavorited ? "Adăugat la favorite" : "Eliminat din favorite",
         })

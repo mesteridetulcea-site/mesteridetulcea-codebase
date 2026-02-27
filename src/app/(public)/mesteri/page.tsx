@@ -1,5 +1,12 @@
 import { Suspense } from "react"
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
+
+export const metadata: Metadata = {
+  title: "Meșteri în Tulcea",
+  description:
+    "Explorează lista completă de meșteri verificați din Tulcea. Electricieni, instalatori, zidari, zugravi și mulți alții, gata să te ajute.",
+}
 import { MesterFilters } from "@/components/mester/mester-filters"
 import { MesterCard } from "@/components/mester/mester-card"
 import { Skeleton } from "@/components/ui/skeleton"

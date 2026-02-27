@@ -21,13 +21,14 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const currentCategory = searchParams.get("categorie") || ""
+  const currentCategory = searchParams.get("categorie") || "all"
   const currentSort = searchParams.get("sortare") || "recomandat"
   const currentQuery = searchParams.get("q") || ""
 
   function updateFilters(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
-    if (value) {
+    // Handle "all" as clearing the filter
+    if (value && value !== "all") {
       params.set(key, value)
     } else {
       params.delete(key)
@@ -40,7 +41,7 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
     router.push("/mesteri")
   }
 
-  const hasActiveFilters = currentCategory || currentQuery
+  const hasActiveFilters = (currentCategory && currentCategory !== "all") || currentQuery
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -66,7 +67,7 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
           <SelectValue placeholder="Toate categoriile" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Toate categoriile</SelectItem>
+          <SelectItem value="all">Toate categoriile</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.slug}>
               {category.name}

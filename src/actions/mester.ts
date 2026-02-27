@@ -43,8 +43,8 @@ export async function updateMesterProfile(formData: FormData) {
       address: address || null,
       category_id: categoryId,
       updated_at: new Date().toISOString(),
-    })
-    .eq("id", mester.id)
+    } as never)
+    .eq("id", (mester as { id: string }).id)
 
   if (error) {
     return { error: "Nu s-a putut actualiza profilul" }
@@ -116,7 +116,7 @@ export async function applyAsMester(formData: FormData) {
     average_rating: 0,
     total_reviews: 0,
     total_views: 0,
-  })
+  } as never)
 
   if (mesterError) {
     console.error("Mester creation error:", mesterError)
@@ -126,7 +126,7 @@ export async function applyAsMester(formData: FormData) {
   // Update profile role
   await supabase
     .from("profiles")
-    .update({ role: "mester" })
+    .update({ role: "mester" } as never)
     .eq("id", user.id)
 
   revalidatePath("/", "layout")
