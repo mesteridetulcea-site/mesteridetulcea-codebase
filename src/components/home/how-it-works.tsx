@@ -25,11 +25,16 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-16 bg-[#0f0b04]">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold">Cum funcționează</h2>
-          <p className="mt-2 text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <div className="h-px w-16 bg-primary/35" />
+            <span className="text-primary text-2xl">★</span>
+            <div className="h-px w-16 bg-primary/35" />
+          </div>
+          <h2 className="text-3xl font-bold text-white tracking-wide">Cum funcționează</h2>
+          <p className="mt-2 text-white/45 italic">
             Găsești meșterul potrivit în 4 pași simpli
           </p>
         </div>
@@ -40,18 +45,18 @@ export function HowItWorks() {
               key={step.title}
               className="relative flex flex-col items-center text-center"
             >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground mb-4">
-                <step.icon className="h-8 w-8" />
+              <div className="relative flex h-16 w-16 items-center justify-center bg-primary/15 border border-primary/35 mb-4">
+                <step.icon className="h-7 w-7 text-primary" />
+                <span className="absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center bg-primary text-white text-xs font-bold">
+                  {index + 1}
+                </span>
               </div>
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 bg-background text-primary font-bold text-lg">
-                {index + 1}
-              </span>
-              <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-              <p className="text-sm text-muted-foreground">{step.description}</p>
+              <h3 className="font-semibold text-lg mb-2 text-white tracking-wide">{step.title}</h3>
+              <p className="text-sm text-white/45 italic leading-relaxed">{step.description}</p>
 
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-8 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-[2px] bg-border" />
+                <div className="hidden lg:block absolute top-8 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-primary/20" />
               )}
             </div>
           ))}

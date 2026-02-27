@@ -118,18 +118,29 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container py-8">
-      <div className="max-w-2xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Caută servicii sau meșteri
-        </h1>
-        <SearchInput
-          defaultValue={query}
-          onSearch={handleSearch}
-          autoFocus={!initialQuery}
-          className="w-full"
-        />
+    <>
+      <div className="bg-[#0f0b04] border-b border-[#584528] py-10">
+        <div className="container">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px w-10 bg-primary/40" />
+            <span className="text-primary">★</span>
+            <div className="h-px w-10 bg-primary/40" />
+          </div>
+          <h1 className="text-3xl font-bold text-white text-center mb-6">
+            Caută servicii sau meșteri
+          </h1>
+          <div className="max-w-2xl mx-auto">
+            <SearchInput
+              defaultValue={query}
+              onSearch={handleSearch}
+              autoFocus={!initialQuery}
+              className="w-full"
+            />
+          </div>
+        </div>
       </div>
+
+    <div className="container py-8">
 
       {isLoading && (
         <div className="flex justify-center py-12">
@@ -224,5 +235,6 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+    </>
   )
 }

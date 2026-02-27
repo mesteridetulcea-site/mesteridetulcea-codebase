@@ -195,21 +195,30 @@ export default async function MesteriPage(props: PageProps) {
   const categories = await getCategories()
 
   return (
-    <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Meșteri în Tulcea</h1>
-        <p className="text-muted-foreground mt-2">
-          Găsește meșterul potrivit pentru lucrarea ta
-        </p>
+    <>
+      <div className="bg-[#0f0b04] border-b border-[#584528] py-10">
+        <div className="container">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="h-px w-10 bg-primary/40" />
+            <span className="text-primary">★</span>
+            <div className="h-px w-10 bg-primary/40" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">Meșteri în Tulcea</h1>
+          <p className="text-white/45 mt-2 italic">
+            Găsește meșterul potrivit pentru lucrarea ta
+          </p>
+        </div>
       </div>
 
-      <Suspense fallback={null}>
-        <MesterFilters categories={categories} />
-      </Suspense>
+      <div className="container py-8">
+        <Suspense fallback={null}>
+          <MesterFilters categories={categories} />
+        </Suspense>
 
-      <Suspense fallback={<MesterGridSkeleton />}>
-        <MesterGrid searchParams={props.searchParams} />
-      </Suspense>
-    </div>
+        <Suspense fallback={<MesterGridSkeleton />}>
+          <MesterGrid searchParams={props.searchParams} />
+        </Suspense>
+      </div>
+    </>
   )
 }

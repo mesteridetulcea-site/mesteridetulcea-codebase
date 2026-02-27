@@ -19,7 +19,6 @@ async function getFeaturedMesters() {
     .order("average_rating", { ascending: false })
     .limit(4)
 
-  // Get cover photos for each mester
   const mesterIds = mesters?.map((m) => m.id) || []
   const { data: photos } = await supabase
     .from("mester_photos")
@@ -41,21 +40,18 @@ export async function FeaturedMesters() {
   }
 
   return (
-    <section className="py-16">
+    <section className="py-16 bg-white">
       <div className="container">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h2 className="text-3xl font-bold">Meșteri recomandați</h2>
-            <p className="mt-2 text-muted-foreground">
-              Cei mai apreciați meșteri din Tulcea
-            </p>
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <div className="h-px w-16 bg-[#584528]/35" />
+            <span className="text-primary text-2xl">★</span>
+            <div className="h-px w-16 bg-[#584528]/35" />
           </div>
-          <Link href="/mesteri">
-            <Button variant="outline" className="hidden sm:flex">
-              Vezi toți meșterii
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <h2 className="text-3xl font-bold tracking-wide">Meșteri recomandați</h2>
+          <p className="mt-2 text-muted-foreground italic">
+            Cei mai apreciați meșteri din Tulcea
+          </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -68,9 +64,12 @@ export async function FeaturedMesters() {
           ))}
         </div>
 
-        <div className="mt-8 text-center sm:hidden">
+        <div className="mt-10 text-center">
           <Link href="/mesteri">
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              className="border-[#584528]/50 hover:bg-primary hover:text-white hover:border-primary tracking-widest uppercase text-xs"
+            >
               Vezi toți meșterii
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

@@ -10,7 +10,6 @@ import {
   Home,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { Card, CardContent } from "@/components/ui/card"
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   electrician: Zap,
@@ -36,7 +35,6 @@ async function getCategories() {
 export async function CategoriesGrid() {
   const categories = await getCategories()
 
-  // Default categories if none exist in database
   const defaultCategories = [
     { id: "1", name: "Electricieni", slug: "electrician", icon: "electrician" },
     { id: "2", name: "Instalatori", slug: "instalator", icon: "instalator" },
@@ -51,11 +49,16 @@ export async function CategoriesGrid() {
   const displayCategories = categories.length > 0 ? categories : defaultCategories
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-16 bg-[#f8f4ef]">
       <div className="container">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold">Categorii de servicii</h2>
-          <p className="mt-2 text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <div className="h-px w-16 bg-[#584528]/40" />
+            <span className="text-primary text-2xl">★</span>
+            <div className="h-px w-16 bg-[#584528]/40" />
+          </div>
+          <h2 className="text-3xl font-bold text-foreground">Categorii de servicii</h2>
+          <p className="mt-2 text-muted-foreground italic">
             Alege categoria de care ai nevoie
           </p>
         </div>
@@ -68,14 +71,14 @@ export async function CategoriesGrid() {
                 key={category.id}
                 href={`/mesteri?categorie=${category.slug}`}
               >
-                <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/50">
-                  <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                    <div className="mb-3 rounded-full bg-primary/10 p-3 group-hover:bg-primary/20 transition-colors">
-                      <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="font-medium">{category.name}</span>
-                  </CardContent>
-                </Card>
+                <div className="group cursor-pointer bg-white border border-[#584528]/15 hover:border-primary/50 transition-all hover:shadow-md p-6 flex flex-col items-center justify-center text-center">
+                  <div className="mb-3 p-3 bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <span className="font-medium text-sm tracking-wider uppercase text-foreground/75 group-hover:text-primary transition-colors">
+                    {category.name}
+                  </span>
+                </div>
               </Link>
             )
           })}

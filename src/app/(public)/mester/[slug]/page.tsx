@@ -106,15 +106,20 @@ export default async function MesterProfilePage({ params }: PageProps) {
   const isFavorited = await checkIsFavorited(mester.id)
 
   return (
-    <div className="container py-8">
-      {/* Back button */}
-      <Link href="/mesteri">
-        <Button variant="ghost" className="mb-6 -ml-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Înapoi la listă
-        </Button>
-      </Link>
+    <>
+      <div className="bg-[#0f0b04] border-b border-[#584528] py-4">
+        <div className="container">
+          <Link
+            href="/mesteri"
+            className="inline-flex items-center text-white/55 hover:text-primary transition-colors text-sm"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Înapoi la meșteri
+          </Link>
+        </div>
+      </div>
 
+      <div className="container py-8">
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-8">
@@ -239,6 +244,7 @@ export default async function MesterProfilePage({ params }: PageProps) {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

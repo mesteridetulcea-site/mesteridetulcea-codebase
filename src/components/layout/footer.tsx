@@ -26,26 +26,26 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className="bg-[#0f0b04] border-t border-[#584528]">
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
               <Hammer className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Meșteri de Tulcea</span>
+              <span className="font-bold text-lg text-white tracking-wide">Meșteri de Tulcea</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/45 italic leading-relaxed">
               Platforma care conectează locuitorii din Tulcea cu meșteri de
               încredere pentru orice tip de lucrare.
             </p>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-white/45">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 text-primary/70" />
                 <span>Tulcea, România</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4 text-primary/70" />
                 <a
                   href="mailto:contact@mesteritulcea.ro"
                   className="hover:text-primary transition-colors"
@@ -54,7 +54,7 @@ export function Footer() {
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4 text-primary/70" />
                 <a
                   href="tel:+40712345678"
                   className="hover:text-primary transition-colors"
@@ -67,13 +67,13 @@ export function Footer() {
 
           {/* Servicii */}
           <div>
-            <h3 className="font-semibold mb-4">Servicii</h3>
+            <h3 className="font-semibold mb-4 text-white tracking-widest uppercase text-sm border-b border-[#584528] pb-2">Servicii</h3>
             <ul className="space-y-2">
               {footerLinks.servicii.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-white/45 hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -84,13 +84,13 @@ export function Footer() {
 
           {/* Informații */}
           <div>
-            <h3 className="font-semibold mb-4">Informații</h3>
+            <h3 className="font-semibold mb-4 text-white tracking-widest uppercase text-sm border-b border-[#584528] pb-2">Informații</h3>
             <ul className="space-y-2">
               {footerLinks.informatii.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-white/45 hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -101,13 +101,13 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-4 text-white tracking-widest uppercase text-sm border-b border-[#584528] pb-2">Legal</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-white/45 hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -117,7 +117,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
+        <div className="border-t border-[#584528]/50 mt-8 pt-8 text-center text-sm text-white/25">
           <p>
             &copy; {currentYear} Meșteri de Tulcea. Toate drepturile rezervate.
           </p>

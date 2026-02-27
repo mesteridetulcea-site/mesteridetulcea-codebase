@@ -1,56 +1,56 @@
 @import "tailwindcss";
 
-/* Orange/Amber themed color palette for Mesteri de Tulcea */
+/* Hotel-inspired elegant palette — warm gold & dark brown */
 :root {
   --background: 0 0% 100%;
-  --foreground: 20 14.3% 4.1%;
+  --foreground: 0 0% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 20 14.3% 4.1%;
+  --card-foreground: 0 0% 13%;
   --popover: 0 0% 100%;
-  --popover-foreground: 20 14.3% 4.1%;
-  --primary: 24.6 95% 53.1%;
-  --primary-foreground: 60 9.1% 97.8%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --accent: 60 4.8% 95.9%;
-  --accent-foreground: 24 9.8% 10%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 40 58% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 38 18% 94%;
+  --secondary-foreground: 36 37% 18%;
+  --muted: 38 15% 95%;
+  --muted-foreground: 30 10% 45%;
+  --accent: 40 58% 40%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 60 9.1% 97.8%;
-  --border: 20 5.9% 90%;
-  --input: 20 5.9% 90%;
-  --ring: 24.6 95% 53.1%;
-  --radius: 0.5rem;
+  --destructive-foreground: 0 0% 100%;
+  --border: 36 37% 25%;
+  --input: 36 20% 85%;
+  --ring: 40 58% 40%;
+  --radius: 0.125rem;
 
   /* Chart colors */
-  --chart-1: 24.6 95% 53.1%;
-  --chart-2: 45 93% 47%;
+  --chart-1: 40 58% 40%;
+  --chart-2: 36 37% 25%;
   --chart-3: 173 58% 39%;
   --chart-4: 220 70% 50%;
   --chart-5: 280 65% 60%;
 }
 
 .dark {
-  --background: 20 14.3% 4.1%;
-  --foreground: 60 9.1% 97.8%;
-  --card: 20 14.3% 4.1%;
-  --card-foreground: 60 9.1% 97.8%;
-  --popover: 20 14.3% 4.1%;
-  --popover-foreground: 60 9.1% 97.8%;
-  --primary: 24.6 95% 53.1%;
-  --primary-foreground: 60 9.1% 97.8%;
-  --secondary: 12 6.5% 15.1%;
-  --secondary-foreground: 60 9.1% 97.8%;
-  --muted: 12 6.5% 15.1%;
-  --muted-foreground: 24 5.4% 63.9%;
-  --accent: 12 6.5% 15.1%;
-  --accent-foreground: 60 9.1% 97.8%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 60 9.1% 97.8%;
-  --border: 12 6.5% 15.1%;
-  --input: 12 6.5% 15.1%;
-  --ring: 24.6 95% 53.1%;
+  --background: 22 30% 5%;
+  --foreground: 38 18% 92%;
+  --card: 22 25% 8%;
+  --card-foreground: 38 18% 92%;
+  --popover: 22 25% 8%;
+  --popover-foreground: 38 18% 92%;
+  --primary: 40 58% 48%;
+  --primary-foreground: 22 40% 8%;
+  --secondary: 22 20% 15%;
+  --secondary-foreground: 38 18% 85%;
+  --muted: 22 20% 15%;
+  --muted-foreground: 30 12% 60%;
+  --accent: 40 58% 48%;
+  --accent-foreground: 22 40% 8%;
+  --destructive: 0 62.8% 40%;
+  --destructive-foreground: 38 18% 92%;
+  --border: 36 30% 20%;
+  --input: 36 20% 18%;
+  --ring: 40 58% 48%;
 }
 
 @theme inline {
@@ -73,11 +73,11 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -89,6 +89,19 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: 0.02em;
+  }
+
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 80rem;
   }
 }
 
