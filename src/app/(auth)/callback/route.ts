@@ -28,7 +28,7 @@ export async function GET(request: Request) {
             full_name: user.user_metadata.full_name || user.user_metadata.name || null,
             avatar_url: user.user_metadata.avatar_url || null,
             role: "client",
-          })
+          } as never)
         }
       }
 

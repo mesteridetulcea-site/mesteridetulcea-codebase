@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
+import type { MesterWithCategory } from "@/types/database"
 
 export const metadata: Metadata = {
   title: "Meșteri în Tulcea",
@@ -24,10 +25,21 @@ interface PageProps {
   }>
 }
 
-async function getCategories() {
+interface Category {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon: string | null
+  keywords: string[] | null
+  order_index: number
+  created_at: string
+}
+
+async function getCategories(): Promise<Category[]> {
   const supabase = await createClient()
   const { data } = await supabase.from("categories").select("*").order("order_index")
-  return data || []
+  return (data || []) as Category[]
 }
 
 async function getMesters(params: {
@@ -55,7 +67,7 @@ async function getMesters(params: {
       .from("categories")
       .select("id")
       .eq("slug", params.category)
-      .single()
+      .single() as { data: { id: string } | null }
 
     if (categoryData) {
       queryBuilder = queryBuilder.eq("category_id", categoryData.id)
@@ -93,18 +105,18 @@ async function getMesters(params: {
   const { data: mesters, count } = await queryBuilder
 
   // Get cover photos
-  const mesterIds = mesters?.map((m) => m.id) || []
+  const mesterIds = (mesters as { id: string }[])?.map((m) => m.id) || []
   const { data: photos } = await supabase
     .from("mester_photos")
     .select("mester_id, url")
     .in("mester_id", mesterIds)
     .eq("is_cover", true)
-    .eq("approval_status", "approved")
+    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
 
   const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
 
   return {
-    mesters: mesters || [],
+    mesters: (mesters || []) as MesterWithCategory[],
     photoMap,
     total: count || 0,
     totalPages: Math.ceil((count || 0) / ITEMS_PER_PAGE),

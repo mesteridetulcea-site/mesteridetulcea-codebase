@@ -34,22 +34,18 @@ export async function createTransportRequest(formData: FormData) {
 
   const { data, error } = await adminClient
     .from("transport_requests")
-    .insert(
-      [
-        {
-          user_id: user?.id || null,
-          pickup_address: pickupAddress,
-          pickup_lat: isNaN(pickupLat) ? defaultLat : pickupLat,
-          pickup_lng: isNaN(pickupLng) ? defaultLng : pickupLng,
-          dropoff_address: dropoffAddress,
-          dropoff_lat: isNaN(dropoffLat) ? defaultLat : dropoffLat,
-          dropoff_lng: isNaN(dropoffLng) ? defaultLng : dropoffLng,
-          description: description || null,
-          phone: phone,
-          status: "pending",
-        },
-      ] as any
-    )
+    .insert({
+      user_id: user?.id || null,
+      pickup_address: pickupAddress,
+      pickup_lat: isNaN(pickupLat) ? defaultLat : pickupLat,
+      pickup_lng: isNaN(pickupLng) ? defaultLng : pickupLng,
+      dropoff_address: dropoffAddress,
+      dropoff_lat: isNaN(dropoffLat) ? defaultLat : dropoffLat,
+      dropoff_lng: isNaN(dropoffLng) ? defaultLng : dropoffLng,
+      description: description || null,
+      phone: phone,
+      status: "pending",
+    } as never)
     .select()
     .single<{ id: string }>()
 

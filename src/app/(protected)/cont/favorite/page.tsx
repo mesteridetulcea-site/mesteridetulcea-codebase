@@ -6,6 +6,7 @@ import { MesterCard } from "@/components/mester/mester-card"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { createClient } from "@/lib/supabase/server"
+import type { MesterWithCategory } from "@/types/database"
 
 async function getFavoritesWithPhotos() {
   const favorites = await getFavorites()
@@ -15,12 +16,12 @@ async function getFavoritesWithPhotos() {
   const supabase = await createClient()
   const mesterIds = favorites.map((f) => f.mester?.id).filter(Boolean)
 
-  const { data: photos } = await supabase
+  const { data: photos } = (await supabase
     .from("mester_photos")
     .select("mester_id, url")
     .in("mester_id", mesterIds)
     .eq("is_cover", true)
-    .eq("approval_status", "approved")
+    .eq("approval_status", "approved")) as { data: { mester_id: string; url: string }[] | null }
 
   const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
 
@@ -71,7 +72,7 @@ export default async function FavoritesPage() {
                 favorite.mester && (
                   <MesterCard
                     key={favorite.id}
-                    mester={favorite.mester}
+                    mester={favorite.mester as MesterWithCategory}
                     coverPhoto={photoMap.get(favorite.mester.id)}
                   />
                 )

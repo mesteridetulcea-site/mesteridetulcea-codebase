@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { MesterCard } from "@/components/mester/mester-card"
+import type { MesterWithCategory } from "@/types/database"
 
 async function getFeaturedMesters() {
   const supabase = await createClient()
@@ -17,7 +18,7 @@ async function getFeaturedMesters() {
     .eq("is_featured", true)
     .order("subscription_tier", { ascending: false })
     .order("average_rating", { ascending: false })
-    .limit(4)
+    .limit(4) as { data: MesterWithCategory[] | null }
 
   const mesterIds = mesters?.map((m) => m.id) || []
   const { data: photos } = await supabase
@@ -25,7 +26,7 @@ async function getFeaturedMesters() {
     .select("mester_id, url")
     .in("mester_id", mesterIds)
     .eq("is_cover", true)
-    .eq("approval_status", "approved")
+    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
 
   const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
 

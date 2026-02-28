@@ -31,6 +31,10 @@ export function TransportMap({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
+    // Check if map is already initialized on this container (React strict mode)
+    const container = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number }
+    if (container._leaflet_id) return
+
     // Dynamic import of Leaflet
     import("leaflet").then((L) => {
       // Fix Leaflet default icon issue

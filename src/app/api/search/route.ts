@@ -13,11 +13,19 @@ export async function GET(request: Request) {
 
   const supabase = await createClient()
 
+  interface Category {
+    id: string
+    name: string
+    slug: string
+    keywords: string[] | null
+    order_index: number
+  }
+
   // Get all categories with keywords
   const { data: categories } = await supabase
     .from("categories")
     .select("*")
-    .order("order_index")
+    .order("order_index") as { data: Category[] | null }
 
   // Score each category
   const scoredCategories =
@@ -50,11 +58,23 @@ export async function GET(request: Request) {
     mesterQuery = mesterQuery.ilike("business_name", `%${query}%`)
   }
 
+  interface Mester {
+    id: string
+    business_name: string
+    slug: string
+    subscription_tier: string
+    average_rating: number
+    total_reviews: number
+    city: string
+    description: string | null
+    category: Category | null
+  }
+
   // Order by tier then rating
   const { data: mesters } = await mesterQuery
     .order("subscription_tier", { ascending: false })
     .order("average_rating", { ascending: false })
-    .limit(limit)
+    .limit(limit) as { data: Mester[] | null }
 
   // Get cover photos for mesters
   const mesterIds = mesters?.map((m) => m.id) || []
@@ -63,7 +83,7 @@ export async function GET(request: Request) {
     .select("mester_id, url")
     .in("mester_id", mesterIds)
     .eq("is_cover", true)
-    .eq("approval_status", "approved")
+    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
 
   const photoMap = Object.fromEntries(
     photos?.map((p) => [p.mester_id, p.url]) || []

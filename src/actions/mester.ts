@@ -133,7 +133,40 @@ export async function applyAsMester(formData: FormData) {
   redirect("/mester-cont")
 }
 
-export async function getMesterProfile() {
+interface MesterProfile {
+  id: string
+  profile_id: string
+  category_id: string
+  slug: string
+  business_name: string
+  description: string | null
+  experience_years: number | null
+  subscription_tier: string
+  approval_status: string
+  is_featured: boolean
+  average_rating: number
+  total_reviews: number
+  total_views: number
+  city: string
+  address: string | null
+  whatsapp_number: string | null
+  created_at: string
+  updated_at: string
+  category: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  profile: {
+    id: string
+    email: string
+    full_name: string | null
+    avatar_url: string | null
+    phone: string | null
+  } | null
+}
+
+export async function getMesterProfile(): Promise<MesterProfile | null> {
   const supabase = await createClient()
 
   const {
@@ -154,5 +187,5 @@ export async function getMesterProfile() {
     .eq("profile_id", user.id)
     .single()
 
-  return mester
+  return mester as MesterProfile | null
 }

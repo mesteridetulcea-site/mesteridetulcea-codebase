@@ -19,7 +19,16 @@ async function getUserData() {
     redirect("/login")
   }
 
-  const [{ data: profile }, { count: favoritesCount }, { count: requestsCount }] =
+  interface Profile {
+    id: string
+    email: string
+    full_name: string | null
+    avatar_url: string | null
+    phone: string | null
+    role: string
+  }
+
+  const [profileResult, favoritesResult, requestsResult] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
       supabase
@@ -31,6 +40,10 @@ async function getUserData() {
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id),
     ])
+
+  const profile = profileResult.data as Profile | null
+  const favoritesCount = favoritesResult.count
+  const requestsCount = requestsResult.count
 
   return {
     user,
@@ -45,7 +58,7 @@ async function getUserData() {
 export default async function AccountPage() {
   const { profile, stats } = await getUserData()
 
-  const getInitials = (name: string | null) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return "U"
     return name
       .split(" ")

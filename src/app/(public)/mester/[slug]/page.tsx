@@ -13,10 +13,55 @@ import { ReviewsWithForm } from "@/components/mester/reviews-with-form"
 import { WhatsAppButton } from "@/components/mester/whatsapp-button"
 import { FavoriteButton } from "@/components/mester/favorite-button"
 import { checkIsFavorited } from "@/actions/favorites"
-import type { SubscriptionTier } from "@/types/database"
+import type { SubscriptionTier, ReviewWithUser } from "@/types/database"
 
 interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+interface MesterData {
+  id: string
+  profile_id: string
+  category_id: string
+  slug: string
+  business_name: string
+  description: string | null
+  experience_years: number | null
+  subscription_tier: string
+  approval_status: string
+  is_featured: boolean
+  average_rating: number
+  total_reviews: number
+  total_views: number
+  city: string
+  address: string | null
+  whatsapp_number: string | null
+  created_at: string
+  updated_at: string
+  category: { id: string; name: string; slug: string } | null
+  profile: { id: string; full_name: string | null; avatar_url: string | null } | null
+}
+
+interface PhotoData {
+  id: string
+  mester_id: string
+  url: string
+  caption: string | null
+  is_cover: boolean
+  approval_status: "pending" | "approved" | "rejected"
+  order_index: number
+  created_at: string
+}
+
+interface ReviewData {
+  id: string
+  mester_id: string
+  user_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  updated_at: string
+  profile: { full_name: string | null; avatar_url: string | null } | null
 }
 
 async function getMester(slug: string) {
@@ -33,7 +78,7 @@ async function getMester(slug: string) {
     )
     .eq("slug", slug)
     .eq("approval_status", "approved")
-    .single()
+    .single() as { data: MesterData | null }
 
   if (!mester) return null
 
@@ -43,7 +88,7 @@ async function getMester(slug: string) {
     .select("*")
     .eq("mester_id", mester.id)
     .eq("approval_status", "approved")
-    .order("order_index")
+    .order("order_index") as { data: PhotoData[] | null }
 
   // Get reviews with user info
   const { data: reviews } = await supabase
@@ -56,12 +101,12 @@ async function getMester(slug: string) {
     )
     .eq("mester_id", mester.id)
     .order("created_at", { ascending: false })
-    .limit(10)
+    .limit(10) as { data: ReviewWithUser[] | null }
 
   // Increment view count
   await supabase
     .from("mesters")
-    .update({ total_views: mester.total_views + 1 })
+    .update({ total_views: mester.total_views + 1 } as never)
     .eq("id", mester.id)
 
   return {
@@ -79,7 +124,7 @@ export async function generateMetadata({ params }: PageProps) {
     .from("mesters")
     .select("business_name, description, category:categories(name)")
     .eq("slug", slug)
-    .single()
+    .single() as { data: { business_name: string; description: string | null; category: { name: string } | null } | null }
 
   if (!mester) {
     return { title: "Meșter negăsit" }

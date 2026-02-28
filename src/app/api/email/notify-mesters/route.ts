@@ -29,10 +29,16 @@ export async function POST(request: Request) {
       mesterQuery = mesterQuery.eq("category_id", categoryId)
     }
 
+    interface MesterWithProfile {
+      id: string
+      business_name: string
+      profile: { email: string; full_name: string | null } | null
+    }
+
     const { data: mesters } = await mesterQuery
       .order("subscription_tier", { ascending: false })
       .order("average_rating", { ascending: false })
-      .limit(3)
+      .limit(3) as { data: MesterWithProfile[] | null }
 
     if (!mesters || mesters.length === 0) {
       return NextResponse.json({ message: "No mesters to notify" })
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
         status: "pending",
       } as never)
       .select()
-      .single()
+      .single() as { data: { id: string } | null; error: Error | null }
 
     if (requestError) {
       console.error("Error creating service request:", requestError)
@@ -96,7 +102,7 @@ export async function POST(request: Request) {
     if (serviceRequest) {
       await supabase
         .from("service_requests")
-        .update({ status: "sent" })
+        .update({ status: "sent" } as never)
         .eq("id", serviceRequest.id)
     }
 

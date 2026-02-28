@@ -13,7 +13,7 @@ async function getMesterStats() {
   const { data: reviews } = await supabase
     .from("reviews")
     .select("rating")
-    .eq("mester_id", mester.id)
+    .eq("mester_id", mester.id) as { data: { rating: number }[] | null }
 
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
     rating,

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import type { SubscriptionTier, ApprovalStatus } from "@/types/database"
 
 export async function toggleFavorite(mesterId: string) {
   const supabase = await createClient()
@@ -51,7 +52,41 @@ export async function toggleFavorite(mesterId: string) {
   }
 }
 
-export async function getFavorites() {
+interface FavoriteMester {
+  id: string
+  profile_id: string
+  category_id: string
+  business_name: string
+  slug: string
+  description: string | null
+  experience_years: number | null
+  subscription_tier: SubscriptionTier
+  approval_status: ApprovalStatus
+  is_featured: boolean
+  average_rating: number
+  total_reviews: number
+  total_views: number
+  city: string
+  address: string | null
+  whatsapp_number: string | null
+  created_at: string
+  updated_at: string
+  category: {
+    id: string
+    name: string
+    slug: string
+  } | null
+}
+
+interface Favorite {
+  id: string
+  user_id: string
+  mester_id: string
+  created_at: string
+  mester: FavoriteMester | null
+}
+
+export async function getFavorites(): Promise<Favorite[]> {
   const supabase = await createClient()
 
   const {
@@ -76,7 +111,7 @@ export async function getFavorites() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
-  return data || []
+  return (data || []) as Favorite[]
 }
 
 export async function checkIsFavorited(mesterId: string) {

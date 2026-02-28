@@ -10,7 +10,16 @@ import { Footer } from "@/components/layout/footer"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
 
-async function getServiceRequests() {
+interface ServiceRequest {
+  id: string
+  query: string
+  status: string
+  created_at: string
+  notified_mesters: string[] | null
+  category: { name: string } | null
+}
+
+async function getServiceRequests(): Promise<ServiceRequest[]> {
   const supabase = await createClient()
 
   const {
@@ -32,7 +41,7 @@ async function getServiceRequests() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
-  return data || []
+  return (data || []) as ServiceRequest[]
 }
 
 const statusConfig = {
