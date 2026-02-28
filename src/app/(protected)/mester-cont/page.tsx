@@ -26,17 +26,17 @@ export default async function MesterDashboardPage() {
   const stats = [
     {
       title: "Vizualizări",
-      value: mester.total_views,
+      value: mester.views_count,
       icon: Eye,
     },
     {
       title: "Rating mediu",
-      value: mester.average_rating.toFixed(1),
+      value: mester.avg_rating.toFixed(1),
       icon: Star,
     },
     {
       title: "Recenzii",
-      value: mester.total_reviews,
+      value: mester.reviews_count,
       icon: Heart,
     },
   ]
@@ -45,7 +45,7 @@ export default async function MesterDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Bun venit, {mester.business_name}!</h1>
+          <h1 className="text-3xl font-bold">Bun venit, {mester.display_name}!</h1>
           <p className="text-muted-foreground">
             Gestionează profilul tău de meșter
           </p>
@@ -155,7 +155,7 @@ export default async function MesterDashboardPage() {
             <p className="text-sm text-muted-foreground mb-4">
               Vezi cum arată profilul tău pentru clienți.
             </p>
-            <Link href={`/mester/${mester.slug}`} target="_blank">
+            <Link href={`/mester/${mester.id}`} target="_blank">
               <Button variant="outline">Vezi profilul public</Button>
             </Link>
           </CardContent>

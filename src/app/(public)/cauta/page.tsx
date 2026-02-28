@@ -9,20 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useUser } from "@/lib/hooks/use-user"
 import { toast } from "@/lib/hooks/use-toast"
+import type { MesterWithCategory } from "@/types/database"
 
-interface SearchResult {
-  mesters: Array<{
-    id: string
-    business_name: string
-    slug: string
-    subscription_tier: string
-    average_rating: number
-    total_reviews: number
-    description: string | null
-    city: string
-    category: { id: string; name: string; slug: string } | null
-    coverPhoto: string | null
-  }>
+interface SearchApiResult {
+  mesters: Array<MesterWithCategory & { coverPhoto: string | null }>
   categories: Array<{
     id: string
     name: string
@@ -39,7 +29,7 @@ export default function SearchPage() {
 
   const initialQuery = searchParams.get("q") || ""
   const [query, setQuery] = useState(initialQuery)
-  const [results, setResults] = useState<SearchResult | null>(null)
+  const [results, setResults] = useState<SearchApiResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isNotifying, setIsNotifying] = useState(false)
   const [notificationSent, setNotificationSent] = useState(false)
@@ -207,7 +197,7 @@ export default function SearchPage() {
                 {results.mesters.map((mester) => (
                   <MesterCard
                     key={mester.id}
-                    mester={mester as any}
+                    mester={mester}
                     coverPhoto={mester.coverPhoto}
                   />
                 ))}

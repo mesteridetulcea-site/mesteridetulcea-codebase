@@ -19,12 +19,11 @@ export async function toggleFavorite(mesterId: string) {
   const { data: existing } = await supabase
     .from("favorites")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("client_id", user.id)
     .eq("mester_id", mesterId)
     .single() as { data: { id: string } | null }
 
   if (existing) {
-    // Remove favorite
     const { error } = await supabase
       .from("favorites")
       .delete()
@@ -37,9 +36,8 @@ export async function toggleFavorite(mesterId: string) {
     revalidatePath("/cont/favorite")
     return { isFavorited: false }
   } else {
-    // Add favorite
     const { error } = await supabase.from("favorites").insert({
-      user_id: user.id,
+      client_id: user.id,
       mester_id: mesterId,
     } as never)
 
@@ -52,25 +50,8 @@ export async function toggleFavorite(mesterId: string) {
   }
 }
 
-interface FavoriteMester {
-  id: string
-  profile_id: string
+interface FavoriteMesterCategory {
   category_id: string
-  business_name: string
-  slug: string
-  description: string | null
-  experience_years: number | null
-  subscription_tier: SubscriptionTier
-  approval_status: ApprovalStatus
-  is_featured: boolean
-  average_rating: number
-  total_reviews: number
-  total_views: number
-  city: string
-  address: string | null
-  whatsapp_number: string | null
-  created_at: string
-  updated_at: string
   category: {
     id: string
     name: string
@@ -78,9 +59,29 @@ interface FavoriteMester {
   } | null
 }
 
-interface Favorite {
+interface FavoriteMester {
   id: string
   user_id: string
+  display_name: string
+  bio: string | null
+  years_experience: number | null
+  subscription_tier: SubscriptionTier
+  approval_status: ApprovalStatus
+  is_featured: boolean
+  avg_rating: number
+  reviews_count: number
+  views_count: number
+  city: string
+  neighborhood: string | null
+  whatsapp_number: string | null
+  created_at: string
+  updated_at: string
+  mester_categories: FavoriteMesterCategory[]
+}
+
+interface Favorite {
+  id: string
+  client_id: string
   mester_id: string
   created_at: string
   mester: FavoriteMester | null
@@ -102,13 +103,13 @@ export async function getFavorites(): Promise<Favorite[]> {
     .select(
       `
       *,
-      mester:mesters(
+      mester:mester_profiles(
         *,
-        category:categories(*)
+        mester_categories(category_id, category:categories(id, name, slug))
       )
     `
     )
-    .eq("user_id", user.id)
+    .eq("client_id", user.id)
     .order("created_at", { ascending: false })
 
   return (data || []) as Favorite[]
@@ -128,7 +129,7 @@ export async function checkIsFavorited(mesterId: string) {
   const { data } = await supabase
     .from("favorites")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("client_id", user.id)
     .eq("mester_id", mesterId)
     .single()
 

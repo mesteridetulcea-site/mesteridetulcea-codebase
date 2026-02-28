@@ -7,7 +7,6 @@ import { createCategory, updateCategory, deleteCategory } from "@/actions/admin"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
@@ -46,7 +45,7 @@ export default function AdminCategoriesPage() {
     const { data } = await supabase
       .from("categories")
       .select("*")
-      .order("order_index")
+      .order("sort_order")
 
     setCategories(data || [])
     setLoading(false)
@@ -137,29 +136,12 @@ export default function AdminCategoriesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Descriere</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  defaultValue={editingCategory?.description || ""}
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="icon">Icon (slug)</Label>
                 <Input
                   id="icon"
                   name="icon"
                   defaultValue={editingCategory?.icon || ""}
                   placeholder="electrician, instalator, etc."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="keywords">Cuvinte cheie (separate prin virgulă)</Label>
-                <Input
-                  id="keywords"
-                  name="keywords"
-                  defaultValue={editingCategory?.keywords?.join(", ") || ""}
-                  placeholder="priză, cablu, tablou electric"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -234,12 +216,9 @@ export default function AdminCategoriesPage() {
                 <p className="text-sm text-muted-foreground">
                   Slug: {category.slug}
                 </p>
-                {category.description && (
-                  <p className="text-sm mt-2">{category.description}</p>
-                )}
-                {category.keywords && category.keywords.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Cuvinte cheie: {category.keywords.join(", ")}
+                {category.icon && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Icon: {category.icon}
                   </p>
                 )}
               </CardContent>

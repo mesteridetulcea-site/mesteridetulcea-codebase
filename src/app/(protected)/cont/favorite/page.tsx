@@ -18,12 +18,12 @@ async function getFavoritesWithPhotos() {
 
   const { data: photos } = (await supabase
     .from("mester_photos")
-    .select("mester_id, url")
+    .select("mester_id, public_url")
     .in("mester_id", mesterIds)
-    .eq("is_cover", true)
-    .eq("approval_status", "approved")) as { data: { mester_id: string; url: string }[] | null }
+    .eq("photo_type", "profile")
+    .eq("approval_status", "approved")) as { data: { mester_id: string; public_url: string }[] | null }
 
-  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
+  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.public_url]))
 
   return { favorites, photoMap }
 }

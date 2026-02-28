@@ -46,19 +46,20 @@ export default function MesterProfilePage() {
       const { data: cats } = await supabase
         .from("categories")
         .select("*")
-        .order("order_index")
+        .order("sort_order")
       setCategories(cats || [])
 
       // Load mester profile
       const mester = await getMesterProfile()
       if (mester) {
+        const primaryCategory = mester.mester_categories?.[0]?.category_id || ""
         setFormData({
-          businessName: mester.business_name || "",
-          description: mester.description || "",
-          experienceYears: mester.experience_years?.toString() || "",
+          businessName: mester.display_name || "",
+          description: mester.bio || "",
+          experienceYears: mester.years_experience?.toString() || "",
           whatsappNumber: mester.whatsapp_number || "",
-          address: mester.address || "",
-          categoryId: mester.category_id || "",
+          address: mester.neighborhood || "",
+          categoryId: primaryCategory,
         })
       }
       setLoading(false)
@@ -193,14 +194,14 @@ export default function MesterProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Adresă</Label>
+              <Label htmlFor="address">Adresă / Zonă</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                placeholder="Strada, număr"
+                placeholder="Strada, număr sau zonă"
               />
             </div>
 

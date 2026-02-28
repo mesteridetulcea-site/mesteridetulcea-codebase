@@ -68,7 +68,7 @@ export function ReviewsSection({
                   <Avatar>
                     <AvatarImage src={review.profile?.avatar_url || undefined} />
                     <AvatarFallback>
-                      {getInitials(review.profile?.full_name)}
+                      {getInitials(review.profile?.full_name ?? null)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -99,9 +99,9 @@ export function ReviewsSection({
                         </div>
                       </div>
                     </div>
-                    {review.comment && (
+                    {review.body && (
                       <p className="mt-3 text-sm text-muted-foreground">
-                        {review.comment}
+                        {review.body}
                       </p>
                     )}
                   </div>

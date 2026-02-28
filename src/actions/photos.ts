@@ -16,9 +16,9 @@ export async function uploadPhoto(formData: FormData) {
 
   // Get mester profile
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single() as { data: { id: string } | null }
 
   if (!mester) {
@@ -27,57 +27,57 @@ export async function uploadPhoto(formData: FormData) {
 
   const file = formData.get("file") as File
   const caption = formData.get("caption") as string
-  const isCover = formData.get("isCover") === "true"
+  const isProfile = formData.get("isCover") === "true"
 
   if (!file) {
     return { error: "Nicio imagine selectată" }
   }
 
-  // Generate unique filename
   const fileExt = file.name.split(".").pop()
-  const fileName = `${mester.id}/${Date.now()}.${fileExt}`
+  const storagePath = `${mester.id}/${Date.now()}.${fileExt}`
 
   // Upload to Supabase Storage
   const { error: uploadError } = await supabase.storage
     .from("mester-photos")
-    .upload(fileName, file)
+    .upload(storagePath, file)
 
   if (uploadError) {
     console.error("Upload error:", uploadError)
     return { error: "Nu s-a putut încărca imaginea" }
   }
 
-  // Get public URL
   const {
     data: { publicUrl },
-  } = supabase.storage.from("mester-photos").getPublicUrl(fileName)
+  } = supabase.storage.from("mester-photos").getPublicUrl(storagePath)
 
-  // Get current max order_index
+  // Get current max sort_order
   const { data: photos } = await supabase
     .from("mester_photos")
-    .select("order_index")
+    .select("sort_order")
     .eq("mester_id", mester.id)
-    .order("order_index", { ascending: false })
-    .limit(1) as { data: { order_index: number }[] | null }
+    .order("sort_order", { ascending: false })
+    .limit(1) as { data: { sort_order: number }[] | null }
 
-  const nextOrderIndex = (photos?.[0]?.order_index || 0) + 1
+  const nextSortOrder = (photos?.[0]?.sort_order || 0) + 1
 
-  // If setting as cover, unset other covers
-  if (isCover) {
+  // If setting as profile photo, unset existing profile photos
+  if (isProfile) {
     await supabase
       .from("mester_photos")
-      .update({ is_cover: false } as never)
+      .update({ photo_type: "work" } as never)
       .eq("mester_id", mester.id)
+      .eq("photo_type", "profile")
   }
 
   // Create photo record
   const { error: insertError } = await supabase.from("mester_photos").insert({
     mester_id: mester.id,
-    url: publicUrl,
+    storage_path: storagePath,
+    public_url: publicUrl,
+    photo_type: isProfile ? "profile" : "work",
     caption: caption || null,
-    is_cover: isCover,
     approval_status: "pending",
-    order_index: nextOrderIndex,
+    sort_order: nextSortOrder,
   } as never)
 
   if (insertError) {
@@ -102,9 +102,9 @@ export async function deletePhoto(photoId: string) {
 
   // Get mester profile
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single() as { data: { id: string } | null }
 
   if (!mester) {
@@ -114,20 +114,17 @@ export async function deletePhoto(photoId: string) {
   // Verify photo belongs to mester
   const { data: photo } = await supabase
     .from("mester_photos")
-    .select("*")
+    .select("storage_path")
     .eq("id", photoId)
     .eq("mester_id", mester.id)
-    .single() as { data: { url: string } | null }
+    .single() as { data: { storage_path: string } | null }
 
   if (!photo) {
     return { error: "Fotografia nu a fost găsită" }
   }
 
-  // Delete from storage (extract path from URL)
-  const urlParts = photo.url.split("/mester-photos/")
-  if (urlParts.length > 1) {
-    await supabase.storage.from("mester-photos").remove([urlParts[1]])
-  }
+  // Delete from storage
+  await supabase.storage.from("mester-photos").remove([photo.storage_path])
 
   // Delete record
   const { error } = await supabase
@@ -156,25 +153,26 @@ export async function setPhotoCover(photoId: string) {
 
   // Get mester profile
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single() as { data: { id: string } | null }
 
   if (!mester) {
     return { error: "Nu ai un profil de meșter" }
   }
 
-  // Unset all covers
+  // Unset all profile photos
   await supabase
     .from("mester_photos")
-    .update({ is_cover: false } as never)
+    .update({ photo_type: "work" } as never)
     .eq("mester_id", mester.id)
+    .eq("photo_type", "profile")
 
-  // Set new cover
+  // Set new profile photo
   const { error } = await supabase
     .from("mester_photos")
-    .update({ is_cover: true } as never)
+    .update({ photo_type: "profile" } as never)
     .eq("id", photoId)
     .eq("mester_id", mester.id)
 
@@ -196,9 +194,9 @@ export async function getMesterPhotos() {
   if (!user) return []
 
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single() as { data: { id: string } | null }
 
   if (!mester) return []
@@ -207,7 +205,7 @@ export async function getMesterPhotos() {
     .from("mester_photos")
     .select("*")
     .eq("mester_id", mester.id)
-    .order("order_index")
+    .order("sort_order")
 
   return photos || []
 }

@@ -50,7 +50,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
           >
             <Image
-              src={photo.url}
+              src={photo.public_url}
               alt={photo.caption || `Fotografie ${index + 1}`}
               fill
               className="object-cover transition-transform group-hover:scale-105"
@@ -76,7 +76,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
             <div className="relative">
               <div className="relative aspect-[4/3] md:aspect-video">
                 <Image
-                  src={photos[selectedIndex].url}
+                  src={photos[selectedIndex].public_url}
                   alt={photos[selectedIndex].caption || "Fotografie"}
                   fill
                   className="object-contain"

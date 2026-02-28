@@ -15,68 +15,71 @@ import { FavoriteButton } from "@/components/mester/favorite-button"
 import { checkIsFavorited } from "@/actions/favorites"
 import type { SubscriptionTier, ReviewWithUser } from "@/types/database"
 
+// The route param is named "slug" but contains the mester id
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
 interface MesterData {
   id: string
-  profile_id: string
-  category_id: string
-  slug: string
-  business_name: string
-  description: string | null
-  experience_years: number | null
+  user_id: string
+  display_name: string
+  bio: string | null
+  years_experience: number | null
   subscription_tier: string
   approval_status: string
   is_featured: boolean
-  average_rating: number
-  total_reviews: number
-  total_views: number
+  avg_rating: number
+  reviews_count: number
+  views_count: number
   city: string
-  address: string | null
+  neighborhood: string | null
   whatsapp_number: string | null
   created_at: string
   updated_at: string
-  category: { id: string; name: string; slug: string } | null
+  mester_categories: {
+    category_id: string
+    category: { id: string; name: string; slug: string } | null
+  }[]
   profile: { id: string; full_name: string | null; avatar_url: string | null } | null
 }
 
 interface PhotoData {
   id: string
   mester_id: string
-  url: string
+  storage_path: string
+  public_url: string
+  photo_type: "profile" | "work" | "certificate"
   caption: string | null
-  is_cover: boolean
   approval_status: "pending" | "approved" | "rejected"
-  order_index: number
+  sort_order: number
   created_at: string
 }
 
 interface ReviewData {
   id: string
   mester_id: string
-  user_id: string
+  client_id: string
   rating: number
-  comment: string | null
+  body: string | null
   created_at: string
   updated_at: string
   profile: { full_name: string | null; avatar_url: string | null } | null
 }
 
-async function getMester(slug: string) {
+async function getMester(id: string) {
   const supabase = await createClient()
 
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select(
       `
       *,
-      category:categories(*),
-      profile:profiles(*)
+      mester_categories(category_id, category:categories(id, name, slug)),
+      profile:profiles(id, full_name, avatar_url)
     `
     )
-    .eq("slug", slug)
+    .eq("id", id)
     .eq("approval_status", "approved")
     .single() as { data: MesterData | null }
 
@@ -88,7 +91,7 @@ async function getMester(slug: string) {
     .select("*")
     .eq("mester_id", mester.id)
     .eq("approval_status", "approved")
-    .order("order_index") as { data: PhotoData[] | null }
+    .order("sort_order") as { data: PhotoData[] | null }
 
   // Get reviews with user info
   const { data: reviews } = await supabase
@@ -105,8 +108,8 @@ async function getMester(slug: string) {
 
   // Increment view count
   await supabase
-    .from("mesters")
-    .update({ total_views: mester.total_views + 1 } as never)
+    .from("mester_profiles")
+    .update({ views_count: mester.views_count + 1 } as never)
     .eq("id", mester.id)
 
   return {
@@ -117,37 +120,43 @@ async function getMester(slug: string) {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params
+  const { slug: id } = await params
   const supabase = await createClient()
 
   const { data: mester } = await supabase
-    .from("mesters")
-    .select("business_name, description, category:categories(name)")
-    .eq("slug", slug)
-    .single() as { data: { business_name: string; description: string | null; category: { name: string } | null } | null }
+    .from("mester_profiles")
+    .select(`
+      display_name, bio,
+      mester_categories(category:categories(name))
+    `)
+    .eq("id", id)
+    .single() as { data: { display_name: string; bio: string | null; mester_categories: { category: { name: string } | null }[] } | null }
 
   if (!mester) {
     return { title: "Meșter negăsit" }
   }
 
+  const categoryName = mester.mester_categories?.[0]?.category?.name
+
   return {
-    title: mester.business_name,
+    title: mester.display_name,
     description:
-      mester.description ||
-      `${mester.business_name} - ${mester.category?.name || "Meșter"} în Tulcea`,
+      mester.bio ||
+      `${mester.display_name} - ${categoryName || "Meșter"} în Tulcea`,
   }
 }
 
 export default async function MesterProfilePage({ params }: PageProps) {
-  const { slug } = await params
-  const data = await getMester(slug)
+  const { slug: id } = await params
+  const data = await getMester(id)
 
   if (!data) {
     notFound()
   }
 
   const { mester, photos, reviews } = data
-  const coverPhoto = photos.find((p) => p.is_cover) || photos[0]
+  const coverPhoto = photos.find((p) => p.photo_type === "profile") || photos[0]
+  const primaryCategory = mester.mester_categories?.[0]?.category
   const isFavorited = await checkIsFavorited(mester.id)
 
   return (
@@ -173,15 +182,15 @@ export default async function MesterProfilePage({ params }: PageProps) {
             <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden flex-shrink-0">
               {coverPhoto ? (
                 <Image
-                  src={coverPhoto.url}
-                  alt={mester.business_name}
+                  src={coverPhoto.public_url}
+                  alt={mester.display_name}
                   fill
                   className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                   <span className="text-4xl font-bold text-primary/30">
-                    {mester.business_name[0]}
+                    {mester.display_name[0]}
                   </span>
                 </div>
               )}
@@ -191,10 +200,10 @@ export default async function MesterProfilePage({ params }: PageProps) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold">
-                    {mester.business_name}
+                    {mester.display_name}
                   </h1>
                   <p className="text-muted-foreground mt-1">
-                    {mester.category?.name || "Servicii diverse"}
+                    {primaryCategory?.name || "Servicii diverse"}
                   </p>
                 </div>
                 <SubscriptionBadge
@@ -206,39 +215,39 @@ export default async function MesterProfilePage({ params }: PageProps) {
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                   <span className="font-medium">
-                    {mester.average_rating.toFixed(1)}
+                    {mester.avg_rating.toFixed(1)}
                   </span>
                   <span className="text-muted-foreground">
-                    ({mester.total_reviews} recenzii)
+                    ({mester.reviews_count} recenzii)
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   {mester.city}
                 </div>
-                {mester.experience_years && (
+                {mester.years_experience && (
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    {mester.experience_years} ani experiență
+                    {mester.years_experience} ani experiență
                   </div>
                 )}
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Eye className="h-4 w-4" />
-                  {mester.total_views} vizualizări
+                  {mester.views_count} vizualizări
                 </div>
               </div>
             </div>
           </div>
 
           {/* Description */}
-          {mester.description && (
+          {mester.bio && (
             <Card>
               <CardHeader>
                 <CardTitle>Despre</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground whitespace-pre-line">
-                  {mester.description}
+                  {mester.bio}
                 </p>
               </CardContent>
             </Card>
@@ -251,7 +260,7 @@ export default async function MesterProfilePage({ params }: PageProps) {
                 Fotografii ({photos.length})
               </TabsTrigger>
               <TabsTrigger value="reviews">
-                Recenzii ({mester.total_reviews})
+                Recenzii ({mester.reviews_count})
               </TabsTrigger>
             </TabsList>
             <TabsContent value="photos" className="mt-6">
@@ -261,8 +270,8 @@ export default async function MesterProfilePage({ params }: PageProps) {
               <ReviewsWithForm
                 mesterId={mester.id}
                 reviews={reviews}
-                averageRating={mester.average_rating}
-                totalReviews={mester.total_reviews}
+                averageRating={mester.avg_rating}
+                totalReviews={mester.reviews_count}
               />
             </TabsContent>
           </Tabs>
@@ -274,15 +283,15 @@ export default async function MesterProfilePage({ params }: PageProps) {
             <CardContent className="pt-6 space-y-4">
               <WhatsAppButton
                 whatsappNumber={mester.whatsapp_number}
-                mesterName={mester.business_name}
+                mesterName={mester.display_name}
               />
               <FavoriteButton mesterId={mester.id} initialFavorited={isFavorited} />
               <Separator />
               <div className="text-sm text-muted-foreground space-y-2">
-                {mester.address && (
+                {mester.neighborhood && (
                   <p className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    {mester.address}, {mester.city}
+                    {mester.neighborhood}, {mester.city}
                   </p>
                 )}
               </div>

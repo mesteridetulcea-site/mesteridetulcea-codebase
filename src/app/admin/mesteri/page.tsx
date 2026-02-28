@@ -1,28 +1,27 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { Loader2, Check, X, Star, ExternalLink } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import { approveMester, rejectMester, toggleMesterFeatured } from "@/actions/admin"
+import { approveMester, rejectMester, toggleMesterFeatured, getAdminMesters } from "@/actions/admin"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/lib/hooks/use-toast"
 import type { ApprovalStatus, SubscriptionTier } from "@/types/database"
-import { APPROVAL_STATUS_LABELS, SUBSCRIPTION_TIERS } from "@/lib/constants"
+import { SUBSCRIPTION_TIERS } from "@/lib/constants"
 
 interface MesterWithDetails {
   id: string
-  business_name: string
-  slug: string
+  display_name: string
   approval_status: ApprovalStatus
   subscription_tier: SubscriptionTier
   is_featured: boolean
   created_at: string
-  category: { name: string } | null
+  mester_categories: {
+    category: { name: string } | null
+  }[]
   profile: { email: string; full_name: string | null } | null
 }
 
@@ -36,17 +35,13 @@ export default function AdminMestersPage() {
   }, [])
 
   async function loadMesters() {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from("mesters")
-      .select(`
-        id, business_name, slug, approval_status, subscription_tier, is_featured, created_at,
-        category:categories(name),
-        profile:profiles(email, full_name)
-      `)
-      .order("created_at", { ascending: false })
-
-    setMesters((data as MesterWithDetails[]) || [])
+    setLoading(true)
+    const result = await getAdminMesters()
+    if (result.error) {
+      toast({ title: "Eroare", description: result.error, variant: "destructive" })
+    } else {
+      setMesters((result.data as MesterWithDetails[]) || [])
+    }
     setLoading(false)
   }
 
@@ -101,6 +96,7 @@ export default function AdminMestersPage() {
   function MesterCard({ mester }: { mester: MesterWithDetails }) {
     const isLoading = actionLoading === mester.id
     const isPending = mester.approval_status === "pending"
+    const categoryName = mester.mester_categories?.[0]?.category?.name
 
     return (
       <Card key={mester.id}>
@@ -108,7 +104,7 @@ export default function AdminMestersPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold">{mester.business_name}</h3>
+                <h3 className="font-semibold">{mester.display_name}</h3>
                 <Badge variant={mester.subscription_tier}>
                   {SUBSCRIPTION_TIERS[mester.subscription_tier].label}
                 </Badge>
@@ -117,8 +113,8 @@ export default function AdminMestersPage() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {mester.category?.name || "Fără categorie"} •{" "}
-                {mester.profile?.email}
+                {categoryName || "Fără categorie"} •{" "}
+                {mester.profile?.email || "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Înregistrat la{" "}
@@ -126,7 +122,7 @@ export default function AdminMestersPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Link href={`/mester/${mester.slug}`} target="_blank">
+              <Link href={`/mester/${mester.id}`} target="_blank">
                 <Button variant="ghost" size="icon">
                   <ExternalLink className="h-4 w-4" />
                 </Button>
@@ -212,15 +208,31 @@ export default function AdminMestersPage() {
         </TabsContent>
 
         <TabsContent value="approved" className="space-y-4 mt-4">
-          {approvedMesters.map((mester) => (
-            <MesterCard key={mester.id} mester={mester} />
-          ))}
+          {approvedMesters.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Nu există meșteri aprobați
+              </CardContent>
+            </Card>
+          ) : (
+            approvedMesters.map((mester) => (
+              <MesterCard key={mester.id} mester={mester} />
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="rejected" className="space-y-4 mt-4">
-          {rejectedMesters.map((mester) => (
-            <MesterCard key={mester.id} mester={mester} />
-          ))}
+          {rejectedMesters.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Nu există meșteri respinși
+              </CardContent>
+            </Card>
+          ) : (
+            rejectedMesters.map((mester) => (
+              <MesterCard key={mester.id} mester={mester} />
+            ))
+          )}
         </TabsContent>
       </Tabs>
     </div>

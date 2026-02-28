@@ -31,7 +31,7 @@ export async function approveMester(mesterId: string, notes?: string) {
   const supabase = await createAdminClient()
 
   const { error } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .update({ approval_status: "approved" } as never)
     .eq("id", mesterId)
 
@@ -39,13 +39,12 @@ export async function approveMester(mesterId: string, notes?: string) {
     return { error: "Nu s-a putut aproba meșterul" }
   }
 
-  // Create audit log
-  await supabase.from("audit_logs").insert({
+  await supabase.from("admin_logs").insert({
     admin_id: auth.userId!,
     action: "approve_mester",
-    entity_type: "mester",
-    entity_id: mesterId,
-    details: { notes },
+    target_type: "mester",
+    target_id: mesterId,
+    notes: notes || null,
   } as never)
 
   revalidatePath("/admin/mesteri")
@@ -59,7 +58,7 @@ export async function rejectMester(mesterId: string, notes?: string) {
   const supabase = await createAdminClient()
 
   const { error } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .update({ approval_status: "rejected" } as never)
     .eq("id", mesterId)
 
@@ -67,13 +66,12 @@ export async function rejectMester(mesterId: string, notes?: string) {
     return { error: "Nu s-a putut respinge meșterul" }
   }
 
-  // Create audit log
-  await supabase.from("audit_logs").insert({
+  await supabase.from("admin_logs").insert({
     admin_id: auth.userId!,
     action: "reject_mester",
-    entity_type: "mester",
-    entity_id: mesterId,
-    details: { notes },
+    target_type: "mester",
+    target_id: mesterId,
+    notes: notes || null,
   } as never)
 
   revalidatePath("/admin/mesteri")
@@ -95,12 +93,12 @@ export async function approvePhoto(photoId: string) {
     return { error: "Nu s-a putut aproba fotografia" }
   }
 
-  await supabase.from("audit_logs").insert({
+  await supabase.from("admin_logs").insert({
     admin_id: auth.userId!,
     action: "approve_photo",
-    entity_type: "mester_photo",
-    entity_id: photoId,
-    details: null,
+    target_type: "mester_photo",
+    target_id: photoId,
+    notes: null,
   } as never)
 
   revalidatePath("/admin/fotografii")
@@ -122,12 +120,12 @@ export async function rejectPhoto(photoId: string) {
     return { error: "Nu s-a putut respinge fotografia" }
   }
 
-  await supabase.from("audit_logs").insert({
+  await supabase.from("admin_logs").insert({
     admin_id: auth.userId!,
     action: "reject_photo",
-    entity_type: "mester_photo",
-    entity_id: photoId,
-    details: null,
+    target_type: "mester_photo",
+    target_id: photoId,
+    notes: null,
   } as never)
 
   revalidatePath("/admin/fotografii")
@@ -141,9 +139,7 @@ export async function createCategory(formData: FormData) {
   const supabase = await createAdminClient()
 
   const name = formData.get("name") as string
-  const description = formData.get("description") as string
   const icon = formData.get("icon") as string
-  const keywordsStr = formData.get("keywords") as string
 
   const slug = name
     .toLowerCase()
@@ -152,38 +148,32 @@ export async function createCategory(formData: FormData) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
 
-  const keywords = keywordsStr
-    ? keywordsStr.split(",").map((k) => k.trim())
-    : null
-
-  // Get max order_index
+  // Get max sort_order
   const { data: categories } = await supabase
     .from("categories")
-    .select("order_index")
-    .order("order_index", { ascending: false })
-    .limit(1) as { data: { order_index: number }[] | null }
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1) as { data: { sort_order: number }[] | null }
 
-  const nextOrderIndex = (categories?.[0]?.order_index || 0) + 1
+  const nextSortOrder = (categories?.[0]?.sort_order || 0) + 1
 
   const { error } = await supabase.from("categories").insert({
     name,
     slug,
-    description: description || null,
     icon: icon || null,
-    keywords,
-    order_index: nextOrderIndex,
+    sort_order: nextSortOrder,
   } as never)
 
   if (error) {
     return { error: "Nu s-a putut crea categoria" }
   }
 
-  await supabase.from("audit_logs").insert({
+  await supabase.from("admin_logs").insert({
     admin_id: auth.userId!,
     action: "create_category",
-    entity_type: "category",
-    entity_id: slug,
-    details: { name },
+    target_type: "category",
+    target_id: slug,
+    notes: name,
   } as never)
 
   revalidatePath("/admin/categorii")
@@ -197,21 +187,13 @@ export async function updateCategory(categoryId: string, formData: FormData) {
   const supabase = await createAdminClient()
 
   const name = formData.get("name") as string
-  const description = formData.get("description") as string
   const icon = formData.get("icon") as string
-  const keywordsStr = formData.get("keywords") as string
-
-  const keywords = keywordsStr
-    ? keywordsStr.split(",").map((k) => k.trim())
-    : null
 
   const { error } = await supabase
     .from("categories")
     .update({
       name,
-      description: description || null,
       icon: icon || null,
-      keywords,
     } as never)
     .eq("id", categoryId)
 
@@ -231,7 +213,7 @@ export async function deleteCategory(categoryId: string) {
 
   // Check if category has mesters
   const { count } = await supabase
-    .from("mesters")
+    .from("mester_categories")
     .select("*", { count: "exact", head: true })
     .eq("category_id", categoryId)
 
@@ -252,15 +234,46 @@ export async function deleteCategory(categoryId: string) {
   return { success: true }
 }
 
+export async function getAdminMesters() {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error, data: null }
+
+  const supabase = await createAdminClient()
+
+  const { data, error } = await supabase
+    .from("mester_profiles")
+    .select(`
+      id, display_name, approval_status, subscription_tier, is_featured, created_at,
+      mester_categories(category:categories(name)),
+      profile:profiles(email, full_name)
+    `)
+    .order("created_at", { ascending: false }) as {
+      data: Array<{
+        id: string
+        display_name: string
+        approval_status: string
+        subscription_tier: string
+        is_featured: boolean
+        created_at: string
+        mester_categories: { category: { name: string } | null }[]
+        profile: { email: string; full_name: string | null } | null
+      }> | null
+      error: unknown
+    }
+
+  if (error) return { error: "Nu s-au putut încărca meșterii", data: null }
+
+  return { error: null, data: data || [] }
+}
+
 export async function toggleMesterFeatured(mesterId: string) {
   const auth = await checkIsAdmin()
   if (!auth.isAdmin) return { error: auth.error }
 
   const supabase = await createAdminClient()
 
-  // Get current status
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("is_featured")
     .eq("id", mesterId)
     .single() as { data: { is_featured: boolean } | null }
@@ -271,7 +284,7 @@ export async function toggleMesterFeatured(mesterId: string) {
 
   const newFeaturedStatus = !mester.is_featured
   const { error } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .update({ is_featured: newFeaturedStatus } as never)
     .eq("id", mesterId)
 

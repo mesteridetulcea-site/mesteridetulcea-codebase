@@ -15,18 +15,18 @@ export async function updateMesterProfile(formData: FormData) {
     return { error: "Trebuie să fii autentificat" }
   }
 
-  const businessName = formData.get("businessName") as string
-  const description = formData.get("description") as string
-  const experienceYears = formData.get("experienceYears") as string
+  const displayName = formData.get("businessName") as string
+  const bio = formData.get("description") as string
+  const yearsExperience = formData.get("experienceYears") as string
   const whatsappNumber = formData.get("whatsappNumber") as string
-  const address = formData.get("address") as string
+  const neighborhood = formData.get("address") as string
   const categoryId = formData.get("categoryId") as string
 
   // Get existing mester profile
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single()
 
   if (!mester) {
@@ -34,20 +34,32 @@ export async function updateMesterProfile(formData: FormData) {
   }
 
   const { error } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .update({
-      business_name: businessName,
-      description,
-      experience_years: experienceYears ? parseInt(experienceYears) : null,
+      display_name: displayName,
+      bio: bio || null,
+      years_experience: yearsExperience ? parseInt(yearsExperience) : null,
       whatsapp_number: whatsappNumber || null,
-      address: address || null,
-      category_id: categoryId,
+      neighborhood: neighborhood || null,
       updated_at: new Date().toISOString(),
     } as never)
     .eq("id", (mester as { id: string }).id)
 
   if (error) {
     return { error: "Nu s-a putut actualiza profilul" }
+  }
+
+  // Update category: replace existing entry
+  if (categoryId) {
+    await supabase
+      .from("mester_categories")
+      .delete()
+      .eq("mester_id", (mester as { id: string }).id)
+
+    await supabase.from("mester_categories").insert({
+      mester_id: (mester as { id: string }).id,
+      category_id: categoryId,
+    } as never)
   }
 
   revalidatePath("/mester-cont")
@@ -67,60 +79,53 @@ export async function applyAsMester(formData: FormData) {
 
   // Check if already a mester
   const { data: existingMester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single()
 
   if (existingMester) {
     return { error: "Ai deja un profil de meșter" }
   }
 
-  const businessName = formData.get("businessName") as string
+  const displayName = formData.get("businessName") as string
   const categoryId = formData.get("categoryId") as string
-  const description = formData.get("description") as string
-  const experienceYears = formData.get("experienceYears") as string
+  const bio = formData.get("description") as string
+  const yearsExperience = formData.get("experienceYears") as string
   const whatsappNumber = formData.get("whatsappNumber") as string
-  const address = formData.get("address") as string
+  const neighborhood = formData.get("address") as string
 
-  // Generate slug
-  const slug = businessName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-
-  // Check if slug exists
-  const { data: existingSlug } = await supabase
-    .from("mesters")
+  const { data: newMester, error: mesterError } = await supabase
+    .from("mester_profiles")
+    .insert({
+      user_id: user.id,
+      display_name: displayName,
+      bio: bio || null,
+      years_experience: yearsExperience ? parseInt(yearsExperience) : null,
+      whatsapp_number: whatsappNumber || null,
+      neighborhood: neighborhood || null,
+      city: "Tulcea",
+      subscription_tier: "ucenic",
+      approval_status: "pending",
+      is_featured: false,
+      avg_rating: 0,
+      reviews_count: 0,
+      views_count: 0,
+    } as never)
     .select("id")
-    .eq("slug", slug)
     .single()
 
-  const finalSlug = existingSlug ? `${slug}-${Date.now()}` : slug
-
-  const { error: mesterError } = await supabase.from("mesters").insert({
-    profile_id: user.id,
-    business_name: businessName,
-    slug: finalSlug,
-    category_id: categoryId,
-    description,
-    experience_years: experienceYears ? parseInt(experienceYears) : null,
-    whatsapp_number: whatsappNumber || null,
-    address: address || null,
-    city: "Tulcea",
-    subscription_tier: "ucenic",
-    approval_status: "pending",
-    is_featured: false,
-    average_rating: 0,
-    total_reviews: 0,
-    total_views: 0,
-  } as never)
-
-  if (mesterError) {
+  if (mesterError || !newMester) {
     console.error("Mester creation error:", mesterError)
     return { error: "Nu s-a putut crea profilul de meșter" }
+  }
+
+  // Insert category association
+  if (categoryId) {
+    await supabase.from("mester_categories").insert({
+      mester_id: (newMester as { id: string }).id,
+      category_id: categoryId,
+    } as never)
   }
 
   // Update profile role
@@ -133,30 +138,31 @@ export async function applyAsMester(formData: FormData) {
   redirect("/mester-cont")
 }
 
-interface MesterProfile {
+interface MesterProfileData {
   id: string
-  profile_id: string
-  category_id: string
-  slug: string
-  business_name: string
-  description: string | null
-  experience_years: number | null
+  user_id: string
+  display_name: string
+  bio: string | null
+  years_experience: number | null
   subscription_tier: string
   approval_status: string
   is_featured: boolean
-  average_rating: number
-  total_reviews: number
-  total_views: number
+  avg_rating: number
+  reviews_count: number
+  views_count: number
   city: string
-  address: string | null
+  neighborhood: string | null
   whatsapp_number: string | null
   created_at: string
   updated_at: string
-  category: {
-    id: string
-    name: string
-    slug: string
-  } | null
+  mester_categories: {
+    category_id: string
+    category: {
+      id: string
+      name: string
+      slug: string
+    } | null
+  }[]
   profile: {
     id: string
     email: string
@@ -166,7 +172,7 @@ interface MesterProfile {
   } | null
 }
 
-export async function getMesterProfile(): Promise<MesterProfile | null> {
+export async function getMesterProfile(): Promise<MesterProfileData | null> {
   const supabase = await createClient()
 
   const {
@@ -176,16 +182,16 @@ export async function getMesterProfile(): Promise<MesterProfile | null> {
   if (!user) return null
 
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select(
       `
       *,
-      category:categories(*),
-      profile:profiles(*)
+      mester_categories(category_id, category:categories(id, name, slug)),
+      profile:profiles(id, email, full_name, avatar_url, phone)
     `
     )
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single()
 
-  return mester as MesterProfile | null
+  return mester as MesterProfileData | null
 }

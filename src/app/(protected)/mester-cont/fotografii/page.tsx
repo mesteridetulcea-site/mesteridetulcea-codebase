@@ -217,17 +217,18 @@ export default function MesterPhotosPage() {
             {photos.map((photo) => {
               const status = approvalConfig[photo.approval_status as keyof typeof approvalConfig]
               const StatusIcon = status.icon
+              const isCoverPhoto = photo.photo_type === "profile"
 
               return (
                 <Card key={photo.id} className="overflow-hidden">
                   <div className="relative aspect-[4/3]">
                     <Image
-                      src={photo.url}
+                      src={photo.public_url}
                       alt={photo.caption || "Fotografie"}
                       fill
                       className="object-cover"
                     />
-                    {photo.is_cover && (
+                    {isCoverPhoto && (
                       <div className="absolute top-2 left-2">
                         <Badge className="bg-primary">
                           <Star className="mr-1 h-3 w-3" />
@@ -249,7 +250,7 @@ export default function MesterPhotosPage() {
                       </p>
                     )}
                     <div className="flex gap-2">
-                      {!photo.is_cover && photo.approval_status === "approved" && (
+                      {!isCoverPhoto && photo.approval_status === "approved" && (
                         <Button
                           variant="outline"
                           size="sm"

@@ -113,7 +113,7 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
               id="comment"
               name="comment"
               placeholder="Spune-ne mai multe despre experiența ta..."
-              defaultValue={existingReview?.comment || ""}
+              defaultValue={existingReview?.body || ""}
               rows={4}
             />
           </div>

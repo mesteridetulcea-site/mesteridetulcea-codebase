@@ -10,7 +10,7 @@ npm run build     # Production build
 npm run lint      # Run ESLint
 ```
 
-No test suite is configured.
+No test suite is configured.  
 
 ## Architecture Overview
 

@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -144,6 +145,16 @@ export function HeroSearch() {
                 </button>
               </span>
             ))}
+          </div>
+
+          {/* Become a mester link */}
+          <div className="mt-5">
+            <Link
+              href="/devino-mester"
+              className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-white/35 hover:text-primary transition-colors duration-200 border border-white/10 hover:border-primary/40 px-5 py-2.5"
+            >
+              Ești meșter? Înregistrează-te →
+            </Link>
           </div>
 
           {/* Trust badges */}

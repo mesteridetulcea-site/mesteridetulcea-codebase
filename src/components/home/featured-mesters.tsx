@@ -9,26 +9,26 @@ async function getFeaturedMesters() {
   const supabase = await createClient()
 
   const { data: mesters } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select(`
       *,
-      category:categories(*)
+      mester_categories(category_id, category:categories(*))
     `)
     .eq("approval_status", "approved")
     .eq("is_featured", true)
     .order("subscription_tier", { ascending: false })
-    .order("average_rating", { ascending: false })
+    .order("avg_rating", { ascending: false })
     .limit(4) as { data: MesterWithCategory[] | null }
 
   const mesterIds = mesters?.map((m) => m.id) || []
   const { data: photos } = await supabase
     .from("mester_photos")
-    .select("mester_id, url")
+    .select("mester_id, public_url")
     .in("mester_id", mesterIds)
-    .eq("is_cover", true)
-    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
+    .eq("photo_type", "profile")
+    .eq("approval_status", "approved") as { data: { mester_id: string; public_url: string }[] | null }
 
-  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
+  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.public_url]))
 
   return { mesters: mesters || [], photoMap }
 }

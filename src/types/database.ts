@@ -9,6 +9,7 @@ export type Json =
 export type SubscriptionTier = "ucenic" | "mester" | "master" | "premium"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type UserRole = "client" | "mester" | "admin"
+export type PhotoType = "profile" | "work" | "certificate"
 
 export interface Database {
   public: {
@@ -50,124 +51,129 @@ export interface Database {
           id: string
           name: string
           slug: string
-          description: string | null
           icon: string | null
-          keywords: string[] | null
-          order_index: number
+          sort_order: number
           created_at: string
         }
         Insert: {
           id?: string
           name: string
           slug: string
-          description?: string | null
           icon?: string | null
-          keywords?: string[] | null
-          order_index?: number
+          sort_order?: number
           created_at?: string
         }
         Update: {
           id?: string
           name?: string
           slug?: string
-          description?: string | null
           icon?: string | null
-          keywords?: string[] | null
-          order_index?: number
+          sort_order?: number
           created_at?: string
         }
       }
-      mesters: {
+      mester_profiles: {
         Row: {
           id: string
-          profile_id: string
-          category_id: string
-          slug: string
-          business_name: string
-          description: string | null
-          experience_years: number | null
+          user_id: string
+          display_name: string
+          bio: string | null
+          years_experience: number | null
           subscription_tier: SubscriptionTier
           approval_status: ApprovalStatus
           is_featured: boolean
           whatsapp_number: string | null
-          address: string | null
+          neighborhood: string | null
           city: string
-          average_rating: number
-          total_reviews: number
-          total_views: number
+          avg_rating: number
+          reviews_count: number
+          views_count: number
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          profile_id: string
-          category_id: string
-          slug: string
-          business_name: string
-          description?: string | null
-          experience_years?: number | null
+          user_id: string
+          display_name: string
+          bio?: string | null
+          years_experience?: number | null
           subscription_tier?: SubscriptionTier
           approval_status?: ApprovalStatus
           is_featured?: boolean
           whatsapp_number?: string | null
-          address?: string | null
+          neighborhood?: string | null
           city?: string
-          average_rating?: number
-          total_reviews?: number
-          total_views?: number
+          avg_rating?: number
+          reviews_count?: number
+          views_count?: number
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          profile_id?: string
-          category_id?: string
-          slug?: string
-          business_name?: string
-          description?: string | null
-          experience_years?: number | null
+          user_id?: string
+          display_name?: string
+          bio?: string | null
+          years_experience?: number | null
           subscription_tier?: SubscriptionTier
           approval_status?: ApprovalStatus
           is_featured?: boolean
           whatsapp_number?: string | null
-          address?: string | null
+          neighborhood?: string | null
           city?: string
-          average_rating?: number
-          total_reviews?: number
-          total_views?: number
+          avg_rating?: number
+          reviews_count?: number
+          views_count?: number
           created_at?: string
           updated_at?: string
+        }
+      }
+      mester_categories: {
+        Row: {
+          mester_id: string
+          category_id: string
+        }
+        Insert: {
+          mester_id: string
+          category_id: string
+        }
+        Update: {
+          mester_id?: string
+          category_id?: string
         }
       }
       mester_photos: {
         Row: {
           id: string
           mester_id: string
-          url: string
+          storage_path: string
+          public_url: string
+          photo_type: PhotoType
           caption: string | null
-          is_cover: boolean
           approval_status: ApprovalStatus
-          order_index: number
+          sort_order: number
           created_at: string
         }
         Insert: {
           id?: string
           mester_id: string
-          url: string
+          storage_path: string
+          public_url: string
+          photo_type?: PhotoType
           caption?: string | null
-          is_cover?: boolean
           approval_status?: ApprovalStatus
-          order_index?: number
+          sort_order?: number
           created_at?: string
         }
         Update: {
           id?: string
           mester_id?: string
-          url?: string
+          storage_path?: string
+          public_url?: string
+          photo_type?: PhotoType
           caption?: string | null
-          is_cover?: boolean
           approval_status?: ApprovalStatus
-          order_index?: number
+          sort_order?: number
           created_at?: string
         }
       }
@@ -175,27 +181,27 @@ export interface Database {
         Row: {
           id: string
           mester_id: string
-          user_id: string
+          client_id: string
           rating: number
-          comment: string | null
+          body: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           mester_id: string
-          user_id: string
+          client_id: string
           rating: number
-          comment?: string | null
+          body?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           mester_id?: string
-          user_id?: string
+          client_id?: string
           rating?: number
-          comment?: string | null
+          body?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -203,19 +209,19 @@ export interface Database {
       favorites: {
         Row: {
           id: string
-          user_id: string
+          client_id: string
           mester_id: string
           created_at: string
         }
         Insert: {
           id?: string
-          user_id: string
+          client_id: string
           mester_id: string
           created_at?: string
         }
         Update: {
           id?: string
-          user_id?: string
+          client_id?: string
           mester_id?: string
           created_at?: string
         }
@@ -223,102 +229,55 @@ export interface Database {
       service_requests: {
         Row: {
           id: string
-          user_id: string | null
-          query: string
-          category_id: string | null
-          status: "pending" | "sent" | "completed"
+          client_id: string | null
+          original_message: string
+          detected_category_id: string | null
           notified_mesters: string[] | null
           created_at: string
         }
         Insert: {
           id?: string
-          user_id?: string | null
-          query: string
-          category_id?: string | null
-          status?: "pending" | "sent" | "completed"
+          client_id?: string | null
+          original_message: string
+          detected_category_id?: string | null
           notified_mesters?: string[] | null
           created_at?: string
         }
         Update: {
           id?: string
-          user_id?: string | null
-          query?: string
-          category_id?: string | null
-          status?: "pending" | "sent" | "completed"
+          client_id?: string | null
+          original_message?: string
+          detected_category_id?: string | null
           notified_mesters?: string[] | null
           created_at?: string
         }
       }
-      transport_requests: {
-        Row: {
-          id: string
-          user_id: string | null
-          pickup_address: string
-          pickup_lat: number
-          pickup_lng: number
-          dropoff_address: string
-          dropoff_lat: number
-          dropoff_lng: number
-          description: string | null
-          phone: string
-          status: "pending" | "accepted" | "completed" | "cancelled"
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          pickup_address: string
-          pickup_lat: number
-          pickup_lng: number
-          dropoff_address: string
-          dropoff_lat: number
-          dropoff_lng: number
-          description?: string | null
-          phone: string
-          status?: "pending" | "accepted" | "completed" | "cancelled"
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          pickup_address?: string
-          pickup_lat?: number
-          pickup_lng?: number
-          dropoff_address?: string
-          dropoff_lat?: number
-          dropoff_lng?: number
-          description?: string | null
-          phone?: string
-          status?: "pending" | "accepted" | "completed" | "cancelled"
-          created_at?: string
-        }
-      }
-      audit_logs: {
+      admin_logs: {
         Row: {
           id: string
           admin_id: string
           action: string
-          entity_type: string
-          entity_id: string
-          details: Json | null
+          target_type: string
+          target_id: string
+          notes: string | null
           created_at: string
         }
         Insert: {
           id?: string
           admin_id: string
           action: string
-          entity_type: string
-          entity_id: string
-          details?: Json | null
+          target_type: string
+          target_id: string
+          notes?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           admin_id?: string
           action?: string
-          entity_type?: string
-          entity_id?: string
-          details?: Json | null
+          target_type?: string
+          target_id?: string
+          notes?: string | null
           created_at?: string
         }
       }
@@ -340,25 +299,30 @@ export interface Database {
 // Helper types for common operations
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 export type Category = Database["public"]["Tables"]["categories"]["Row"]
-export type Mester = Database["public"]["Tables"]["mesters"]["Row"]
+export type MesterProfile = Database["public"]["Tables"]["mester_profiles"]["Row"]
+export type MesterCategory = Database["public"]["Tables"]["mester_categories"]["Row"]
 export type MesterPhoto = Database["public"]["Tables"]["mester_photos"]["Row"]
 export type Review = Database["public"]["Tables"]["reviews"]["Row"]
 export type Favorite = Database["public"]["Tables"]["favorites"]["Row"]
 export type ServiceRequest = Database["public"]["Tables"]["service_requests"]["Row"]
-export type TransportRequest = Database["public"]["Tables"]["transport_requests"]["Row"]
-export type AuditLog = Database["public"]["Tables"]["audit_logs"]["Row"]
+export type AdminLog = Database["public"]["Tables"]["admin_logs"]["Row"]
 
 // Extended types with relations
-export type MesterWithCategory = Mester & {
-  category: Category
+export type CategoryRef = {
+  category_id: string
+  category: Category | null
 }
 
-export type MesterWithDetails = Mester & {
-  category: Category
-  profile: Profile
+export type MesterWithCategory = MesterProfile & {
+  mester_categories: CategoryRef[]
+}
+
+export type MesterWithDetails = MesterProfile & {
+  mester_categories: CategoryRef[]
+  profile: Profile | null
   photos: MesterPhoto[]
 }
 
 export type ReviewWithUser = Review & {
-  profile: Pick<Profile, "full_name" | "avatar_url">
+  profile: Pick<Profile, "full_name" | "avatar_url"> | null
 }

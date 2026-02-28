@@ -12,10 +12,10 @@ async function getStats() {
     { count: totalReviews },
   ] = await Promise.all([
     supabase
-      .from("mesters")
+      .from("mester_profiles")
       .select("*", { count: "exact", head: true }),
     supabase
-      .from("mesters")
+      .from("mester_profiles")
       .select("*", { count: "exact", head: true })
       .eq("approval_status", "pending"),
     supabase

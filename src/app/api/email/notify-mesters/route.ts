@@ -14,30 +14,39 @@ export async function POST(request: Request) {
 
     const supabase = await createAdminClient()
 
-    // Get top 3 mesters in the category (by tier and rating)
-    let mesterQuery = supabase
-      .from("mesters")
-      .select(
-        `
-        *,
-        profile:profiles(email, full_name)
-      `
-      )
-      .eq("approval_status", "approved")
-
-    if (categoryId) {
-      mesterQuery = mesterQuery.eq("category_id", categoryId)
-    }
-
     interface MesterWithProfile {
       id: string
-      business_name: string
+      display_name: string
       profile: { email: string; full_name: string | null } | null
+    }
+
+    // Get top 3 mesters in the category (by tier and rating)
+    let mesterIds: string[] = []
+
+    if (categoryId) {
+      const { data: categoryMesters } = await supabase
+        .from("mester_categories")
+        .select("mester_id")
+        .eq("category_id", categoryId) as { data: { mester_id: string }[] | null }
+
+      mesterIds = categoryMesters?.map((m) => m.mester_id) || []
+    }
+
+    let mesterQuery = supabase
+      .from("mester_profiles")
+      .select(`
+        id, display_name,
+        profile:profiles(email, full_name)
+      `)
+      .eq("approval_status", "approved")
+
+    if (mesterIds.length > 0) {
+      mesterQuery = mesterQuery.in("id", mesterIds)
     }
 
     const { data: mesters } = await mesterQuery
       .order("subscription_tier", { ascending: false })
-      .order("average_rating", { ascending: false })
+      .order("avg_rating", { ascending: false })
       .limit(3) as { data: MesterWithProfile[] | null }
 
     if (!mesters || mesters.length === 0) {
@@ -45,21 +54,14 @@ export async function POST(request: Request) {
     }
 
     // Create service request record
-    const { data: serviceRequest, error: requestError } = await supabase
+    await supabase
       .from("service_requests")
       .insert({
-        query,
-        category_id: categoryId || null,
-        user_id: userId || null,
+        original_message: query,
+        detected_category_id: categoryId || null,
+        client_id: userId || null,
         notified_mesters: mesters.map((m) => m.id),
-        status: "pending",
       } as never)
-      .select()
-      .single() as { data: { id: string } | null; error: Error | null }
-
-    if (requestError) {
-      console.error("Error creating service request:", requestError)
-    }
 
     // Send emails to each mester
     const emailPromises = mesters.map(async (mester) => {
@@ -97,14 +99,6 @@ export async function POST(request: Request) {
     })
 
     const results = await Promise.all(emailPromises)
-
-    // Update service request status
-    if (serviceRequest) {
-      await supabase
-        .from("service_requests")
-        .update({ status: "sent" } as never)
-        .eq("id", serviceRequest.id)
-    }
 
     return NextResponse.json({
       message: "Notifications sent",

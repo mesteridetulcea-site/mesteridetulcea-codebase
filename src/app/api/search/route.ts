@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { normalizeText, calculateCategoryMatch, looksLikeServiceRequest } from "@/lib/utils/search"
+import { calculateCategoryMatch, looksLikeServiceRequest } from "@/lib/utils/search"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -17,84 +17,102 @@ export async function GET(request: Request) {
     id: string
     name: string
     slug: string
-    keywords: string[] | null
-    order_index: number
+    icon: string | null
+    sort_order: number
   }
 
-  // Get all categories with keywords
+  // Get all categories
   const { data: categories } = await supabase
     .from("categories")
     .select("*")
-    .order("order_index") as { data: Category[] | null }
+    .order("sort_order") as { data: Category[] | null }
 
-  // Score each category
+  // Score each category by name match (no keywords column in real DB)
   const scoredCategories =
     categories
       ?.map((category) => ({
         ...category,
-        score: calculateCategoryMatch(query, category.name, category.keywords),
+        score: calculateCategoryMatch(query, category.name, null),
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score) || []
 
   const topCategory = scoredCategories[0]
 
-  // Build mester query
-  let mesterQuery = supabase
-    .from("mesters")
-    .select(
-      `
-      *,
-      category:categories(*)
-    `
-    )
-    .eq("approval_status", "approved")
-
-  // If we found a matching category, filter by it
-  if (topCategory) {
-    mesterQuery = mesterQuery.eq("category_id", topCategory.id)
-  } else {
-    // Otherwise search by business name
-    mesterQuery = mesterQuery.ilike("business_name", `%${query}%`)
-  }
-
-  interface Mester {
+  interface MesterResult {
     id: string
-    business_name: string
-    slug: string
+    display_name: string
     subscription_tier: string
-    average_rating: number
-    total_reviews: number
+    avg_rating: number
+    reviews_count: number
     city: string
-    description: string | null
-    category: Category | null
+    bio: string | null
+    mester_categories: {
+      category_id: string
+      category: Category | null
+    }[]
   }
 
-  // Order by tier then rating
-  const { data: mesters } = await mesterQuery
-    .order("subscription_tier", { ascending: false })
-    .order("average_rating", { ascending: false })
-    .limit(limit) as { data: Mester[] | null }
+  let mesters: MesterResult[] = []
 
-  // Get cover photos for mesters
-  const mesterIds = mesters?.map((m) => m.id) || []
+  if (topCategory) {
+    // Get mester ids in this category
+    const { data: categoryMesters } = await supabase
+      .from("mester_categories")
+      .select("mester_id")
+      .eq("category_id", topCategory.id) as { data: { mester_id: string }[] | null }
+
+    if (categoryMesters && categoryMesters.length > 0) {
+      const ids = categoryMesters.map((m) => m.mester_id)
+
+      const { data } = await supabase
+        .from("mester_profiles")
+        .select(`
+          id, display_name, subscription_tier, avg_rating, reviews_count, city, bio,
+          mester_categories(category_id, category:categories(*))
+        `)
+        .eq("approval_status", "approved")
+        .in("id", ids)
+        .order("subscription_tier", { ascending: false })
+        .order("avg_rating", { ascending: false })
+        .limit(limit) as { data: MesterResult[] | null }
+
+      mesters = data || []
+    }
+  } else {
+    // Search by display_name
+    const { data } = await supabase
+      .from("mester_profiles")
+      .select(`
+        id, display_name, subscription_tier, avg_rating, reviews_count, city, bio,
+        mester_categories(category_id, category:categories(*))
+      `)
+      .eq("approval_status", "approved")
+      .ilike("display_name", `%${query}%`)
+      .order("subscription_tier", { ascending: false })
+      .order("avg_rating", { ascending: false })
+      .limit(limit) as { data: MesterResult[] | null }
+
+    mesters = data || []
+  }
+
+  // Get cover photos
+  const mesterIds = mesters.map((m) => m.id)
   const { data: photos } = await supabase
     .from("mester_photos")
-    .select("mester_id, url")
+    .select("mester_id, public_url")
     .in("mester_id", mesterIds)
-    .eq("is_cover", true)
-    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
+    .eq("photo_type", "profile")
+    .eq("approval_status", "approved") as { data: { mester_id: string; public_url: string }[] | null }
 
   const photoMap = Object.fromEntries(
-    photos?.map((p) => [p.mester_id, p.url]) || []
+    photos?.map((p) => [p.mester_id, p.public_url]) || []
   )
 
-  // Add cover photo to each mester
-  const mestersWithPhotos =
-    mesters?.map((m) => ({
-      ...m,
-      coverPhoto: photoMap[m.id] || null,
-    })) || []
+  const mestersWithPhotos = mesters.map((m) => ({
+    ...m,
+    coverPhoto: photoMap[m.id] || null,
+  }))
 
   return NextResponse.json({
     mesters: mestersWithPhotos,

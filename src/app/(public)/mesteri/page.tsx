@@ -29,16 +29,14 @@ interface Category {
   id: string
   name: string
   slug: string
-  description: string | null
   icon: string | null
-  keywords: string[] | null
-  order_index: number
+  sort_order: number
   created_at: string
 }
 
 async function getCategories(): Promise<Category[]> {
   const supabase = await createClient()
-  const { data } = await supabase.from("categories").select("*").order("order_index")
+  const { data } = await supabase.from("categories").select("*").order("sort_order")
   return (data || []) as Category[]
 }
 
@@ -51,17 +49,17 @@ async function getMesters(params: {
   const supabase = await createClient()
 
   let queryBuilder = supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select(
       `
       *,
-      category:categories(*)
+      mester_categories(category_id, category:categories(*))
     `,
       { count: "exact" }
     )
     .eq("approval_status", "approved")
 
-  // Category filter
+  // Category filter via junction table
   if (params.category) {
     const { data: categoryData } = await supabase
       .from("categories")
@@ -70,31 +68,41 @@ async function getMesters(params: {
       .single() as { data: { id: string } | null }
 
     if (categoryData) {
-      queryBuilder = queryBuilder.eq("category_id", categoryData.id)
+      // Filter mesters that have this category in mester_categories
+      const { data: mesterIds } = await supabase
+        .from("mester_categories")
+        .select("mester_id")
+        .eq("category_id", categoryData.id) as { data: { mester_id: string }[] | null }
+
+      if (mesterIds && mesterIds.length > 0) {
+        queryBuilder = queryBuilder.in("id", mesterIds.map((m) => m.mester_id))
+      } else {
+        // No mesters in this category
+        return { mesters: [], photoMap: new Map(), total: 0, totalPages: 0 }
+      }
     }
   }
 
   // Search filter
   if (params.query) {
-    queryBuilder = queryBuilder.ilike("business_name", `%${params.query}%`)
+    queryBuilder = queryBuilder.ilike("display_name", `%${params.query}%`)
   }
 
   // Sorting
   switch (params.sort) {
     case "rating":
-      queryBuilder = queryBuilder.order("average_rating", { ascending: false })
+      queryBuilder = queryBuilder.order("avg_rating", { ascending: false })
       break
     case "recenzii":
-      queryBuilder = queryBuilder.order("total_reviews", { ascending: false })
+      queryBuilder = queryBuilder.order("reviews_count", { ascending: false })
       break
     case "nou":
       queryBuilder = queryBuilder.order("created_at", { ascending: false })
       break
     default:
-      // Recommended: by tier then by rating
       queryBuilder = queryBuilder
         .order("subscription_tier", { ascending: false })
-        .order("average_rating", { ascending: false })
+        .order("avg_rating", { ascending: false })
   }
 
   // Pagination
@@ -104,16 +112,16 @@ async function getMesters(params: {
 
   const { data: mesters, count } = await queryBuilder
 
-  // Get cover photos
+  // Get cover photos (profile type)
   const mesterIds = (mesters as { id: string }[])?.map((m) => m.id) || []
   const { data: photos } = await supabase
     .from("mester_photos")
-    .select("mester_id, url")
+    .select("mester_id, public_url")
     .in("mester_id", mesterIds)
-    .eq("is_cover", true)
-    .eq("approval_status", "approved") as { data: { mester_id: string; url: string }[] | null }
+    .eq("photo_type", "profile")
+    .eq("approval_status", "approved") as { data: { mester_id: string; public_url: string }[] | null }
 
-  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.url]))
+  const photoMap = new Map(photos?.map((p) => [p.mester_id, p.public_url]))
 
   return {
     mesters: (mesters || []) as MesterWithCategory[],

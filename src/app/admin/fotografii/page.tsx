@@ -11,12 +11,11 @@ import { toast } from "@/lib/hooks/use-toast"
 
 interface PhotoWithMester {
   id: string
-  url: string
+  public_url: string
   caption: string | null
   created_at: string
   mester: {
-    business_name: string
-    slug: string
+    display_name: string
   } | null
 }
 
@@ -34,8 +33,8 @@ export default function AdminPhotosPage() {
     const { data } = await supabase
       .from("mester_photos")
       .select(`
-        id, url, caption, created_at,
-        mester:mesters(business_name, slug)
+        id, public_url, caption, created_at,
+        mester:mester_profiles(display_name)
       `)
       .eq("approval_status", "pending")
       .order("created_at", { ascending: false })
@@ -100,7 +99,7 @@ export default function AdminPhotosPage() {
               <Card key={photo.id} className="overflow-hidden">
                 <div className="relative aspect-[4/3]">
                   <Image
-                    src={photo.url}
+                    src={photo.public_url}
                     alt={photo.caption || "Fotografie"}
                     fill
                     className="object-cover"
@@ -108,7 +107,7 @@ export default function AdminPhotosPage() {
                 </div>
                 <CardContent className="p-4">
                   <p className="font-medium text-sm truncate">
-                    {photo.mester?.business_name || "Unknown"}
+                    {photo.mester?.display_name || "Unknown"}
                   </p>
                   {photo.caption && (
                     <p className="text-xs text-muted-foreground truncate mt-1">

@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils/cn"
 interface SearchResult {
   mesters: Array<{
     id: string
-    business_name: string
-    slug: string
-    category: { name: string } | null
+    display_name: string
+    mester_categories: Array<{
+      category: { name: string } | null
+    }>
   }>
   categories: Array<{
     id: string
@@ -114,9 +115,9 @@ export function SearchInput({
     router.push(`/mesteri?categorie=${slug}`)
   }
 
-  function handleMesterClick(slug: string) {
+  function handleMesterClick(id: string) {
     setShowDropdown(false)
-    router.push(`/mester/${slug}`)
+    router.push(`/mester/${id}`)
   }
 
   return (
@@ -166,20 +167,23 @@ export function SearchInput({
               <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
                 Meșteri
               </p>
-              {results.mesters.map((mester) => (
-                <button
-                  key={mester.id}
-                  onClick={() => handleMesterClick(mester.slug)}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-muted transition-colors"
-                >
-                  <span className="font-medium">{mester.business_name}</span>
-                  {mester.category && (
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {mester.category.name}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {results.mesters.map((mester) => {
+                const categoryName = mester.mester_categories?.[0]?.category?.name
+                return (
+                  <button
+                    key={mester.id}
+                    onClick={() => handleMesterClick(mester.id)}
+                    className="w-full text-left px-3 py-2 rounded hover:bg-muted transition-colors"
+                  >
+                    <span className="font-medium">{mester.display_name}</span>
+                    {categoryName && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        {categoryName}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>

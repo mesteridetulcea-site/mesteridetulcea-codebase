@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
-import { Loader2, CheckCircle } from "lucide-react"
+import { Camera, CheckCircle, Loader2, User } from "lucide-react"
 import { signUpClient } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,36 +16,29 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function RegisterPage() {
+export default function RegisterClientPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setAvatarPreview(url)
+  }
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
-    setSuccess(null)
-
-    const password = formData.get("password") as string
-    const confirmPassword = formData.get("confirmPassword") as string
-
-    if (password !== confirmPassword) {
-      setError("Parolele nu coincid")
-      setLoading(false)
-      return
-    }
-
-    if (password.length < 6) {
-      setError("Parola trebuie să aibă minim 6 caractere")
-      setLoading(false)
-      return
-    }
 
     const result = await signUpClient(formData)
     if (result?.error) {
       setError(result.error)
     } else if (result?.success) {
-      setSuccess(result.message)
+      setSuccess(result.message ?? null)
     }
     setLoading(false)
   }
@@ -72,13 +65,50 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Creează cont</CardTitle>
+        <CardTitle className="text-2xl">Cont client</CardTitle>
         <CardDescription>
           Înregistrează-te pentru a găsi meșteri în Tulcea
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-5">
+          {/* Avatar upload */}
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="relative group h-20 w-20 rounded-full overflow-hidden border-2 border-dashed border-border hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label="Încarcă poza de profil"
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarPreview}
+                  alt="Previzualizare profil"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full w-full bg-muted text-muted-foreground gap-1">
+                  <User className="h-7 w-7" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="h-5 w-5 text-white" />
+              </div>
+            </button>
+            <p className="text-xs text-muted-foreground">
+              Poza de profil (opțional)
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              name="avatar"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="fullName">Nume complet</Label>
             <Input
@@ -117,7 +147,7 @@ export default function RegisterPage() {
               id="password"
               name="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Minim 6 caractere"
               required
               autoComplete="new-password"
             />
@@ -128,16 +158,18 @@ export default function RegisterPage() {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
-              placeholder="••••••••"
+              placeholder="Repetați parola"
               required
               autoComplete="new-password"
             />
           </div>
+
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
               {error}
             </div>
           )}
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
@@ -150,13 +182,19 @@ export default function RegisterPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <div className="text-sm text-center text-muted-foreground">
+      <CardFooter className="flex flex-col gap-2 text-sm text-center text-muted-foreground">
+        <p>
           Ai deja cont?{" "}
           <Link href="/login" className="text-primary hover:underline">
             Autentifică-te
           </Link>
-        </div>
+        </p>
+        <p>
+          Ești meșter?{" "}
+          <Link href="/register/mester" className="text-primary hover:underline">
+            Înregistrează-te ca meșter
+          </Link>
+        </p>
       </CardFooter>
     </Card>
   )

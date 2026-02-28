@@ -19,9 +19,9 @@ export default async function MesterLayout({
 
   // Check if user has a mester profile
   const { data: mester } = await supabase
-    .from("mesters")
+    .from("mester_profiles")
     .select("id, approval_status")
-    .eq("profile_id", user.id)
+    .eq("user_id", user.id)
     .single()
 
   if (!mester) {

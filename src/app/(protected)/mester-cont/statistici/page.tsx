@@ -1,7 +1,7 @@
 import { getMesterProfile } from "@/actions/mester"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, Star, Heart, TrendingUp, Calendar } from "lucide-react"
+import { Eye, Star, Heart, TrendingUp } from "lucide-react"
 
 async function getMesterStats() {
   const supabase = await createClient()
@@ -49,15 +49,15 @@ export default async function StatisticsPage() {
   const stats = [
     {
       title: "Total vizualizări",
-      value: mester.total_views,
+      value: mester.views_count,
       icon: Eye,
       description: "De la înregistrare",
     },
     {
       title: "Rating mediu",
-      value: mester.average_rating.toFixed(1),
+      value: mester.avg_rating.toFixed(1),
       icon: Star,
-      description: `Din ${mester.total_reviews} recenzii`,
+      description: `Din ${mester.reviews_count} recenzii`,
     },
     {
       title: "Salvări în favorite",
@@ -105,7 +105,7 @@ export default async function StatisticsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {mester.total_reviews === 0 ? (
+          {mester.reviews_count === 0 ? (
             <p className="text-muted-foreground text-center py-8">
               Nu ai primit încă recenzii.
             </p>

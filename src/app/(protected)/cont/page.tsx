@@ -34,11 +34,11 @@ async function getUserData() {
       supabase
         .from("favorites")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id),
+        .eq("client_id", user.id),
       supabase
         .from("service_requests")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id),
+        .eq("client_id", user.id),
     ])
 
   const profile = profileResult.data as Profile | null
