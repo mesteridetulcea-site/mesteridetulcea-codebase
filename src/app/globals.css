@@ -1,26 +1,151 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
+/* Hotel-inspired elegant palette — warm gold & dark brown */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 40 58% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 38 18% 94%;
+  --secondary-foreground: 36 37% 18%;
+  --muted: 38 15% 95%;
+  --muted-foreground: 30 10% 45%;
+  --accent: 40 58% 40%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 36 37% 25%;
+  --input: 36 20% 85%;
+  --ring: 40 58% 40%;
+  --radius: 0.125rem;
+
+  /* Chart colors */
+  --chart-1: 40 58% 40%;
+  --chart-2: 36 37% 25%;
+  --chart-3: 173 58% 39%;
+  --chart-4: 220 70% 50%;
+  --chart-5: 280 65% 60%;
+}
+
+.dark {
+  --background: 22 30% 5%;
+  --foreground: 38 18% 92%;
+  --card: 22 25% 8%;
+  --card-foreground: 38 18% 92%;
+  --popover: 22 25% 8%;
+  --popover-foreground: 38 18% 92%;
+  --primary: 40 58% 48%;
+  --primary-foreground: 22 40% 8%;
+  --secondary: 22 20% 15%;
+  --secondary-foreground: 38 18% 85%;
+  --muted: 22 20% 15%;
+  --muted-foreground: 30 12% 60%;
+  --accent: 40 58% 48%;
+  --accent-foreground: 22 40% 8%;
+  --destructive: 0 62.8% 40%;
+  --destructive-foreground: 38 18% 92%;
+  --border: 36 30% 20%;
+  --input: 36 20% 18%;
+  --ring: 40 58% 48%;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: 0.02em;
+  }
+
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 80rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Focus ring styles */
+.focus-ring {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+/* Leaflet custom markers */
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px;
+  font-size: 14px;
 }
