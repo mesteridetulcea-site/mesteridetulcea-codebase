@@ -1,14 +1,26 @@
 import type { Metadata } from "next"
-import { Playfair_Display, Geist_Mono } from "next/font/google"
+import { Cormorant_Garamond, Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import "./globals.css"
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair",
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
+})
+
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+})
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 })
 
 const geistMono = Geist_Mono({
@@ -49,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body
-        className={`${playfairDisplay.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${cormorantGaramond.variable} ${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <TooltipProvider>
           {children}

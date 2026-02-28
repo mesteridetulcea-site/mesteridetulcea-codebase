@@ -1,32 +1,32 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Hotel-inspired elegant palette — warm gold & dark brown */
+/* ─── Warm Artisan Gold Palette ─── */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 13%;
+  --background: 38 22% 97%;
+  --foreground: 25 18% 8%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 13%;
+  --card-foreground: 25 18% 8%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 13%;
-  --primary: 40 58% 40%;
+  --popover-foreground: 25 18% 8%;
+  --primary: 38 68% 44%;
   --primary-foreground: 0 0% 100%;
   --secondary: 38 18% 94%;
   --secondary-foreground: 36 37% 18%;
-  --muted: 38 15% 95%;
+  --muted: 38 14% 95%;
   --muted-foreground: 30 10% 45%;
-  --accent: 40 58% 40%;
+  --accent: 38 68% 44%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 100%;
-  --border: 36 37% 25%;
+  --border: 35 38% 22%;
   --input: 36 20% 85%;
-  --ring: 40 58% 40%;
-  --radius: 0.125rem;
+  --ring: 38 68% 44%;
+  --radius: 0rem;
 
   /* Chart colors */
-  --chart-1: 40 58% 40%;
-  --chart-2: 36 37% 25%;
+  --chart-1: 38 68% 44%;
+  --chart-2: 35 38% 22%;
   --chart-3: 173 58% 39%;
   --chart-4: 220 70% 50%;
   --chart-5: 280 65% 60%;
@@ -39,19 +39,19 @@
   --card-foreground: 38 18% 92%;
   --popover: 22 25% 8%;
   --popover-foreground: 38 18% 92%;
-  --primary: 40 58% 48%;
+  --primary: 38 68% 48%;
   --primary-foreground: 22 40% 8%;
   --secondary: 22 20% 15%;
   --secondary-foreground: 38 18% 85%;
   --muted: 22 20% 15%;
   --muted-foreground: 30 12% 60%;
-  --accent: 40 58% 48%;
+  --accent: 38 68% 48%;
   --accent-foreground: 22 40% 8%;
   --destructive: 0 62.8% 40%;
   --destructive-foreground: 38 18% 92%;
-  --border: 36 30% 20%;
+  --border: 35 30% 20%;
   --input: 36 20% 18%;
-  --ring: 40 58% 48%;
+  --ring: 38 68% 48%;
 }
 
 @theme inline {
@@ -74,11 +74,13 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --radius-sm: calc(var(--radius) - 1px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-playfair);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 2px;
+  --radius-xl: 4px;
+  --font-sans: var(--font-barlow);
+  --font-display: var(--font-cormorant);
+  --font-condensed: var(--font-barlow-condensed);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -92,8 +94,10 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    letter-spacing: 0.02em;
+  h1, h2, h3, h4 {
+    font-family: var(--font-cormorant);
+    font-weight: 500;
+    letter-spacing: 0.01em;
   }
 
   .container {
@@ -106,24 +110,58 @@
   }
 }
 
+@layer utilities {
+  .font-display {
+    font-family: var(--font-cormorant);
+  }
+
+  .font-condensed {
+    font-family: var(--font-barlow-condensed);
+  }
+
+  /* Center-out underline reveal for nav links */
+  .nav-link {
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+    transform-origin: center;
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .nav-link-active::after {
+    transform: scaleX(1);
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--muted));
-  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.25);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.45);
 }
 
 /* Focus ring styles */
@@ -142,7 +180,7 @@
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .leaflet-popup-content {

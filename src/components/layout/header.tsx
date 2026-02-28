@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import {
-  Hammer,
   Search,
   Menu,
   User,
@@ -56,28 +55,30 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#584528] bg-[#0f0b04]">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-[#e8e0d4] bg-white shadow-sm">
+      <div className="container flex h-16 items-center justify-between px-8 md:px-12">
+
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Hammer className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg text-white hidden sm:inline-block tracking-wide">
-            Meșteri de Tulcea
+        <Link href="/" className="group flex flex-col leading-none shrink-0">
+          <span className="font-display italic font-light text-foreground/40 text-[10px] tracking-[0.2em] group-hover:text-primary/60 transition-colors duration-200">
+            Meșteri de
           </span>
-          <span className="font-bold text-lg text-white sm:hidden tracking-wide">MdT</span>
+          <span className="font-condensed font-bold text-foreground text-[17px] tracking-[0.22em] uppercase group-hover:text-primary transition-colors duration-200">
+            Tulcea
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-9">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm font-medium tracking-widest uppercase transition-colors hover:text-primary",
+                "nav-link font-condensed text-xs tracking-[0.18em] uppercase transition-colors duration-200 pb-0.5",
                 pathname === link.href
-                  ? "text-primary"
-                  : "text-white/70"
+                  ? "text-primary nav-link-active"
+                  : "text-foreground/50 hover:text-foreground/80"
               )}
             >
               {link.label}
@@ -89,98 +90,113 @@ export function Header() {
         <div className="flex items-center gap-2">
           {/* Search button */}
           <Link href="/cauta">
-            <Button variant="ghost" size="icon" className="hidden sm:flex text-white/70 hover:text-primary hover:bg-white/5">
-              <Search className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:flex text-foreground/40 hover:text-primary hover:bg-primary/5 rounded-none h-9 w-9"
+            >
+              <Search className="h-4 w-4" />
               <span className="sr-only">Caută</span>
             </Button>
           </Link>
 
           {/* Auth section */}
           {loading ? (
-            <div className="h-8 w-8 rounded-full bg-white/10 animate-pulse" />
+            <div className="h-8 w-8 bg-foreground/8 animate-pulse" />
           ) : user && profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-8 w-8 rounded-full hover:bg-white/10"
+                  className="relative h-8 w-8 hover:bg-foreground/5 rounded-none p-0"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 rounded-none">
                     <AvatarImage
                       src={profile.avatar_url || undefined}
                       alt={profile.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-primary text-white text-xs">
+                    <AvatarFallback className="bg-primary text-white text-xs rounded-none font-condensed tracking-wider">
                       {getInitials(profile.full_name)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-[#1a1208] border-[#584528]" align="end" forceMount>
+              <DropdownMenuContent
+                className="w-56 bg-white border-[#e8e0d4] rounded-none shadow-lg"
+                align="end"
+                forceMount
+              >
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none text-white">
+                  <div className="flex flex-col space-y-0.5">
+                    <p className="font-condensed text-sm font-medium tracking-wider text-foreground">
                       {profile.full_name || "Utilizator"}
                     </p>
-                    <p className="text-xs leading-none text-white/50">
+                    <p className="text-xs text-foreground/40">
                       {profile.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-[#584528]" />
+                <DropdownMenuSeparator className="bg-[#e8e0d4]" />
                 {profile.role === "admin" && (
-                  <DropdownMenuItem asChild className="text-white/80 focus:text-primary focus:bg-white/5">
+                  <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                     <Link href="/admin">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Admin Panel
+                      <span className="font-condensed tracking-wide">Admin Panel</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
                 {profile.role === "mester" && (
-                  <DropdownMenuItem asChild className="text-white/80 focus:text-primary focus:bg-white/5">
+                  <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                     <Link href="/mester-cont">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Panou Meșter
+                      <span className="font-condensed tracking-wide">Panou Meșter</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem asChild className="text-white/80 focus:text-primary focus:bg-white/5">
+                <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                   <Link href="/cont">
                     <User className="mr-2 h-4 w-4" />
-                    Contul meu
+                    <span className="font-condensed tracking-wide">Contul meu</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-white/80 focus:text-primary focus:bg-white/5">
+                <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                   <Link href="/cont/favorite">
                     <Heart className="mr-2 h-4 w-4" />
-                    Favorite
+                    <span className="font-condensed tracking-wide">Favorite</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-white/80 focus:text-primary focus:bg-white/5">
+                <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                   <Link href="/cont/setari">
                     <Settings className="mr-2 h-4 w-4" />
-                    Setări
+                    <span className="font-condensed tracking-wide">Setări</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#584528]" />
+                <DropdownMenuSeparator className="bg-[#e8e0d4]" />
                 <DropdownMenuItem
                   onClick={() => signOut()}
-                  className="text-red-400 focus:text-red-400 focus:bg-white/5"
+                  className="text-red-500/70 focus:text-red-500 focus:bg-red-50 rounded-none"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Deconectare
+                  <span className="font-condensed tracking-wide">Deconectare</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-primary hover:bg-white/5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-foreground/50 hover:text-foreground hover:bg-foreground/5 rounded-none font-condensed tracking-[0.12em] uppercase text-xs"
+                >
                   Autentificare
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-white tracking-wider uppercase text-xs">
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/88 text-white rounded-none font-condensed tracking-[0.12em] uppercase text-xs"
+                >
                   Înregistrare
                 </Button>
               </Link>
@@ -190,41 +206,55 @@ export function Header() {
           {/* Mobile menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden text-white/70 hover:text-primary hover:bg-white/5">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden text-foreground/45 hover:text-foreground hover:bg-foreground/5 rounded-none h-9 w-9"
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Meniu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-[#0f0b04] border-l border-[#584528]">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2 text-white">
-                  <Hammer className="h-5 w-5 text-primary" />
-                  Meșteri de Tulcea
+            <SheetContent
+              side="right"
+              className="w-[280px] sm:w-[340px] bg-white border-l border-[#e8e0d4] rounded-none"
+            >
+              <SheetHeader className="pb-6 border-b border-[#e8e0d4]">
+                <SheetTitle className="flex flex-col items-start gap-0.5">
+                  <span className="font-display italic font-light text-foreground/35 text-[10px] tracking-[0.2em]">
+                    Meșteri de
+                  </span>
+                  <span className="font-condensed font-bold text-foreground text-xl tracking-[0.22em] uppercase">
+                    Tulcea
+                  </span>
                 </SheetTitle>
               </SheetHeader>
-              <nav className="flex flex-col gap-1 mt-8">
+              <nav className="flex flex-col mt-6">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "text-base font-medium tracking-widest uppercase transition-colors hover:text-primary py-3 border-b border-[#584528]/30",
+                      "font-condensed text-sm tracking-[0.18em] uppercase transition-colors py-4 border-b border-[#e8e0d4]/70",
                       pathname === link.href
                         ? "text-primary"
-                        : "text-white/70"
+                        : "text-foreground/50 hover:text-foreground"
                     )}
                   >
                     {link.label}
                   </Link>
                 ))}
                 {!user && (
-                  <div className="pt-6 mt-2 flex flex-col gap-2">
+                  <div className="pt-8 flex flex-col gap-3">
                     <Link
                       href="/login"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Button variant="outline" className="w-full border-[#584528] text-white hover:bg-white/5 tracking-wider uppercase text-xs">
+                      <Button
+                        variant="outline"
+                        className="w-full border-[#e8e0d4] text-foreground/70 hover:bg-foreground/5 rounded-none font-condensed tracking-[0.12em] uppercase text-xs"
+                      >
                         Autentificare
                       </Button>
                     </Link>
@@ -232,7 +262,7 @@ export function Header() {
                       href="/register"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-white tracking-wider uppercase text-xs">
+                      <Button className="w-full bg-primary hover:bg-primary/88 text-white rounded-none font-condensed tracking-[0.12em] uppercase text-xs">
                         Înregistrare
                       </Button>
                     </Link>
