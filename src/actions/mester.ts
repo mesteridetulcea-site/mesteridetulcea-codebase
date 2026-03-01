@@ -128,11 +128,8 @@ export async function applyAsMester(formData: FormData) {
     } as never)
   }
 
-  // Update profile role
-  await supabase
-    .from("profiles")
-    .update({ role: "mester" } as never)
-    .eq("id", user.id)
+  // NOTE: Do NOT change profiles.role here.
+  // Role is updated to "mester" only when the admin approves the profile.
 
   revalidatePath("/", "layout")
   redirect("/mester-cont")
@@ -163,13 +160,6 @@ interface MesterProfileData {
       slug: string
     } | null
   }[]
-  profile: {
-    id: string
-    email: string
-    full_name: string | null
-    avatar_url: string | null
-    phone: string | null
-  } | null
 }
 
 export async function getMesterProfile(): Promise<MesterProfileData | null> {
@@ -181,17 +171,23 @@ export async function getMesterProfile(): Promise<MesterProfileData | null> {
 
   if (!user) return null
 
-  const { data: mester } = await supabase
+  const { data: mester, error } = await supabase
     .from("mester_profiles")
     .select(
       `
-      *,
-      mester_categories(category_id, category:categories(id, name, slug)),
-      profile:profiles(id, email, full_name, avatar_url, phone)
+      id, user_id, display_name, bio, years_experience, subscription_tier,
+      approval_status, is_featured, avg_rating, reviews_count, views_count,
+      city, neighborhood, whatsapp_number, created_at, updated_at,
+      mester_categories(category_id, category:categories(id, name, slug))
     `
     )
     .eq("user_id", user.id)
     .single()
+
+  if (error) {
+    console.error("getMesterProfile error:", error)
+    return null
+  }
 
   return mester as MesterProfileData | null
 }

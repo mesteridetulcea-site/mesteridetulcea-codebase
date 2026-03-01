@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import {
   Search,
   Menu,
@@ -13,7 +14,6 @@ import {
   LayoutDashboard,
 } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user"
-import { signOut } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -41,8 +41,16 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, profile, loading } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/")
+    router.refresh()
+  }
 
   const getInitials = (name: string | null) => {
     if (!name) return "U"
@@ -173,7 +181,7 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-[#e8e0d4]" />
                 <DropdownMenuItem
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
                   className="text-red-500/70 focus:text-red-500 focus:bg-red-50 rounded-none"
                 >
                   <LogOut className="mr-2 h-4 w-4" />

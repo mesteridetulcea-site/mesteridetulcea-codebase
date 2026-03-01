@@ -30,6 +30,13 @@ export async function approveMester(mesterId: string, notes?: string) {
 
   const supabase = await createAdminClient()
 
+  // Get the user_id for this mester so we can update their profile role
+  const { data: mesterProfile } = await supabase
+    .from("mester_profiles")
+    .select("user_id")
+    .eq("id", mesterId)
+    .single() as { data: { user_id: string } | null }
+
   const { error } = await supabase
     .from("mester_profiles")
     .update({ approval_status: "approved" } as never)
@@ -37,6 +44,14 @@ export async function approveMester(mesterId: string, notes?: string) {
 
   if (error) {
     return { error: "Nu s-a putut aproba meșterul" }
+  }
+
+  // Update the user's role to "mester" now that they're approved
+  if (mesterProfile?.user_id) {
+    await supabase
+      .from("profiles")
+      .update({ role: "mester" } as never)
+      .eq("id", mesterProfile.user_id)
   }
 
   await supabase.from("admin_logs").insert({
@@ -240,30 +255,45 @@ export async function getAdminMesters() {
 
   const supabase = await createAdminClient()
 
-  const { data, error } = await supabase
+  const { data: mesters, error } = await supabase
     .from("mester_profiles")
     .select(`
-      id, display_name, approval_status, subscription_tier, is_featured, created_at,
-      mester_categories(category:categories(name)),
-      profile:profiles(email, full_name)
+      id, user_id, display_name, approval_status, subscription_tier, is_featured, created_at,
+      mester_categories(category:categories(name))
     `)
     .order("created_at", { ascending: false }) as {
       data: Array<{
         id: string
+        user_id: string
         display_name: string
         approval_status: string
         subscription_tier: string
         is_featured: boolean
         created_at: string
         mester_categories: { category: { name: string } | null }[]
-        profile: { email: string; full_name: string | null } | null
       }> | null
       error: unknown
     }
 
   if (error) return { error: "Nu s-au putut încărca meșterii", data: null }
+  if (!mesters || mesters.length === 0) return { error: null, data: [] }
 
-  return { error: null, data: data || [] }
+  const userIds = mesters.map((m) => m.user_id)
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, email, full_name")
+    .in("id", userIds) as {
+      data: Array<{ id: string; email: string; full_name: string | null }> | null
+    }
+
+  const profileMap = new Map((profiles || []).map((p) => [p.id, p]))
+
+  const result = mesters.map((m) => ({
+    ...m,
+    profile: profileMap.get(m.user_id) ?? null,
+  }))
+
+  return { error: null, data: result }
 }
 
 export async function toggleMesterFeatured(mesterId: string) {
