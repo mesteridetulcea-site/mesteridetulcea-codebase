@@ -7,8 +7,6 @@ import {
   Users,
   Image,
   FolderTree,
-  FileText,
-  Settings,
   Hammer,
 } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
@@ -36,16 +34,6 @@ const sidebarLinks = [
     href: "/admin/categorii",
     icon: FolderTree,
   },
-  {
-    title: "Jurnal audit",
-    href: "/admin/audit",
-    icon: FileText,
-  },
-  {
-    title: "Setări",
-    href: "/admin/setari",
-    icon: Settings,
-  },
 ]
 
 export function AdminSidebar() {
@@ -56,7 +44,7 @@ export function AdminSidebar() {
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/admin" className="flex items-center gap-2">
           <Hammer className="h-6 w-6 text-primary" />
-          <span className="font-bold">Admin Panel</span>
+          <span className="font-bold">Panou Admin</span>
         </Link>
       </div>
       <ScrollArea className="flex-1 px-3 py-4">

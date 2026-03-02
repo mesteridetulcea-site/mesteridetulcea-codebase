@@ -1,8 +1,13 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Home, Search, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function NotFound() {
+  const router = useRouter()
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
@@ -30,13 +35,13 @@ export default function NotFound() {
           </Button>
         </div>
         <div className="mt-8">
-          <Link
-            href="javascript:history.back()"
+          <button
+            onClick={() => router.back()}
             className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Înapoi la pagina anterioară
-          </Link>
+          </button>
         </div>
       </div>
     </div>

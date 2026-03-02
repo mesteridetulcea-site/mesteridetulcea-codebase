@@ -143,6 +143,7 @@ interface MesterProfileData {
   years_experience: number | null
   subscription_tier: string
   approval_status: string
+  rejection_reason: string | null
   is_featured: boolean
   avg_rating: number
   reviews_count: number
@@ -176,7 +177,7 @@ export async function getMesterProfile(): Promise<MesterProfileData | null> {
     .select(
       `
       id, user_id, display_name, bio, years_experience, subscription_tier,
-      approval_status, is_featured, avg_rating, reviews_count, views_count,
+      approval_status, rejection_reason, is_featured, avg_rating, reviews_count, views_count,
       city, neighborhood, whatsapp_number, created_at, updated_at,
       mester_categories(category_id, category:categories(id, name, slug))
     `

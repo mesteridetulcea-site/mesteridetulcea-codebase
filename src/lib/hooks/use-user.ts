@@ -8,6 +8,7 @@ import type { Profile } from "@/types/database"
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [hasMesterProfile, setHasMesterProfile] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export function useUser() {
         fetchProfile(session.user.id)
       } else {
         setProfile(null)
+        setHasMesterProfile(false)
         setLoading(false)
       }
     })
@@ -43,15 +45,15 @@ export function useUser() {
 
   async function fetchProfile(userId: string) {
     const supabase = createClient()
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single()
+    const [{ data: profileData }, { data: mesterData }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).single(),
+      supabase.from("mester_profiles").select("id").eq("user_id", userId).maybeSingle(),
+    ])
 
-    setProfile(data)
+    setProfile(profileData)
+    setHasMesterProfile(!!mesterData)
     setLoading(false)
   }
 
-  return { user, profile, loading }
+  return { user, profile, hasMesterProfile, loading }
 }

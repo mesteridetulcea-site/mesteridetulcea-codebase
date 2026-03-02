@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { toast } from "@/lib/hooks/use-toast"
 import type { ApprovalStatus, SubscriptionTier } from "@/types/database"
 import { SUBSCRIPTION_TIERS } from "@/lib/constants"
@@ -29,6 +38,12 @@ export default function AdminMestersPage() {
   const [mesters, setMesters] = useState<MesterWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; mesterId: string; mesterName: string }>({
+    open: false,
+    mesterId: "",
+    mesterName: "",
+  })
+  const [rejectReason, setRejectReason] = useState("")
 
   useEffect(() => {
     loadMesters()
@@ -57,9 +72,16 @@ export default function AdminMestersPage() {
     setActionLoading(null)
   }
 
-  async function handleReject(mesterId: string) {
+  function openRejectDialog(mesterId: string, mesterName: string) {
+    setRejectReason("")
+    setRejectDialog({ open: true, mesterId, mesterName })
+  }
+
+  async function handleRejectConfirm() {
+    const { mesterId } = rejectDialog
+    setRejectDialog((d) => ({ ...d, open: false }))
     setActionLoading(mesterId)
-    const result = await rejectMester(mesterId)
+    const result = await rejectMester(mesterId, rejectReason || undefined)
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })
     } else {
@@ -123,8 +145,9 @@ export default function AdminMestersPage() {
             </div>
             <div className="flex items-center gap-2">
               <Link href={`/mester/${mester.id}`} target="_blank">
-                <Button variant="ghost" size="icon">
-                  <ExternalLink className="h-4 w-4" />
+                <Button variant="ghost" size="sm">
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  Profil
                 </Button>
               </Link>
               {isPending ? (
@@ -144,7 +167,7 @@ export default function AdminMestersPage() {
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleReject(mester.id)}
+                    onClick={() => openRejectDialog(mester.id, mester.display_name)}
                     disabled={isLoading}
                   >
                     <X className="h-4 w-4 mr-1" />
@@ -235,6 +258,39 @@ export default function AdminMestersPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Reject dialog */}
+      <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog((d) => ({ ...d, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Respinge meșter</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Ești sigur că vrei să respingi cererea lui{" "}
+              <span className="font-medium text-foreground">{rejectDialog.mesterName}</span>?
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="reject-reason">Motiv (opțional)</Label>
+              <Textarea
+                id="reject-reason"
+                placeholder="Explică de ce cererea a fost respinsă..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialog((d) => ({ ...d, open: false }))}>
+              Anulează
+            </Button>
+            <Button variant="destructive" onClick={handleRejectConfirm}>
+              Respinge
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Image, Star, FileText } from "lucide-react"
 
 async function getStats() {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const [
     { count: totalMesters },
@@ -13,7 +13,8 @@ async function getStats() {
   ] = await Promise.all([
     supabase
       .from("mester_profiles")
-      .select("*", { count: "exact", head: true }),
+      .select("*", { count: "exact", head: true })
+      .eq("approval_status", "approved"),
     supabase
       .from("mester_profiles")
       .select("*", { count: "exact", head: true })

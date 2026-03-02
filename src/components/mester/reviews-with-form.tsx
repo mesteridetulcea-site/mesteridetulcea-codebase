@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MessageSquarePlus, Loader2 } from "lucide-react"
 import Link from "next/link"
-import type { Review, ReviewWithUser } from "@/types/database"
+import type { ReviewWithUser } from "@/types/database"
 
 interface ReviewsWithFormProps {
   mesterId: string
   reviews: ReviewWithUser[]
   averageRating: number
   totalReviews: number
+  isAdmin?: boolean
 }
 
 export function ReviewsWithForm({
@@ -23,10 +24,11 @@ export function ReviewsWithForm({
   reviews,
   averageRating,
   totalReviews,
+  isAdmin = false,
 }: ReviewsWithFormProps) {
   const { user, loading: userLoading } = useUser()
   const [showForm, setShowForm] = useState(false)
-  const [existingReview, setExistingReview] = useState<Review | null>(null)
+  const [hasExistingReview, setHasExistingReview] = useState(false)
   const [checkingReview, setCheckingReview] = useState(true)
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function ReviewsWithForm({
       }
 
       const result = await getUserReviewForMester(mesterId)
-      setExistingReview(result.review)
+      setHasExistingReview(!!result.review)
       setCheckingReview(false)
     }
 
@@ -48,11 +50,10 @@ export function ReviewsWithForm({
 
   function handleReviewSuccess() {
     setShowForm(false)
-    // Refresh the page to show updated reviews
     window.location.reload()
   }
 
-  const canReview = user && !existingReview
+  const canReview = user && !hasExistingReview
 
   return (
     <div className="space-y-6">
@@ -74,11 +75,6 @@ export function ReviewsWithForm({
                 Lasă o recenzie
               </Button>
             )}
-            {existingReview && !showForm && (
-              <Button variant="outline" size="sm" onClick={() => setShowForm(true)}>
-                Modifică recenzia
-              </Button>
-            )}
           </>
         )}
       </div>
@@ -88,7 +84,6 @@ export function ReviewsWithForm({
         <div className="mb-6">
           <ReviewForm
             mesterId={mesterId}
-            existingReview={existingReview}
             onSuccess={handleReviewSuccess}
           />
           <Button
@@ -117,6 +112,9 @@ export function ReviewsWithForm({
           reviews={reviews}
           averageRating={averageRating}
           totalReviews={totalReviews}
+          isAdmin={isAdmin}
+          onReviewRejected={() => window.location.reload()}
+          onReviewDeleted={() => window.location.reload()}
         />
       )}
     </div>

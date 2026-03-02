@@ -39,7 +39,11 @@ export async function approveMester(mesterId: string, notes?: string) {
 
   const { error } = await supabase
     .from("mester_profiles")
-    .update({ approval_status: "approved" } as never)
+    .update({
+      approval_status: "approved",
+      approved_by: auth.userId,
+      approved_at: new Date().toISOString(),
+    } as never)
     .eq("id", mesterId)
 
   if (error) {
@@ -74,7 +78,10 @@ export async function rejectMester(mesterId: string, notes?: string) {
 
   const { error } = await supabase
     .from("mester_profiles")
-    .update({ approval_status: "rejected" } as never)
+    .update({
+      approval_status: "rejected",
+      rejection_reason: notes || null,
+    } as never)
     .eq("id", mesterId)
 
   if (error) {
@@ -324,4 +331,37 @@ export async function toggleMesterFeatured(mesterId: string) {
 
   revalidatePath("/admin/mesteri")
   return { success: true, isFeatured: newFeaturedStatus }
+}
+
+export async function adminRejectReview(reviewId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: review } = await supabase
+    .from("reviews")
+    .select("mester_id")
+    .eq("id", reviewId)
+    .single() as { data: { mester_id: string } | null }
+
+  if (!review) return { error: "Recenzia nu a fost găsită" }
+
+  const { error } = await supabase
+    .from("reviews")
+    .update({ approval_status: "rejected" } as never)
+    .eq("id", reviewId)
+
+  if (error) return { error: "Nu s-a putut respinge recenzia" }
+
+  await supabase.from("admin_logs").insert({
+    admin_id: auth.userId!,
+    action: "reject_review",
+    target_type: "review",
+    target_id: reviewId,
+    notes: null,
+  } as never)
+
+  revalidatePath(`/mester/${review.mester_id}`)
+  return { success: true }
 }

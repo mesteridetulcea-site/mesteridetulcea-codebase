@@ -8,11 +8,13 @@ import {
   Star,
   Users,
   ChevronDown,
+  LayoutDashboard,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@/lib/hooks/use-user"
 
 const popularSearches = [
   { label: "Electricieni", slug: "electrician" },
@@ -24,6 +26,7 @@ const popularSearches = [
 export function HeroSearch() {
   const [query, setQuery] = useState("")
   const router = useRouter()
+  const { profile, hasMesterProfile } = useUser()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -147,14 +150,32 @@ export function HeroSearch() {
             ))}
           </div>
 
-          {/* Become a mester link */}
+          {/* Role-based CTA */}
           <div className="mt-5">
-            <Link
-              href="/devino-mester"
-              className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-white/35 hover:text-primary transition-colors duration-200 border border-white/10 hover:border-primary/40 px-5 py-2.5"
-            >
-              Ești meșter? Înregistrează-te →
-            </Link>
+            {profile?.role === "admin" ? (
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                Panou Admin
+              </Link>
+            ) : hasMesterProfile || profile?.role === "mester" ? (
+              <Link
+                href="/mester-cont"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                Panou Meșter
+              </Link>
+            ) : (
+              <Link
+                href="/devino-mester"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
+              >
+                Ești meșter? Înregistrează-te →
+              </Link>
+            )}
           </div>
 
           {/* Trust badges */}

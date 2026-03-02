@@ -42,7 +42,7 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, profile, loading } = useUser()
+  const { user, profile, hasMesterProfile, loading } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   async function handleSignOut() {
@@ -149,11 +149,11 @@ export function Header() {
                   <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                     <Link href="/admin">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span className="font-condensed tracking-wide">Admin Panel</span>
+                      <span className="font-condensed tracking-wide">Panou Admin</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {profile.role === "mester" && (
+                {(profile.role === "mester" || hasMesterProfile) && profile.role !== "admin" && (
                   <DropdownMenuItem asChild className="text-foreground/65 focus:text-primary focus:bg-primary/5 rounded-none">
                     <Link href="/mester-cont">
                       <LayoutDashboard className="mr-2 h-4 w-4" />

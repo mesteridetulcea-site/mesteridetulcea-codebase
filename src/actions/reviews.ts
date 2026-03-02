@@ -14,6 +14,7 @@ export async function createReview(mesterId: string, formData: FormData) {
   }
 
   const rating = parseInt(formData.get("rating") as string)
+  const title = formData.get("title") as string
   const body = formData.get("comment") as string
 
   if (!rating || rating < 1 || rating > 5) {
@@ -38,7 +39,9 @@ export async function createReview(mesterId: string, formData: FormData) {
     mester_id: mesterId,
     client_id: user.id,
     rating,
+    title: title || null,
     body: body || null,
+    approval_status: "approved",
   } as never)
 
   if (error) {
@@ -50,53 +53,6 @@ export async function createReview(mesterId: string, formData: FormData) {
   return { success: true }
 }
 
-export async function updateReview(reviewId: string, formData: FormData) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: "Trebuie să fii autentificat" }
-  }
-
-  const rating = parseInt(formData.get("rating") as string)
-  const body = formData.get("comment") as string
-
-  if (!rating || rating < 1 || rating > 5) {
-    return { error: "Rating-ul trebuie să fie între 1 și 5" }
-  }
-
-  // Check ownership
-  const { data: review } = await supabase
-    .from("reviews")
-    .select("mester_id")
-    .eq("id", reviewId)
-    .eq("client_id", user.id)
-    .single() as { data: { mester_id: string } | null }
-
-  if (!review) {
-    return { error: "Nu ai permisiunea să modifici această recenzie" }
-  }
-
-  const adminClient = await createAdminClient()
-
-  const { error } = await adminClient
-    .from("reviews")
-    .update({
-      rating,
-      body: body || null,
-      updated_at: new Date().toISOString(),
-    } as never)
-    .eq("id", reviewId)
-
-  if (error) {
-    return { error: "Nu s-a putut actualiza recenzia" }
-  }
-
-  revalidatePath(`/mester/${review.mester_id}`)
-  return { success: true }
-}
 
 export async function deleteReview(reviewId: string) {
   const supabase = await createClient()

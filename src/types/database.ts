@@ -183,7 +183,9 @@ export interface Database {
           mester_id: string
           client_id: string
           rating: number
+          title: string | null
           body: string | null
+          approval_status: "pending" | "approved" | "rejected"
           created_at: string
           updated_at: string
         }
@@ -192,7 +194,9 @@ export interface Database {
           mester_id: string
           client_id: string
           rating: number
+          title?: string | null
           body?: string | null
+          approval_status?: "pending" | "approved" | "rejected"
           created_at?: string
           updated_at?: string
         }
@@ -201,7 +205,9 @@ export interface Database {
           mester_id?: string
           client_id?: string
           rating?: number
+          title?: string | null
           body?: string | null
+          approval_status?: "pending" | "approved" | "rejected"
           created_at?: string
           updated_at?: string
         }

@@ -3,21 +3,20 @@
 import { useState } from "react"
 import { Star, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createReview, updateReview } from "@/actions/reviews"
+import { createReview } from "@/actions/reviews"
 import { toast } from "@/lib/hooks/use-toast"
-import type { Review } from "@/types/database"
 
 interface ReviewFormProps {
   mesterId: string
-  existingReview?: Review | null
   onSuccess?: () => void
 }
 
-export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormProps) {
-  const [rating, setRating] = useState(existingReview?.rating || 0)
+export function ReviewForm({ mesterId, onSuccess }: ReviewFormProps) {
+  const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -37,12 +36,7 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
     const formData = new FormData(e.currentTarget)
     formData.set("rating", rating.toString())
 
-    let result
-    if (existingReview) {
-      result = await updateReview(existingReview.id, formData)
-    } else {
-      result = await createReview(mesterId, formData)
-    }
+    const result = await createReview(mesterId, formData)
 
     if (result.error) {
       toast({
@@ -52,7 +46,7 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
       })
     } else {
       toast({
-        title: existingReview ? "Recenzie actualizată!" : "Recenzie adăugată!",
+        title: "Recenzie adăugată!",
         description: "Mulțumim pentru feedback-ul tău.",
       })
       onSuccess?.()
@@ -66,9 +60,7 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">
-          {existingReview ? "Modifică recenzia" : "Lasă o recenzie"}
-        </CardTitle>
+        <CardTitle className="text-lg">Lasă o recenzie</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,6 +98,17 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
             )}
           </div>
 
+          {/* Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title">Titlu (opțional)</Label>
+            <Input
+              id="title"
+              name="title"
+              placeholder="ex: Lucrare de calitate, recomand cu încredere"
+              maxLength={120}
+            />
+          </div>
+
           {/* Comment */}
           <div className="space-y-2">
             <Label htmlFor="comment">Comentariu (opțional)</Label>
@@ -113,7 +116,6 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
               id="comment"
               name="comment"
               placeholder="Spune-ne mai multe despre experiența ta..."
-              defaultValue={existingReview?.body || ""}
               rows={4}
             />
           </div>
@@ -124,8 +126,6 @@ export function ReviewForm({ mesterId, existingReview, onSuccess }: ReviewFormPr
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Se salvează...
               </>
-            ) : existingReview ? (
-              "Actualizează recenzia"
             ) : (
               "Trimite recenzia"
             )}

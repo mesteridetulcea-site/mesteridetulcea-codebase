@@ -75,15 +75,22 @@ export default async function MesterDashboardPage() {
       {isRejected && (
         <Card className="border-red-500 bg-red-50">
           <CardContent className="py-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600" />
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium text-red-800">
                   Profilul tău a fost respins
                 </p>
-                <p className="text-sm text-red-700">
-                  Contactează suportul pentru mai multe detalii.
-                </p>
+                {mester.rejection_reason ? (
+                  <p className="text-sm text-red-700 mt-1">
+                    <span className="font-medium">Motiv:</span>{" "}
+                    {mester.rejection_reason}
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-700">
+                    Contactează suportul pentru mai multe detalii.
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

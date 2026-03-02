@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, MapPin, Clock, Star, Eye } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -41,7 +41,6 @@ interface MesterData {
     category_id: string
     category: { id: string; name: string; slug: string } | null
   }[]
-  profile: { id: string; full_name: string | null; avatar_url: string | null } | null
 }
 
 interface PhotoData {
@@ -68,20 +67,34 @@ interface ReviewData {
 }
 
 async function getMester(id: string) {
-  const supabase = await createClient()
+  const regularClient = await createClient()
 
-  const { data: mester } = await supabase
+  // Check if current user is admin — use admin client to bypass all RLS
+  const { data: { user } } = await regularClient.auth.getUser()
+  let isAdmin = false
+  if (user) {
+    const { data: roleData } = await regularClient
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single() as { data: { role: string } | null }
+    isAdmin = roleData?.role === "admin"
+  }
+
+  const supabase = isAdmin ? await createAdminClient() : regularClient
+
+  const baseQuery = supabase
     .from("mester_profiles")
-    .select(
-      `
+    .select(`
       *,
-      mester_categories(category_id, category:categories(id, name, slug)),
-      profile:profiles(id, full_name, avatar_url)
-    `
-    )
+      mester_categories(category_id, category:categories(id, name, slug))
+    `)
     .eq("id", id)
-    .eq("approval_status", "approved")
-    .single() as { data: MesterData | null }
+
+  const { data: mester } = await (isAdmin
+    ? baseQuery
+    : baseQuery.eq("approval_status", "approved")
+  ).single() as { data: MesterData | null }
 
   if (!mester) return null
 
@@ -93,29 +106,50 @@ async function getMester(id: string) {
     .eq("approval_status", "approved")
     .order("sort_order") as { data: PhotoData[] | null }
 
-  // Get reviews with user info
-  const { data: reviews } = await supabase
+  // Get reviews — admins see pending+approved, public sees only approved
+  // Two-step fetch: reviews FK points to auth.users (not public.profiles),
+  // so PostgREST can't auto-join; we merge profiles manually.
+  const adminClient2 = await createAdminClient()
+  const reviewsBase = supabase
     .from("reviews")
-    .select(
-      `
-      *,
-      profile:profiles(full_name, avatar_url)
-    `
-    )
+    .select("*")
     .eq("mester_id", mester.id)
     .order("created_at", { ascending: false })
-    .limit(10) as { data: ReviewWithUser[] | null }
+    .limit(10)
+  const { data: rawReviews } = await (isAdmin
+    ? reviewsBase.neq("approval_status", "rejected")
+    : reviewsBase.eq("approval_status", "approved")
+  ) as { data: Omit<ReviewWithUser, "profile">[] | null }
 
-  // Increment view count
-  await supabase
-    .from("mester_profiles")
-    .update({ views_count: mester.views_count + 1 } as never)
-    .eq("id", mester.id)
+  let reviews: ReviewWithUser[] = []
+  if (rawReviews && rawReviews.length > 0) {
+    const clientIds = [...new Set(rawReviews.map((r) => r.client_id))]
+    const { data: profiles } = await adminClient2
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", clientIds) as { data: { id: string; full_name: string | null; avatar_url: string | null }[] | null }
+    const profileMap = new Map(profiles?.map((p) => [p.id, p]) ?? [])
+    reviews = rawReviews.map((review) => ({
+      ...review,
+      profile: profileMap.has(review.client_id)
+        ? { full_name: profileMap.get(review.client_id)!.full_name, avatar_url: profileMap.get(review.client_id)!.avatar_url }
+        : null,
+    }))
+  }
+
+  // Increment view count (only for non-admin views)
+  if (!isAdmin) {
+    await regularClient
+      .from("mester_profiles")
+      .update({ views_count: mester.views_count + 1 } as never)
+      .eq("id", mester.id)
+  }
 
   return {
     mester,
     photos: photos || [],
     reviews: reviews || [],
+    isAdmin,
   }
 }
 
@@ -154,7 +188,7 @@ export default async function MesterProfilePage({ params }: PageProps) {
     notFound()
   }
 
-  const { mester, photos, reviews } = data
+  const { mester, photos, reviews, isAdmin } = data
   const coverPhoto = photos.find((p) => p.photo_type === "profile") || photos[0]
   const primaryCategory = mester.mester_categories?.[0]?.category
   const isFavorited = await checkIsFavorited(mester.id)
@@ -272,6 +306,7 @@ export default async function MesterProfilePage({ params }: PageProps) {
                 reviews={reviews}
                 averageRating={mester.avg_rating}
                 totalReviews={mester.reviews_count}
+                isAdmin={isAdmin}
               />
             </TabsContent>
           </Tabs>
