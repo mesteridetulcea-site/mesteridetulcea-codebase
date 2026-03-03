@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { uploadAvatar } from "@/lib/utils/upload"
 
 export async function updateMesterProfile(formData: FormData) {
   const supabase = await createClient()
@@ -21,6 +22,7 @@ export async function updateMesterProfile(formData: FormData) {
   const whatsappNumber = formData.get("whatsappNumber") as string
   const neighborhood = formData.get("address") as string
   const categoryId = formData.get("categoryId") as string
+  const avatarFile = formData.get("avatar") as File | null
 
   // Get existing mester profile
   const { data: mester } = await supabase
@@ -31,6 +33,19 @@ export async function updateMesterProfile(formData: FormData) {
 
   if (!mester) {
     return { error: "Nu ai un profil de meșter" }
+  }
+
+  // Upload avatar if provided
+  if (avatarFile && avatarFile.size > 0) {
+    const avatarUrl = await uploadAvatar(user.id, avatarFile)
+    if (avatarUrl) {
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl } as never)
+        .eq("id", user.id)
+    } else {
+      return { error: "Imaginea de profil nu a putut fi încărcată. Acceptăm JPG, PNG, WebP până la 2MB." }
+    }
   }
 
   const { error } = await supabase
@@ -63,6 +78,7 @@ export async function updateMesterProfile(formData: FormData) {
   }
 
   revalidatePath("/mester-cont")
+  revalidatePath("/mester-cont/profil")
   return { success: true }
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Loader2 } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Loader2, Camera, User } from "lucide-react"
 import { getMesterProfile, updateMesterProfile } from "@/actions/mester"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,9 @@ export default function MesterProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -49,6 +52,17 @@ export default function MesterProfilePage() {
         .order("sort_order")
       setCategories(cats || [])
 
+      // Load current avatar from profiles
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", user.id)
+          .single() as { data: { avatar_url: string | null } | null }
+        setAvatarUrl(profile?.avatar_url ?? null)
+      }
+
       // Load mester profile
       const mester = await getMesterProfile()
       if (mester) {
@@ -67,6 +81,12 @@ export default function MesterProfilePage() {
     loadData()
   }, [])
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarPreview(URL.createObjectURL(file))
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -75,6 +95,12 @@ export default function MesterProfilePage() {
     Object.entries(formData).forEach(([key, value]) => {
       form.append(key, value)
     })
+
+    // Attach avatar file if selected
+    const file = fileInputRef.current?.files?.[0]
+    if (file) {
+      form.append("avatar", file)
+    }
 
     const result = await updateMesterProfile(form)
 
@@ -89,9 +115,17 @@ export default function MesterProfilePage() {
         title: "Salvat!",
         description: "Profilul a fost actualizat cu succes.",
       })
+      // Update displayed avatar if a new one was uploaded
+      if (avatarPreview) {
+        setAvatarUrl(avatarPreview)
+        setAvatarPreview(null)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
     }
     setSaving(false)
   }
+
+  const displayedAvatar = avatarPreview ?? avatarUrl
 
   if (loading) {
     return (
@@ -119,6 +153,43 @@ export default function MesterProfilePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+
+            {/* Avatar upload */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="relative group h-24 w-24 rounded-full overflow-hidden border-2 border-dashed border-border hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-label="Schimbă poza de profil"
+              >
+                {displayedAvatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={displayedAvatar}
+                    alt="Poza de profil"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full w-full bg-muted text-muted-foreground">
+                    <User className="h-8 w-8" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="h-5 w-5 text-white" />
+                </div>
+              </button>
+              <p className="text-xs text-muted-foreground">
+                {avatarPreview ? "Imagine nouă selectată — salvează pentru a aplica" : "Apasă pentru a schimba poza (JPG, PNG, WebP · max 2MB)"}
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="businessName">Nume firmă/Afacere *</Label>
               <Input
