@@ -36,7 +36,7 @@ export function HeroSearch() {
   }
 
   return (
-    <section className="relative bg-[#0d0905] min-h-[88vh] flex flex-col justify-center overflow-hidden">
+    <section className="relative bg-[#0d0905] min-h-[88vh] flex flex-col justify-center overflow-hidden -mt-[62px]">
 
       {/* ── Background photo ── */}
       <div className="absolute inset-0">
@@ -51,15 +51,28 @@ export function HeroSearch() {
 
       {/* ── Dark gradient overlays ── */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0905]/90 via-[#0d0905]/55 to-[#0d0905]/90" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0d0905]/55 via-transparent to-[#0d0905]/55" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0d0905]/82 via-transparent to-[#0d0905]/82" />
+
+      {/* ── Corner vignette ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 38%, rgba(13,9,5,0.72) 100%)",
+        }}
+      />
 
       {/* ── Gold grid lines ── */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-[0.042]"
         style={{
           backgroundImage:
             "linear-gradient(rgba(196,146,30,1) 1px, transparent 1px), linear-gradient(90deg, rgba(196,146,30,1) 1px, transparent 1px)",
           backgroundSize: "52px 52px",
+          maskImage:
+            "radial-gradient(ellipse 68% 72% at 50% 50%, black 20%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 68% 72% at 50% 50%, black 20%, transparent 100%)",
         }}
       />
 

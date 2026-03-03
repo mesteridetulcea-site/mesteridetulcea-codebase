@@ -3,27 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
-
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"]
-const MAX_AVATAR_SIZE = 5 * 1024 * 1024
-
-async function uploadAvatar(userId: string, file: File): Promise<string | null> {
-  if (!file || file.size === 0) return null
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return null
-  if (file.size > MAX_AVATAR_SIZE) return null
-  const ext = file.name.split(".").pop() ?? "jpg"
-  const path = `${userId}/avatar.${ext}`
-  const adminClient = await createAdminClient()
-  const { error } = await adminClient.storage
-    .from("avatars")
-    .upload(path, file, { upsert: true, contentType: file.type })
-  if (error) {
-    console.error("Avatar upload error:", error)
-    return null
-  }
-  const { data } = adminClient.storage.from("avatars").getPublicUrl(path)
-  return data.publicUrl
-}
+import { uploadAvatar } from "@/lib/utils/upload"
 
 export async function signUpClient(formData: FormData) {
   const email = formData.get("email") as string

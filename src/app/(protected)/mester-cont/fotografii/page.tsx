@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { Loader2, Upload, Trash2, Star, Clock, CheckCircle } from "lucide-react"
 import { getMesterPhotos, uploadPhoto, deletePhoto, setPhotoCover } from "@/actions/photos"
 import { Button } from "@/components/ui/button"
@@ -221,13 +220,18 @@ export default function MesterPhotosPage() {
 
               return (
                 <Card key={photo.id} className="overflow-hidden">
-                  <div className="relative aspect-[4/3]">
-                    <Image
-                      src={photo.public_url}
-                      alt={photo.caption || "Fotografie"}
-                      fill
-                      className="object-cover"
-                    />
+                  <div style={{ width: "100%", height: "208px", overflow: "hidden", backgroundColor: "#f0ede8", position: "relative" }}>
+                    {photo.public_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photo.public_url}
+                        alt={photo.caption || "Fotografie"}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        onError={(e) => { e.currentTarget.style.display = "none" }}
+                      />
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#999", fontSize: "12px" }}>Fără imagine</div>
+                    )}
                     {isCoverPhoto && (
                       <div className="absolute top-2 left-2">
                         <Badge className="bg-primary">
