@@ -9,6 +9,7 @@ export function useUser() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [hasMesterProfile, setHasMesterProfile] = useState(false)
+  const [mesterProfileId, setMesterProfileId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function useUser() {
       } else {
         setProfile(null)
         setHasMesterProfile(false)
+        setMesterProfileId(null)
         setLoading(false)
       }
     })
@@ -52,8 +54,9 @@ export function useUser() {
 
     setProfile(profileData)
     setHasMesterProfile(!!mesterData)
+    setMesterProfileId(mesterData?.id ?? null)
     setLoading(false)
   }
 
-  return { user, profile, hasMesterProfile, loading }
+  return { user, profile, hasMesterProfile, mesterProfileId, loading }
 }

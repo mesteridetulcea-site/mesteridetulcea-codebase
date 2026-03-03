@@ -11,7 +11,6 @@ const footerLinks = {
   ],
   informatii: [
     { label: "Despre noi", href: "/despre" },
-    { label: "Cum funcționează", href: "/cum-functioneaza" },
     { label: "Devino meșter", href: "/devino-mester" },
     { label: "Întrebări frecvente", href: "/intrebari-frecvente" },
   ],

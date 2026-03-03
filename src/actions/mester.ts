@@ -79,6 +79,51 @@ export async function updateMesterProfile(formData: FormData) {
 
   revalidatePath("/mester-cont")
   revalidatePath("/mester-cont/profil")
+  revalidatePath("/cont/setari")
+  return { success: true }
+}
+
+export async function updateClientProfile(formData: FormData) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "Trebuie să fii autentificat" }
+  }
+
+  const fullName = formData.get("fullName") as string
+  const phone = formData.get("phone") as string
+  const avatarFile = formData.get("avatar") as File | null
+
+  let avatarUrl: string | undefined
+  if (avatarFile && avatarFile.size > 0) {
+    const url = await uploadAvatar(user.id, avatarFile)
+    if (url) {
+      avatarUrl = url
+    } else {
+      return { error: "Imaginea de profil nu a putut fi încărcată. Acceptăm JPG, PNG, WebP până la 2MB." }
+    }
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: fullName || null,
+      phone: phone || null,
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq("id", user.id)
+
+  if (error) {
+    return { error: "Nu s-a putut actualiza profilul" }
+  }
+
+  revalidatePath("/cont")
+  revalidatePath("/cont/setari")
   return { success: true }
 }
 
@@ -199,7 +244,7 @@ export async function getMesterProfile(): Promise<MesterProfileData | null> {
     `
     )
     .eq("user_id", user.id)
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error("getMesterProfile error:", error)

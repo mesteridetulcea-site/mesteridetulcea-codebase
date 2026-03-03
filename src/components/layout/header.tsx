@@ -43,7 +43,7 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, profile, hasMesterProfile, loading } = useUser()
+  const { user, profile, hasMesterProfile, mesterProfileId, loading } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -221,6 +221,14 @@ export function Header() {
                     <span className="font-condensed tracking-wide">Favorite</span>
                   </Link>
                 </DropdownMenuItem>
+                {mesterProfileId && (
+                  <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
+                    <Link href={`/mester/${mesterProfileId}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span className="font-condensed tracking-wide">Profil public</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
                   <Link href="/cont/setari">
                     <Settings className="mr-2 h-4 w-4" />
