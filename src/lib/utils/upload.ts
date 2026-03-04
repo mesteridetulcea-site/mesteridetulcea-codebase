@@ -30,3 +30,30 @@ export async function uploadAvatar(
   const { data } = adminClient.storage.from("avatars").getPublicUrl(path)
   return data.publicUrl
 }
+
+export async function uploadCererePhoto(
+  userId: string,
+  cerereId: string,
+  file: File
+): Promise<string | null> {
+  if (!file || file.size === 0) return null
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return null
+  if (file.size > MAX_AVATAR_SIZE) return null
+
+  const ext = file.name.split(".").pop() ?? "jpg"
+  const path = `${userId}/${cerereId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const adminClient = await createAdminClient()
+
+  const { error } = await adminClient.storage
+    .from("cereri-photos")
+    .upload(path, file, { upsert: false, contentType: file.type })
+
+  if (error) {
+    console.error("Cerere photo upload error:", error)
+    return null
+  }
+
+  const { data } = adminClient.storage.from("cereri-photos").getPublicUrl(path)
+  return data.publicUrl
+}

@@ -365,3 +365,37 @@ export async function adminRejectReview(reviewId: string) {
   revalidatePath(`/mester/${review.mester_id}`)
   return { success: true }
 }
+
+export async function approveCererePhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { error } = await supabase
+    .from("cerere_photos")
+    .update({ approval_status: "approved" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut aproba fotografia" }
+
+  revalidatePath("/admin/cereri-foto")
+  return { success: true }
+}
+
+export async function rejectCererePhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { error } = await supabase
+    .from("cerere_photos")
+    .update({ approval_status: "rejected" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut respinge fotografia" }
+
+  revalidatePath("/admin/cereri-foto")
+  return { success: true }
+}

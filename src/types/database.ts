@@ -240,6 +240,10 @@ export interface Database {
           detected_category_id: string | null
           notified_mesters: string[] | null
           created_at: string
+          title: string | null
+          photos: string[] | null
+          status: string | null
+          client_phone: string | null
         }
         Insert: {
           id?: string
@@ -248,6 +252,10 @@ export interface Database {
           detected_category_id?: string | null
           notified_mesters?: string[] | null
           created_at?: string
+          title?: string | null
+          photos?: string[] | null
+          status?: string | null
+          client_phone?: string | null
         }
         Update: {
           id?: string
@@ -255,6 +263,33 @@ export interface Database {
           original_message?: string
           detected_category_id?: string | null
           notified_mesters?: string[] | null
+          created_at?: string
+          title?: string | null
+          photos?: string[] | null
+          status?: string | null
+          client_phone?: string | null
+        }
+      }
+      cerere_photos: {
+        Row: {
+          id: string
+          cerere_id: string
+          url: string
+          approval_status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          cerere_id: string
+          url: string
+          approval_status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          cerere_id?: string
+          url?: string
+          approval_status?: string
           created_at?: string
         }
       }
@@ -312,6 +347,7 @@ export type Review = Database["public"]["Tables"]["reviews"]["Row"]
 export type Favorite = Database["public"]["Tables"]["favorites"]["Row"]
 export type ServiceRequest = Database["public"]["Tables"]["service_requests"]["Row"]
 export type AdminLog = Database["public"]["Tables"]["admin_logs"]["Row"]
+export type CererePhoto = Database["public"]["Tables"]["cerere_photos"]["Row"]
 
 // Extended types with relations
 export type CategoryRef = {

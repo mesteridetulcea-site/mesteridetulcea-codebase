@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils/cn"
 
-const navLinks = [
+const staticNavLinks = [
   { href: "/mesteri", label: "Meșteri" },
   { href: "/cauta", label: "Caută" },
   { href: "/transport", label: "Transport" },
@@ -44,6 +44,11 @@ export function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, profile, hasMesterProfile, mesterProfileId, loading } = useUser()
+
+  const navLinks = [
+    ...staticNavLinks,
+    ...(hasMesterProfile ? [{ href: "/cereri", label: "Cereri" }] : []),
+  ]
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)

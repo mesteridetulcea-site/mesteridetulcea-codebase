@@ -181,14 +181,14 @@ export function HeroSearch() {
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 Panou Meșter
               </Link>
-            ) : (
+            ) : profile ? (
               <Link
-                href="/devino-mester"
+                href="/cereri/nou"
                 className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
               >
-                Ești meșter? Înregistrează-te →
+                Creează o cerere →
               </Link>
-            )}
+            ) : null}
           </div>
 
           {/* Trust badges */}
@@ -212,6 +212,18 @@ export function HeroSearch() {
               Contact direct
             </div>
           </div>
+
+          {/* Devino meșter — visible only to unauthenticated visitors */}
+          {!profile && (
+            <div className="mt-6">
+              <Link
+                href="/devino-mester"
+                className="font-condensed tracking-[0.16em] uppercase text-[11px] text-white/22 hover:text-white/45 transition-colors duration-200"
+              >
+                Ești meșter? Înregistrează-te →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
