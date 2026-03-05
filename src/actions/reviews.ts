@@ -13,6 +13,18 @@ export async function createReview(mesterId: string, formData: FormData) {
     return { error: "Trebuie să fii autentificat pentru a lăsa o recenzie" }
   }
 
+  // Prevent mester from reviewing their own profile
+  const { data: ownProfile } = await supabase
+    .from("mester_profiles")
+    .select("id")
+    .eq("id", mesterId)
+    .eq("user_id", user.id)
+    .single()
+
+  if (ownProfile) {
+    return { error: "Nu poți lăsa o recenzie pe propriul profil" }
+  }
+
   const rating = parseInt(formData.get("rating") as string)
   const title = formData.get("title") as string
   const body = formData.get("comment") as string

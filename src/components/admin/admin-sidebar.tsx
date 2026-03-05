@@ -8,7 +8,6 @@ import {
   Image,
   FolderTree,
   Hammer,
-  FileImage,
 } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
 import { Button } from "@/components/ui/button"
@@ -34,11 +33,6 @@ const sidebarLinks = [
     title: "Categorii",
     href: "/admin/categorii",
     icon: FolderTree,
-  },
-  {
-    title: "Foto Cereri",
-    href: "/admin/cereri-foto",
-    icon: FileImage,
   },
 ]
 

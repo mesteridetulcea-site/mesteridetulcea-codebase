@@ -8,7 +8,8 @@ async function getStats() {
   const [
     { count: totalMesters },
     { count: pendingMesters },
-    { count: pendingPhotos },
+    { count: pendingMesterPhotos },
+    { count: pendingCererePhotos },
     { count: totalReviews },
   ] = await Promise.all([
     supabase
@@ -24,6 +25,10 @@ async function getStats() {
       .select("*", { count: "exact", head: true })
       .eq("approval_status", "pending"),
     supabase
+      .from("cerere_photos")
+      .select("*", { count: "exact", head: true })
+      .eq("approval_status", "pending"),
+    supabase
       .from("reviews")
       .select("*", { count: "exact", head: true }),
   ])
@@ -31,7 +36,7 @@ async function getStats() {
   return {
     totalMesters: totalMesters || 0,
     pendingMesters: pendingMesters || 0,
-    pendingPhotos: pendingPhotos || 0,
+    pendingPhotos: (pendingMesterPhotos || 0) + (pendingCererePhotos || 0),
     totalReviews: totalReviews || 0,
   }
 }

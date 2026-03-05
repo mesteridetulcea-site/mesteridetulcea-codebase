@@ -68,15 +68,15 @@ export default async function FavoritesPage() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {favorites.map((favorite) => (
-                favorite.mester && (
+              {favorites
+                .filter((favorite) => favorite.mester)
+                .map((favorite) => (
                   <MesterCard
                     key={favorite.id}
                     mester={favorite.mester as MesterWithCategory}
-                    coverPhoto={photoMap.get(favorite.mester.id)}
+                    coverPhoto={photoMap.get(favorite.mester!.id)}
                   />
-                )
-              ))}
+                ))}
             </div>
           )}
         </div>

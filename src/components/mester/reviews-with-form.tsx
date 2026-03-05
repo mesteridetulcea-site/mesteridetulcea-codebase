@@ -26,7 +26,7 @@ export function ReviewsWithForm({
   totalReviews,
   isAdmin = false,
 }: ReviewsWithFormProps) {
-  const { user, loading: userLoading } = useUser()
+  const { user, mesterProfileId, loading: userLoading } = useUser()
   const [showForm, setShowForm] = useState(false)
   const [hasExistingReview, setHasExistingReview] = useState(false)
   const [checkingReview, setCheckingReview] = useState(true)
@@ -53,7 +53,8 @@ export function ReviewsWithForm({
     window.location.reload()
   }
 
-  const canReview = user && !hasExistingReview
+  const isOwnProfile = !!mesterProfileId && mesterProfileId === mesterId
+  const canReview = user && !hasExistingReview && !isOwnProfile
 
   return (
     <div className="space-y-6">
@@ -61,7 +62,7 @@ export function ReviewsWithForm({
         <h2 className="text-xl font-semibold">Recenzii</h2>
         {!userLoading && !checkingReview && (
           <>
-            {!user && (
+            {!user && !isOwnProfile && (
               <Link href="/login">
                 <Button variant="outline" size="sm">
                   <MessageSquarePlus className="h-4 w-4 mr-2" />
