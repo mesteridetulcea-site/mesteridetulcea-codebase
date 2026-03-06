@@ -270,6 +270,61 @@ export interface Database {
           client_phone?: string | null
         }
       }
+      mester_projects: {
+        Row: {
+          id: string
+          mester_id: string
+          title: string
+          description: string | null
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          mester_id: string
+          title: string
+          description?: string | null
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          mester_id?: string
+          title?: string
+          description?: string | null
+          sort_order?: number
+          created_at?: string
+        }
+      }
+      project_photos: {
+        Row: {
+          id: string
+          project_id: string
+          storage_path: string
+          url: string
+          sort_order: number
+          approval_status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          storage_path: string
+          url: string
+          sort_order?: number
+          approval_status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          storage_path?: string
+          url?: string
+          sort_order?: number
+          approval_status?: string
+          created_at?: string
+        }
+      }
       cerere_photos: {
         Row: {
           id: string
@@ -348,6 +403,9 @@ export type Favorite = Database["public"]["Tables"]["favorites"]["Row"]
 export type ServiceRequest = Database["public"]["Tables"]["service_requests"]["Row"]
 export type AdminLog = Database["public"]["Tables"]["admin_logs"]["Row"]
 export type CererePhoto = Database["public"]["Tables"]["cerere_photos"]["Row"]
+export type MesterProject = Database["public"]["Tables"]["mester_projects"]["Row"]
+export type ProjectPhoto = Database["public"]["Tables"]["project_photos"]["Row"]
+export type ProjectWithPhotos = MesterProject & { project_photos: ProjectPhoto[] }
 
 // Extended types with relations
 export type CategoryRef = {

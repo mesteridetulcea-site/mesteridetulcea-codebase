@@ -13,6 +13,8 @@ import { ReviewsWithForm } from "@/components/mester/reviews-with-form"
 import { WhatsAppButton } from "@/components/mester/whatsapp-button"
 import { FavoriteButton } from "@/components/mester/favorite-button"
 import { checkIsFavorited } from "@/actions/favorites"
+import { getProjectsForMester } from "@/actions/projects"
+import { ProjectsSection } from "@/components/mester/projects-section"
 import type { SubscriptionTier, ReviewWithUser } from "@/types/database"
 
 // The route param is named "slug" but contains the mester id
@@ -80,6 +82,7 @@ async function getMester(id: string) {
       .single() as { data: { role: string } | null }
     isAdmin = roleData?.role === "admin"
   }
+  const currentUserId = user?.id ?? null
 
   const supabase = isAdmin ? await createAdminClient() : regularClient
 
@@ -150,8 +153,10 @@ async function getMester(id: string) {
     photos: photos || [],
     reviews: reviews || [],
     isAdmin,
+    isOwner: currentUserId === mester.user_id,
   }
 }
+
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug: id } = await params
@@ -188,10 +193,13 @@ export default async function MesterProfilePage({ params }: PageProps) {
     notFound()
   }
 
-  const { mester, photos, reviews, isAdmin } = data
+  const { mester, photos, reviews, isAdmin, isOwner } = data
   const coverPhoto = photos.find((p) => p.photo_type === "profile") || photos[0]
   const primaryCategory = mester.mester_categories?.[0]?.category
-  const isFavorited = await checkIsFavorited(mester.id)
+  const [isFavorited, projects] = await Promise.all([
+    checkIsFavorited(mester.id),
+    getProjectsForMester(mester.id),
+  ])
 
   return (
     <>
@@ -288,8 +296,11 @@ export default async function MesterProfilePage({ params }: PageProps) {
           )}
 
           {/* Tabs */}
-          <Tabs defaultValue="photos" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs defaultValue={projects.length > 0 ? "proiecte" : "photos"} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="proiecte">
+                Proiecte ({projects.length})
+              </TabsTrigger>
               <TabsTrigger value="photos">
                 Fotografii ({photos.length})
               </TabsTrigger>
@@ -297,6 +308,9 @@ export default async function MesterProfilePage({ params }: PageProps) {
                 Recenzii ({mester.reviews_count})
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="proiecte" className="mt-6">
+              <ProjectsSection projects={projects} mesterId={mester.id} isOwner={isOwner} />
+            </TabsContent>
             <TabsContent value="photos" className="mt-6">
               <PhotoGallery photos={photos} />
             </TabsContent>

@@ -9,6 +9,7 @@ import {
   CreditCard,
   BarChart3,
   Hammer,
+  FolderOpen,
 } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,11 @@ const sidebarLinks = [
     title: "Fotografii",
     href: "/mester-cont/fotografii",
     icon: Image,
+  },
+  {
+    title: "Proiecte",
+    href: "/mester-cont/proiecte",
+    icon: FolderOpen,
   },
   {
     title: "Abonament",

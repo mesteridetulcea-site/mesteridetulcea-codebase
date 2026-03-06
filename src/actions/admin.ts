@@ -435,6 +435,12 @@ export async function approveCererePhoto(photoId: string) {
 
   const supabase = await createAdminClient()
 
+  const { data: cererePhoto } = await supabase
+    .from("cerere_photos")
+    .select("cerere_id, cerere:service_requests(client_id)")
+    .eq("id", photoId)
+    .single() as { data: { cerere_id: string; cerere: { client_id: string | null } | null } | null }
+
   const { error } = await supabase
     .from("cerere_photos")
     .update({ approval_status: "approved" } as never)
@@ -442,7 +448,18 @@ export async function approveCererePhoto(photoId: string) {
 
   if (error) return { error: "Nu s-a putut aproba fotografia" }
 
-  revalidatePath("/admin/cereri-foto")
+  if (cererePhoto?.cerere?.client_id) {
+    await createNotification({
+      userId: cererePhoto.cerere.client_id,
+      type: "poza_aprobata",
+      title: "Fotografia ta a fost aprobată",
+      message: "Fotografia adăugată la cererea ta este acum vizibilă.",
+      entityType: "cerere_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
   return { success: true }
 }
 
@@ -452,6 +469,12 @@ export async function rejectCererePhoto(photoId: string) {
 
   const supabase = await createAdminClient()
 
+  const { data: cererePhoto } = await supabase
+    .from("cerere_photos")
+    .select("cerere_id, cerere:service_requests(client_id)")
+    .eq("id", photoId)
+    .single() as { data: { cerere_id: string; cerere: { client_id: string | null } | null } | null }
+
   const { error } = await supabase
     .from("cerere_photos")
     .update({ approval_status: "rejected" } as never)
@@ -459,6 +482,95 @@ export async function rejectCererePhoto(photoId: string) {
 
   if (error) return { error: "Nu s-a putut respinge fotografia" }
 
-  revalidatePath("/admin/cereri-foto")
+  if (cererePhoto?.cerere?.client_id) {
+    await createNotification({
+      userId: cererePhoto.cerere.client_id,
+      type: "poza_respinsa",
+      title: "Fotografia ta a fost respinsă",
+      message: "Fotografia nu respectă ghidurile platformei.",
+      entityType: "cerere_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
+  return { success: true }
+}
+
+export async function approveProjectPhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: projectPhoto } = await supabase
+    .from("project_photos")
+    .select("project_id, project:mester_projects(title, mester:mester_profiles(user_id))")
+    .eq("id", photoId)
+    .single() as {
+      data: {
+        project_id: string
+        project: { title: string; mester: { user_id: string } | null } | null
+      } | null
+    }
+
+  const { error } = await supabase
+    .from("project_photos")
+    .update({ approval_status: "approved" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut aproba fotografia" }
+
+  if (projectPhoto?.project?.mester?.user_id) {
+    await createNotification({
+      userId: projectPhoto.project.mester.user_id,
+      type: "poza_aprobata",
+      title: "Fotografia din proiect a fost aprobată",
+      message: `Fotografia adăugată la proiectul „${projectPhoto.project.title}" este acum vizibilă.`,
+      entityType: "project_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
+  return { success: true }
+}
+
+export async function rejectProjectPhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: projectPhoto } = await supabase
+    .from("project_photos")
+    .select("project_id, project:mester_projects(title, mester:mester_profiles(user_id))")
+    .eq("id", photoId)
+    .single() as {
+      data: {
+        project_id: string
+        project: { title: string; mester: { user_id: string } | null } | null
+      } | null
+    }
+
+  const { error } = await supabase
+    .from("project_photos")
+    .update({ approval_status: "rejected" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut respinge fotografia" }
+
+  if (projectPhoto?.project?.mester?.user_id) {
+    await createNotification({
+      userId: projectPhoto.project.mester.user_id,
+      type: "poza_respinsa",
+      title: "Fotografia din proiect a fost respinsă",
+      message: `Fotografia adăugată la proiectul „${projectPhoto.project.title}" nu respectă ghidurile platformei.`,
+      entityType: "project_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
   return { success: true }
 }
