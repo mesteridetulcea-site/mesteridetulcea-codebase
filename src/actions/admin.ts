@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { createNotification } from "@/actions/notifications"
 
 async function checkIsAdmin() {
   const supabase = await createClient()
@@ -66,6 +67,17 @@ export async function approveMester(mesterId: string, notes?: string) {
     notes: notes || null,
   } as never)
 
+  if (mesterProfile?.user_id) {
+    await createNotification({
+      userId: mesterProfile.user_id,
+      type: "profil_aprobat",
+      title: "Profilul tău a fost aprobat",
+      message: "Contul tău de meșter este acum activ și vizibil pe platformă.",
+      entityType: "mester_profile",
+      entityId: mesterId,
+    })
+  }
+
   revalidatePath("/admin/mesteri")
   return { success: true }
 }
@@ -75,6 +87,12 @@ export async function rejectMester(mesterId: string, notes?: string) {
   if (!auth.isAdmin) return { error: auth.error }
 
   const supabase = await createAdminClient()
+
+  const { data: mesterProfile } = await supabase
+    .from("mester_profiles")
+    .select("user_id")
+    .eq("id", mesterId)
+    .single() as { data: { user_id: string } | null }
 
   const { error } = await supabase
     .from("mester_profiles")
@@ -96,6 +114,17 @@ export async function rejectMester(mesterId: string, notes?: string) {
     notes: notes || null,
   } as never)
 
+  if (mesterProfile?.user_id) {
+    await createNotification({
+      userId: mesterProfile.user_id,
+      type: "profil_respins",
+      title: "Profilul tău a fost respins",
+      message: notes || "Profilul tău necesită modificări. Te rugăm să contactezi suportul.",
+      entityType: "mester_profile",
+      entityId: mesterId,
+    })
+  }
+
   revalidatePath("/admin/mesteri")
   return { success: true }
 }
@@ -105,6 +134,12 @@ export async function approvePhoto(photoId: string) {
   if (!auth.isAdmin) return { error: auth.error }
 
   const supabase = await createAdminClient()
+
+  const { data: photo } = await supabase
+    .from("mester_photos")
+    .select("mester_id, mester_profiles!inner(user_id)")
+    .eq("id", photoId)
+    .single() as { data: { mester_id: string; mester_profiles: { user_id: string } } | null }
 
   const { error } = await supabase
     .from("mester_photos")
@@ -123,6 +158,17 @@ export async function approvePhoto(photoId: string) {
     notes: null,
   } as never)
 
+  if (photo?.mester_profiles?.user_id) {
+    await createNotification({
+      userId: photo.mester_profiles.user_id,
+      type: "poza_aprobata",
+      title: "Fotografia ta a fost aprobată",
+      message: "Fotografia este acum vizibilă pe profilul tău public.",
+      entityType: "photo",
+      entityId: photoId,
+    })
+  }
+
   revalidatePath("/admin/fotografii")
   return { success: true }
 }
@@ -132,6 +178,12 @@ export async function rejectPhoto(photoId: string) {
   if (!auth.isAdmin) return { error: auth.error }
 
   const supabase = await createAdminClient()
+
+  const { data: photo } = await supabase
+    .from("mester_photos")
+    .select("mester_id, mester_profiles!inner(user_id)")
+    .eq("id", photoId)
+    .single() as { data: { mester_id: string; mester_profiles: { user_id: string } } | null }
 
   const { error } = await supabase
     .from("mester_photos")
@@ -149,6 +201,17 @@ export async function rejectPhoto(photoId: string) {
     target_id: photoId,
     notes: null,
   } as never)
+
+  if (photo?.mester_profiles?.user_id) {
+    await createNotification({
+      userId: photo.mester_profiles.user_id,
+      type: "poza_respinsa",
+      title: "Fotografia ta a fost respinsă",
+      message: "Fotografia nu respectă ghidurile platformei.",
+      entityType: "photo",
+      entityId: photoId,
+    })
+  }
 
   revalidatePath("/admin/fotografii")
   return { success: true }

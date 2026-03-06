@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createNotification } from "@/actions/notifications"
 
 export async function uploadPhoto(formData: FormData) {
   const supabase = await createClient()
@@ -84,6 +85,13 @@ export async function uploadPhoto(formData: FormData) {
     console.error("Insert error:", insertError)
     return { error: "Nu s-a putut salva fotografia" }
   }
+
+  await createNotification({
+    userId: user.id,
+    type: "poza_incarcata",
+    title: "Fotografia ta a fost trimisă spre aprobare",
+    message: "Va fi vizibilă pe profil după verificarea de către echipa noastră.",
+  })
 
   revalidatePath("/mester-cont/fotografii")
   return { success: true }

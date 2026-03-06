@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { createNotification } from "@/actions/notifications"
 
 export async function createReview(mesterId: string, formData: FormData) {
   const supabase = await createClient()
@@ -60,6 +61,34 @@ export async function createReview(mesterId: string, formData: FormData) {
     console.error("Create review error:", error)
     return { error: "Nu s-a putut crea recenzia" }
   }
+
+  // Notify the mester
+  const { data: mesterData } = await adminClient
+    .from("mester_profiles")
+    .select("user_id")
+    .eq("id", mesterId)
+    .single() as { data: { user_id: string } | null }
+
+  if (mesterData?.user_id) {
+    await createNotification({
+      userId: mesterData.user_id,
+      type: "review_nou",
+      title: "Recenzie nouă pe profilul tău",
+      message: `Rating: ${rating}/5${title ? ` — ${title}` : ""}`,
+      entityType: "review",
+      entityId: mesterId,
+    })
+  }
+
+  // Confirm to reviewer
+  await createNotification({
+    userId: user.id,
+    type: "review_trimis",
+    title: "Recenzia ta a fost trimisă",
+    message: `Ai lăsat o recenzie de ${rating}/5 stele.`,
+    entityType: "review",
+    entityId: mesterId,
+  })
 
   revalidatePath(`/mester/${mesterId}`)
   return { success: true }

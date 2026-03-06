@@ -19,7 +19,7 @@ export default async function NoaCererePage() {
     .from("profiles")
     .select("phone, role")
     .eq("id", user.id)
-    .single()
+    .single() as { data: { phone: string | null; role: string } | null }
 
   if (!profile?.phone?.trim()) {
     redirect("/cont/setari?required=phone")

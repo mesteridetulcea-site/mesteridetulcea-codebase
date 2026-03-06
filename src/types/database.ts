@@ -368,3 +368,30 @@ export type MesterWithDetails = MesterProfile & {
 export type ReviewWithUser = Review & {
   profile: Pick<Profile, "full_name" | "avatar_url"> | null
 }
+
+export type NotificationType =
+  | 'cerere_noua'
+  | 'profil_aprobat'
+  | 'profil_respins'
+  | 'poza_aprobata'
+  | 'poza_respinsa'
+  | 'review_nou'
+  | 'cerere_postata'
+  | 'cerere_inchisa'
+  | 'aplicatie_trimisa'
+  | 'profil_actualizat'
+  | 'poza_incarcata'
+  | 'review_trimis'
+  | 'cont_actualizat'
+
+export type Notification = {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string | null
+  entity_type: string | null
+  entity_id: string | null
+  read_at: string | null
+  created_at: string
+}

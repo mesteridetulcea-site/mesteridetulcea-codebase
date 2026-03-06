@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { uploadCererePhoto } from "@/lib/utils/upload"
+import { createNotification } from "@/actions/notifications"
 
 export async function createCerere(formData: FormData) {
   const supabase = await createClient()
@@ -21,7 +22,7 @@ export async function createCerere(formData: FormData) {
     .from("profiles")
     .select("phone")
     .eq("id", user.id)
-    .single()
+    .single() as { data: { phone: string | null } | null }
 
   if (!profile?.phone?.trim()) {
     return {
@@ -50,7 +51,7 @@ export async function createCerere(formData: FormData) {
       client_phone: profile.phone,
     } as never)
     .select("id")
-    .single()
+    .single() as { data: { id: string } | null; error: unknown }
 
   if (insertError || !cerere) {
     console.error("createCerere insert error:", insertError)
@@ -70,6 +71,36 @@ export async function createCerere(formData: FormData) {
         .from("cerere_photos")
         .insert({ cerere_id: cerere.id, url, approval_status: "pending" } as never)
     }
+  }
+
+  // Confirm to the client that their cerere was posted
+  await createNotification({
+    userId: user.id,
+    type: "cerere_postata",
+    title: "Cererea ta a fost postată",
+    message: title,
+    entityType: "cerere",
+    entityId: cerere.id,
+  })
+
+  // Notify mesters in the same category
+  const adminClient = await createAdminClient()
+  const { data: mesterCategories } = await adminClient
+    .from("mester_categories")
+    .select("mester_id, mester_profiles!inner(user_id)")
+    .eq("category_id", categoryId) as {
+      data: { mester_id: string; mester_profiles: { user_id: string } }[] | null
+    }
+
+  for (const mc of mesterCategories ?? []) {
+    await createNotification({
+      userId: mc.mester_profiles.user_id,
+      type: "cerere_noua",
+      title: "Cerere nouă disponibilă",
+      message: title,
+      entityType: "cerere",
+      entityId: cerere.id,
+    })
   }
 
   revalidatePath("/cont/cereri")
@@ -102,7 +133,7 @@ export async function getMesterCereri(): Promise<CerereWithCategory[]> {
     .from("mester_profiles")
     .select("id, mester_categories(category_id)")
     .eq("user_id", user.id)
-    .maybeSingle()
+    .maybeSingle() as { data: { id: string; mester_categories: { category_id: string }[] } | null }
 
   if (!mester) redirect("/devino-mester")
 
@@ -137,6 +168,15 @@ export async function closeCerere(id: string) {
     .eq("client_id", user.id)
 
   if (error) return { error: "Nu s-a putut actualiza cererea" }
+
+  await createNotification({
+    userId: user.id,
+    type: "cerere_inchisa",
+    title: "Cererea ta a fost închisă",
+    message: "Cererea nu mai este vizibilă pentru meșteri.",
+    entityType: "cerere",
+    entityId: id,
+  })
 
   revalidatePath("/cont/cereri")
   return { success: true }

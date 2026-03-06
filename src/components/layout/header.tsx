@@ -33,6 +33,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils/cn"
+import { NotificationBell } from "@/components/layout/notification-bell"
 
 const staticNavLinks = [
   { href: "/mesteri", label: "Meșteri" },
@@ -162,6 +163,11 @@ export function Header() {
             </Button>
           </Link>
 
+          {/* Notification bell — only for authenticated users */}
+          {user && (
+            <NotificationBell userId={user.id} />
+          )}
+
           {/* Separator */}
           <div className="hidden sm:block w-px h-4 bg-white/[0.1] mx-2" />
 
@@ -172,12 +178,12 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1.5 px-2 py-1.5 hover:bg-white/[0.07] transition-colors duration-200 outline-none group">
-                  <Avatar className="h-6 w-6 rounded-none">
+                  <Avatar className="h-9 w-9 rounded-none">
                     <AvatarImage
                       src={profile.avatar_url || undefined}
                       alt={profile.full_name || "User"}
                     />
-                    <AvatarFallback className="bg-primary/70 text-white text-[9px] rounded-none font-condensed tracking-wider border border-primary/25">
+                    <AvatarFallback className="bg-primary/70 text-white text-[10px] rounded-none font-condensed tracking-wider border border-primary/25">
                       {getInitials(profile.full_name)}
                     </AvatarFallback>
                   </Avatar>

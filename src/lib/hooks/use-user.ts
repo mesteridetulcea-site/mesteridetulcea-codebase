@@ -47,10 +47,12 @@ export function useUser() {
 
   async function fetchProfile(userId: string) {
     const supabase = createClient()
-    const [{ data: profileData }, { data: mesterData }] = await Promise.all([
+    const [profileResult, mesterResult] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase.from("mester_profiles").select("id").eq("user_id", userId).maybeSingle(),
     ])
+    const profileData = (profileResult as unknown as { data: Profile | null }).data
+    const mesterData = (mesterResult as unknown as { data: { id: string } | null }).data
 
     setProfile(profileData)
     setHasMesterProfile(!!mesterData)

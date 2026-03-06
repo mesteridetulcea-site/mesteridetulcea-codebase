@@ -1,14 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, MapPin, Navigation } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Loader2, MapPin, Navigation, CheckCircle, ArrowRight } from "lucide-react"
 import { createTransportRequest } from "@/actions/transport"
 import { toast } from "@/lib/hooks/use-toast"
+import { cn } from "@/lib/utils/cn"
 
 interface TransportFormProps {
   pickupCoords: { lat: number; lng: number } | null
@@ -17,13 +13,19 @@ interface TransportFormProps {
   onSelectModeChange: (mode: "pickup" | "dropoff" | null) => void
 }
 
+const fieldClass =
+  "w-full h-11 px-4 bg-white border border-[#584528]/18 text-[#1a1208] placeholder:text-[#584528]/30 font-condensed text-[12px] tracking-[0.06em] outline-none focus:border-primary/50 transition-colors duration-200"
+
+const labelClass =
+  "block font-condensed text-[10px] tracking-[0.22em] uppercase text-[#584528]/55 mb-2"
+
 export function TransportForm({
   pickupCoords,
   dropoffCoords,
   selectingMode,
   onSelectModeChange,
 }: TransportFormProps) {
-  const [loading, setLoading] = useState(false)
+  const [loading,   setLoading]   = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -31,11 +33,9 @@ export function TransportForm({
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-
-    // Add coordinates to form data
     if (pickupCoords) {
-      formData.set("pickup_lat", pickupCoords.lat.toString())
-      formData.set("pickup_lng", pickupCoords.lng.toString())
+      formData.set("pickup_lat",  pickupCoords.lat.toString())
+      formData.set("pickup_lng",  pickupCoords.lng.toString())
     }
     if (dropoffCoords) {
       formData.set("dropoff_lat", dropoffCoords.lat.toString())
@@ -45,165 +45,171 @@ export function TransportForm({
     const result = await createTransportRequest(formData)
 
     if (result.error) {
-      toast({
-        title: "Eroare",
-        description: result.error,
-        variant: "destructive",
-      })
+      toast({ title: "Eroare", description: result.error, variant: "destructive" })
     } else {
-      toast({
-        title: "Cerere trimisă!",
-        description: "Veți fi contactat în curând de un transportator.",
-      })
+      toast({ title: "Cerere trimisă!", description: "Veți fi contactat în curând de un transportator." })
       setSubmitted(true)
     }
-
     setLoading(false)
   }
 
+  /* ── Success state ── */
   if (submitted) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Cerere trimisă cu succes!</h3>
-          <p className="text-muted-foreground mb-6">
-            Transportatorii din zona Tulcea au fost notificați. Veți fi contactat în curând.
-          </p>
-          <Button onClick={() => setSubmitted(false)} variant="outline">
-            Trimite altă cerere
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center text-center py-10">
+        {/* Gold diamond check */}
+        <div className="w-14 h-14 border border-primary/35 bg-primary/[0.06] flex items-center justify-center mb-6">
+          <CheckCircle className="h-6 w-6 text-primary" />
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-px bg-primary/35" />
+          <span className="font-condensed text-[9px] tracking-[0.28em] uppercase text-primary/60">
+            Confirmat
+          </span>
+          <div className="w-8 h-px bg-primary/35" />
+        </div>
+
+        <h3 className="font-display text-2xl text-[#1a1208] mb-2">
+          Cerere trimisă cu succes!
+        </h3>
+        <p className="font-condensed text-xs tracking-[0.10em] text-[#584528]/50 leading-relaxed mb-8 max-w-xs">
+          Transportatorii din zona Tulcea au fost notificați. Veți fi contactat în curând.
+        </p>
+
+        <button
+          onClick={() => setSubmitted(false)}
+          className="flex items-center gap-2 px-6 py-3 border border-[#584528]/20 font-condensed text-[11px] tracking-[0.18em] uppercase text-[#584528]/55 hover:border-primary/40 hover:text-primary transition-all duration-200"
+        >
+          Trimite altă cerere
+          <ArrowRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
     )
   }
 
+  /* ── Form ── */
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Solicită Transport</CardTitle>
-        <CardDescription>
-          Completează detaliile pentru cererea de transport marfă
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Pickup Location */}
-          <div className="space-y-2">
-            <Label htmlFor="pickup_address">
-              Adresa de ridicare *
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                id="pickup_address"
-                name="pickup_address"
-                placeholder="Str. Pacii 15, Tulcea"
-                required
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant={selectingMode === "pickup" ? "default" : "outline"}
-                size="icon"
-                onClick={() => onSelectModeChange(selectingMode === "pickup" ? null : "pickup")}
-                title="Selectează pe hartă"
-              >
-                <MapPin className="h-4 w-4" />
-              </Button>
-            </div>
-            {pickupCoords && (
-              <p className="text-xs text-muted-foreground">
-                Coordonate: {pickupCoords.lat.toFixed(5)}, {pickupCoords.lng.toFixed(5)}
-              </p>
+    <form onSubmit={handleSubmit} className="space-y-6">
+
+      {/* Pickup */}
+      <div>
+        <label htmlFor="pickup_address" className={labelClass}>
+          Adresa de ridicare *
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="pickup_address"
+            name="pickup_address"
+            placeholder="Str. Pacii 15, Tulcea"
+            required
+            className={cn(fieldClass, "flex-1")}
+          />
+          <button
+            type="button"
+            onClick={() => onSelectModeChange(selectingMode === "pickup" ? null : "pickup")}
+            title="Selectează pe hartă"
+            className={cn(
+              "h-11 w-11 flex items-center justify-center border transition-all duration-200 shrink-0",
+              selectingMode === "pickup"
+                ? "bg-primary border-primary text-white"
+                : "border-[#584528]/18 text-[#584528]/45 hover:border-primary/40 hover:text-primary"
             )}
-          </div>
+          >
+            <MapPin className="h-4 w-4" />
+          </button>
+        </div>
+        {pickupCoords && (
+          <p className="mt-1.5 font-condensed text-[10px] tracking-wide text-primary/60">
+            ✓ Coordonate: {pickupCoords.lat.toFixed(5)}, {pickupCoords.lng.toFixed(5)}
+          </p>
+        )}
+      </div>
 
-          {/* Dropoff Location */}
-          <div className="space-y-2">
-            <Label htmlFor="dropoff_address">
-              Adresa de livrare *
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                id="dropoff_address"
-                name="dropoff_address"
-                placeholder="Str. Portului 42, Tulcea"
-                required
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant={selectingMode === "dropoff" ? "default" : "outline"}
-                size="icon"
-                onClick={() => onSelectModeChange(selectingMode === "dropoff" ? null : "dropoff")}
-                title="Selectează pe hartă"
-              >
-                <Navigation className="h-4 w-4" />
-              </Button>
-            </div>
-            {dropoffCoords && (
-              <p className="text-xs text-muted-foreground">
-                Coordonate: {dropoffCoords.lat.toFixed(5)}, {dropoffCoords.lng.toFixed(5)}
-              </p>
+      {/* Dropoff */}
+      <div>
+        <label htmlFor="dropoff_address" className={labelClass}>
+          Adresa de livrare *
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="dropoff_address"
+            name="dropoff_address"
+            placeholder="Str. Portului 42, Tulcea"
+            required
+            className={cn(fieldClass, "flex-1")}
+          />
+          <button
+            type="button"
+            onClick={() => onSelectModeChange(selectingMode === "dropoff" ? null : "dropoff")}
+            title="Selectează pe hartă"
+            className={cn(
+              "h-11 w-11 flex items-center justify-center border transition-all duration-200 shrink-0",
+              selectingMode === "dropoff"
+                ? "bg-primary border-primary text-white"
+                : "border-[#584528]/18 text-[#584528]/45 hover:border-primary/40 hover:text-primary"
             )}
-          </div>
+          >
+            <Navigation className="h-4 w-4" />
+          </button>
+        </div>
+        {dropoffCoords && (
+          <p className="mt-1.5 font-condensed text-[10px] tracking-wide text-primary/60">
+            ✓ Coordonate: {dropoffCoords.lat.toFixed(5)}, {dropoffCoords.lng.toFixed(5)}
+          </p>
+        )}
+      </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Descriere marfă
-            </Label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Ex: Mobilă, electronice, materiale de construcții..."
-              rows={3}
-            />
-          </div>
+      {/* Thin gold divider */}
+      <div className="h-px bg-[#584528]/08" />
 
-          {/* Phone */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">
-              Telefon de contact *
-            </Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              placeholder="0740 123 456"
-              required
-            />
-          </div>
+      {/* Description */}
+      <div>
+        <label htmlFor="description" className={labelClass}>
+          Descriere marfă
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Ex: mobilă, electronice, materiale de construcții..."
+          rows={3}
+          className="w-full px-4 py-3 bg-white border border-[#584528]/18 text-[#1a1208] placeholder:text-[#584528]/30 font-condensed text-[12px] tracking-[0.06em] outline-none focus:border-primary/50 transition-colors duration-200 resize-none"
+        />
+      </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Se trimite...
-              </>
-            ) : (
-              <>
-                <MapPin className="h-4 w-4 mr-2" />
-                Trimite cererea
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Phone */}
+      <div>
+        <label htmlFor="phone" className={labelClass}>
+          Telefon de contact *
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="0740 123 456"
+          required
+          className={fieldClass}
+        />
+      </div>
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full h-12 bg-primary/90 hover:bg-primary text-white font-condensed tracking-[0.20em] uppercase text-sm font-semibold flex items-center justify-center gap-2.5 transition-colors duration-200 disabled:opacity-50"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Se trimite...
+          </>
+        ) : (
+          <>
+            <MapPin className="h-4 w-4" />
+            Trimite cererea
+          </>
+        )}
+      </button>
+    </form>
   )
 }

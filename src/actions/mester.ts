@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { uploadAvatar } from "@/lib/utils/upload"
+import { createNotification } from "@/actions/notifications"
 
 export async function updateMesterProfile(formData: FormData) {
   const supabase = await createClient()
@@ -77,6 +78,13 @@ export async function updateMesterProfile(formData: FormData) {
     } as never)
   }
 
+  await createNotification({
+    userId: user.id,
+    type: "profil_actualizat",
+    title: "Profilul tău a fost actualizat",
+    message: "Modificările sunt acum vizibile pe profilul tău public.",
+  })
+
   revalidatePath("/mester-cont")
   revalidatePath("/mester-cont/profil")
   revalidatePath("/cont/setari")
@@ -121,6 +129,13 @@ export async function updateClientProfile(formData: FormData) {
   if (error) {
     return { error: "Nu s-a putut actualiza profilul" }
   }
+
+  await createNotification({
+    userId: user.id,
+    type: "cont_actualizat",
+    title: "Setările contului au fost salvate",
+    message: "Datele tale au fost actualizate cu succes.",
+  })
 
   revalidatePath("/cont")
   revalidatePath("/cont/setari")
@@ -191,6 +206,15 @@ export async function applyAsMester(formData: FormData) {
 
   // NOTE: Do NOT change profiles.role here.
   // Role is updated to "mester" only when the admin approves the profile.
+
+  await createNotification({
+    userId: user.id,
+    type: "aplicatie_trimisa",
+    title: "Aplicația ta a fost trimisă spre verificare",
+    message: "Echipa noastră va verifica profilul tău și vei fi notificat prin email și în aplicație.",
+    entityType: "mester_profile",
+    entityId: (newMester as { id: string }).id,
+  })
 
   revalidatePath("/", "layout")
   redirect("/mester-cont")

@@ -31,13 +31,16 @@ export function TransportMap({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
-    // Check if map is already initialized on this container (React strict mode)
     const container = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number }
     if (container._leaflet_id) return
 
-    // Dynamic import of Leaflet
+    // Cancelled flag prevents the async callback from running after unmount
+    // (fixes "Map container is already initialized" in React Strict Mode)
+    let cancelled = false
+
     import("leaflet").then((L) => {
-      // Fix Leaflet default icon issue
+      if (cancelled || !mapContainerRef.current) return
+
       delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -45,7 +48,7 @@ export function TransportMap({
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       })
 
-      const map = L.map(mapContainerRef.current!).setView(TULCEA_CENTER, DEFAULT_ZOOM)
+      const map = L.map(mapContainerRef.current).setView(TULCEA_CENTER, DEFAULT_ZOOM)
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -91,6 +94,7 @@ export function TransportMap({
     })
 
     return () => {
+      cancelled = true
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null
