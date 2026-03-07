@@ -6,6 +6,7 @@ import { ArrowLeft, Phone, Tag, Clock } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
+import { CererePhotoCarousel } from "@/components/cerere/cerere-photo-carousel"
 
 interface CererePhoto {
   id: string
@@ -118,7 +119,7 @@ export default async function CerereDetailPage({
 
           {/* Photos */}
           {photos.length > 0 && (
-            <section>
+            <section className="bg-white border border-[#e8dcc8] p-8">
               <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-4">
                 Fotografii{" "}
                 {isOwner && (
@@ -131,39 +132,7 @@ export default async function CerereDetailPage({
                   </span>
                 )}
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="relative group">
-                    <a
-                      href={photo.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block aspect-[4/3] overflow-hidden border border-[#e8dcc8] hover:border-primary/40 transition-colors"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={photo.url}
-                        alt="Fotografie cerere"
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
-                      />
-                    </a>
-                    {isOwner && photo.approval_status === "pending" && (
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
-                        <span className="font-condensed tracking-[0.14em] uppercase text-[10px] text-white/80 bg-black/50 px-3 py-1">
-                          În așteptare
-                        </span>
-                      </div>
-                    )}
-                    {isOwner && photo.approval_status === "rejected" && (
-                      <div className="absolute inset-0 bg-red-900/40 flex items-center justify-center pointer-events-none">
-                        <span className="font-condensed tracking-[0.14em] uppercase text-[10px] text-white/80 bg-red-900/60 px-3 py-1">
-                          Respinsă
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <CererePhotoCarousel photos={photos} isOwner={isOwner} />
             </section>
           )}
 

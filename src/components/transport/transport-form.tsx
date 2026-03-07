@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Loader2, MapPin, Navigation, CheckCircle, ArrowRight } from "lucide-react"
 import { createTransportRequest } from "@/actions/transport"
 import { toast } from "@/lib/hooks/use-toast"
@@ -19,14 +19,39 @@ const fieldClass =
 const labelClass =
   "block font-condensed text-[10px] tracking-[0.22em] uppercase text-[#584528]/55 mb-2"
 
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ro`,
+      { headers: { "Accept-Language": "ro" } }
+    )
+    const data = await res.json()
+    return data.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+  } catch {
+    return `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+  }
+}
+
 export function TransportForm({
   pickupCoords,
   dropoffCoords,
   selectingMode,
   onSelectModeChange,
 }: TransportFormProps) {
-  const [loading,   setLoading]   = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [loading,        setLoading]        = useState(false)
+  const [submitted,      setSubmitted]      = useState(false)
+  const [pickupAddress,  setPickupAddress]  = useState("")
+  const [dropoffAddress, setDropoffAddress] = useState("")
+
+  useEffect(() => {
+    if (!pickupCoords) return
+    reverseGeocode(pickupCoords.lat, pickupCoords.lng).then(setPickupAddress)
+  }, [pickupCoords])
+
+  useEffect(() => {
+    if (!dropoffCoords) return
+    reverseGeocode(dropoffCoords.lat, dropoffCoords.lng).then(setDropoffAddress)
+  }, [dropoffCoords])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -78,7 +103,7 @@ export function TransportForm({
         </p>
 
         <button
-          onClick={() => setSubmitted(false)}
+          onClick={() => { setSubmitted(false); setPickupAddress(""); setDropoffAddress("") }}
           className="flex items-center gap-2 px-6 py-3 border border-[#584528]/20 font-condensed text-[11px] tracking-[0.18em] uppercase text-[#584528]/55 hover:border-primary/40 hover:text-primary transition-all duration-200"
         >
           Trimite altă cerere
@@ -103,6 +128,8 @@ export function TransportForm({
             name="pickup_address"
             placeholder="Str. Pacii 15, Tulcea"
             required
+            value={pickupAddress}
+            onChange={(e) => setPickupAddress(e.target.value)}
             className={cn(fieldClass, "flex-1")}
           />
           <button
@@ -137,6 +164,8 @@ export function TransportForm({
             name="dropoff_address"
             placeholder="Str. Portului 42, Tulcea"
             required
+            value={dropoffAddress}
+            onChange={(e) => setDropoffAddress(e.target.value)}
             className={cn(fieldClass, "flex-1")}
           />
           <button

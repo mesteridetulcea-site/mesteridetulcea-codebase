@@ -9,6 +9,7 @@ import {
   Users,
   ChevronDown,
   LayoutDashboard,
+  ArrowRight,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -182,12 +183,22 @@ export function HeroSearch() {
                 Panou Meșter
               </Link>
             ) : profile ? (
-              <Link
-                href="/cereri/nou"
-                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
-              >
-                Creează o cerere →
-              </Link>
+              /* CLIENT — CTA principal + link devino meșter */
+              <div className="flex flex-col items-center gap-3">
+                <Link
+                  href="/cereri/nou"
+                  className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.2em] uppercase text-sm px-8 py-3 transition-colors duration-200"
+                >
+                  Creează o cerere
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/devino-mester"
+                  className="font-condensed text-[11px] tracking-[0.16em] text-white/28 hover:text-primary/60 transition-colors duration-200"
+                >
+                  Ești meșter? Înregistrează-te →
+                </Link>
+              </div>
             ) : null}
           </div>
 
@@ -213,8 +224,8 @@ export function HeroSearch() {
             </div>
           </div>
 
-          {/* Devino meșter — visible to non-mesters (unauthenticated + clients) */}
-          {!hasMesterProfile && profile?.role !== "admin" && (
+          {/* Devino meșter — doar pentru vizitatori neautentificați */}
+          {!profile && (
             <div className="mt-6">
               <Link
                 href="/devino-mester"

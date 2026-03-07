@@ -72,7 +72,7 @@ export default async function FavoritesPage() {
                 .filter((favorite) => favorite.mester)
                 .map((favorite) => (
                   <MesterCard
-                    key={favorite.id}
+                    key={favorite.id ?? favorite.mester_id}
                     mester={favorite.mester as MesterWithCategory}
                     coverPhoto={photoMap.get(favorite.mester!.id)}
                   />

@@ -13,6 +13,7 @@ import {
   Settings,
   LayoutDashboard,
   ChevronDown,
+  ClipboardList,
 } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user"
 import { Button } from "@/components/ui/button"
@@ -232,6 +233,14 @@ export function Header() {
                     <span className="font-condensed tracking-wide">Favorite</span>
                   </Link>
                 </DropdownMenuItem>
+                {profile.role === "client" && !hasMesterProfile && (
+                  <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
+                    <Link href="/cont/cereri">
+                      <ClipboardList className="mr-2 h-4 w-4" />
+                      <span className="font-condensed tracking-wide">Cererile mele</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {mesterProfileId && (
                   <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
                     <Link href={`/mester/${mesterProfileId}`}>
