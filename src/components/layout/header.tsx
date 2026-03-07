@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   ChevronDown,
   ClipboardList,
+  Truck,
 } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user"
 import { Button } from "@/components/ui/button"
@@ -218,6 +219,14 @@ export function Header() {
                     <Link href="/mester-cont">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span className="font-condensed tracking-wide">Panou Meșter</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {(profile.role === "mester" || hasMesterProfile) && profile.role !== "admin" && (
+                  <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
+                    <Link href="/cont/cereri">
+                      <Truck className="mr-2 h-4 w-4" />
+                      <span className="font-condensed tracking-wide">Cereri transport</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
