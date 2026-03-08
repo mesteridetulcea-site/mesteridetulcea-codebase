@@ -3,7 +3,8 @@
 import { useState } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
-import { Truck, Package, MessageSquare, MapPin } from "lucide-react"
+import Link from "next/link"
+import { Truck, Package, MessageSquare, MapPin, ClipboardList } from "lucide-react"
 import { TransportForm } from "@/components/transport/transport-form"
 
 const TransportMap = dynamic(
@@ -187,11 +188,20 @@ export default function TransportPage() {
 
             {/* Form column */}
             <div className="bg-white p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-4 h-px bg-primary/50" />
-                <span className="font-condensed text-[10px] tracking-[0.26em] uppercase text-[#584528]/55">
-                  Detalii cerere
-                </span>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-px bg-primary/50" />
+                  <span className="font-condensed text-[10px] tracking-[0.26em] uppercase text-[#584528]/55">
+                    Detalii cerere
+                  </span>
+                </div>
+                <Link
+                  href="/cont/cereri"
+                  className="inline-flex items-center gap-1.5 font-condensed text-[10px] tracking-[0.18em] uppercase text-[#584528]/45 hover:text-primary border border-[#584528]/15 hover:border-primary/35 px-3 py-1.5 transition-all duration-200"
+                >
+                  <ClipboardList className="h-3 w-3" />
+                  Cererile mele
+                </Link>
               </div>
               <TransportForm
                 pickupCoords={pickupCoords}

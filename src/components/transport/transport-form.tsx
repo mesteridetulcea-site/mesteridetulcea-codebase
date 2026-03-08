@@ -26,6 +26,12 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
       { headers: { "Accept-Language": "ro" } }
     )
     const data = await res.json()
+    const a = data.address ?? {}
+    const road = a.road ?? a.pedestrian ?? a.footway ?? ""
+    const number = a.house_number ? ` ${a.house_number}` : ""
+    const city = a.city ?? a.town ?? a.village ?? a.municipality ?? a.county ?? ""
+    if (road && city) return `${road}${number}, ${city}`
+    if (road) return `${road}${number}`
     return data.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
   } catch {
     return `${lat.toFixed(5)}, ${lng.toFixed(5)}`
