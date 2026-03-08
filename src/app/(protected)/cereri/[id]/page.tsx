@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import Image from "next/image"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ArrowLeft, Phone, Tag, Clock } from "lucide-react"
@@ -34,9 +35,7 @@ export default async function CerereDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: cerere } = await supabase
     .from("service_requests")
@@ -50,112 +49,171 @@ export default async function CerereDetailPage({
 
   const isOwner = user?.id === (cerere as CerereDetail).client_id
 
-  // Only show approved photos to non-owners; owners see all their photos
   const photos = ((cerere as CerereDetail).cerere_photos ?? []).filter(
     (p) => isOwner || p.approval_status === "approved"
   )
 
   const c = cerere as CerereDetail
+  const pendingCount = photos.filter((p) => p.approval_status === "pending").length
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0f0b04]">
+    <div className="flex min-h-screen flex-col">
       <Header />
 
-      {/* Dark header band */}
-      <div className="bg-[#0f0b04] border-b border-[#584528]/40 py-10">
-        <div className="container max-w-4xl">
+      {/* ══════════════════════════════════════════════
+          HERO — identic cu /cauta
+      ══════════════════════════════════════════════ */}
+      <section className="relative bg-[#0d0905] overflow-hidden -mt-[62px]" style={{ minHeight: 300 }}>
+
+        {/* Background photo */}
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1470&auto=format&fit=crop"
+            alt=""
+            fill
+            priority
+            className="object-cover object-center opacity-[0.14]"
+          />
+        </div>
+
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0d0905]/88 via-[#0d0905]/52 to-[#0d0905]/94" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0d0905]/80 via-transparent to-[#0d0905]/80" />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 28%, rgba(13,9,5,0.80) 100%)" }}
+        />
+        <div className="absolute inset-0 opacity-[0.042]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(196,146,30,1) 1px, transparent 1px), linear-gradient(90deg, rgba(196,146,30,1) 1px, transparent 1px)",
+            backgroundSize: "52px 52px",
+            maskImage: "radial-gradient(ellipse 76% 78% at 50% 50%, black 20%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 76% 78% at 50% 50%, black 20%, transparent 100%)",
+          }}
+        />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 60%, rgba(196,146,30,0.065) 0%, transparent 70%)" }}
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/28 to-transparent" />
+
+        <div className="container relative z-10 max-w-3xl pt-[96px] pb-12">
+
+          {/* Back link */}
           <Link
             href={isOwner ? "/cont/cereri" : "/cereri"}
-            className="inline-flex items-center gap-2 font-condensed tracking-[0.16em] uppercase text-xs text-white/35 hover:text-white/60 transition-colors mb-6"
+            className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-[10px] text-white/28 hover:text-primary transition-colors duration-200 mb-8"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Înapoi
+            {isOwner ? "Cererile mele" : "Cereri active"}
           </Link>
 
-          {c.category && (
-            <div className="flex items-center gap-1.5 mb-3">
-              <Tag className="h-3 w-3 text-primary/60" />
-              <span className="font-condensed tracking-[0.18em] uppercase text-[11px] text-primary/70">
-                {c.category.name}
-              </span>
+          {/* Ornament */}
+          <div className="flex items-center gap-4 mb-5">
+            <div className="h-px w-10 bg-gradient-to-r from-transparent to-primary/38" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-1 h-1 bg-primary/50 rotate-45" />
+              <div className="w-1.5 h-1.5 bg-primary/68 rotate-45" />
+              <div className="w-1 h-1 bg-primary/50 rotate-45" />
             </div>
-          )}
+            <div className="h-px w-10 bg-gradient-to-l from-transparent to-primary/38" />
+          </div>
 
-          <h1
-            className="font-condensed font-bold text-white/90 leading-tight mb-3"
-            style={{ fontSize: "clamp(22px, 4vw, 36px)" }}
-          >
-            {c.title || "Cerere"}
-          </h1>
-
-          <div className="flex items-center gap-1.5 text-white/30 font-condensed tracking-wider text-xs">
-            <Clock className="h-3 w-3" />
-            {formatDistanceToNow(new Date(c.created_at), {
-              addSuffix: true,
-              locale: ro,
-            })}
+          {/* Category + time + status */}
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            {c.category && (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <Tag className="h-3 w-3 text-primary/55 shrink-0" />
+                  <span className="font-condensed tracking-[0.22em] uppercase text-[10px] text-primary/75">
+                    {c.category.name}
+                  </span>
+                </div>
+                <span className="text-white/15">·</span>
+              </>
+            )}
+            <div className="flex items-center gap-1.5 font-condensed tracking-[0.14em] uppercase text-[10px] text-white/28">
+              <Clock className="h-3 w-3" />
+              {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: ro })}
+            </div>
             {c.status === "closed" && (
-              <span className="ml-3 px-2 py-0.5 border border-white/10 text-white/30 text-[10px] tracking-[0.14em] uppercase">
+              <span className="px-2 py-0.5 border border-white/10 font-condensed text-[9px] tracking-[0.18em] uppercase text-white/25">
                 Încheiată
               </span>
             )}
           </div>
+
+          {/* Title */}
+          <h1 className="font-display text-white/92 leading-[1.06] tracking-tight"
+            style={{ fontSize: "clamp(1.7rem, 3.5vw, 2.8rem)", fontWeight: 600 }}>
+            {c.title || "Cerere"}
+          </h1>
+
         </div>
-      </div>
+      </section>
 
-      {/* Content */}
-      <main className="flex-1 bg-[#faf7f2] py-10">
-        <div className="container max-w-4xl space-y-8">
+      {/* ══════════════════════════════════════════════
+          CONTENT — white bg, same as /cauta
+      ══════════════════════════════════════════════ */}
+      <main className="flex-1 bg-white">
+        <div className="container max-w-3xl py-10">
+          <div className="flex flex-col gap-px bg-[#584528]/10">
 
-          {/* Description */}
-          <section className="bg-white border border-[#e8dcc8] p-8">
-            <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-4">
-              Descriere
-            </h2>
-            <p className="text-[#3d2e1a]/75 leading-relaxed whitespace-pre-line text-[15px]">
-              {c.original_message}
-            </p>
-          </section>
-
-          {/* Photos */}
-          {photos.length > 0 && (
-            <section className="bg-white border border-[#e8dcc8] p-8">
-              <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-4">
-                Fotografii{" "}
-                {isOwner && (
-                  <span className="text-[#c4921e]/60 ml-1">
-                    (
-                    {photos.filter((p) => p.approval_status === "pending").length > 0
-                      ? `${photos.filter((p) => p.approval_status === "pending").length} în așteptare aprobare`
-                      : "toate aprobate"}
-                    )
-                  </span>
-                )}
-              </h2>
-              <CererePhotoCarousel photos={photos} isOwner={isOwner} />
-            </section>
-          )}
-
-          {/* Contact — shown only to non-owners (mesters) */}
-          {!isOwner && c.client_phone && (
-            <section className="bg-white border border-[#e8dcc8] p-8 flex items-center justify-between">
-              <div>
-                <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-1">
-                  Contact client
-                </h2>
-                <p className="text-[#3d2e1a]/50 text-sm font-condensed">
-                  Sună pentru a discuta detaliile
+            {/* Description */}
+            <section className="bg-white px-8 py-7">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-6 h-px bg-primary/45" />
+                <p className="font-condensed text-[10px] tracking-[0.28em] uppercase text-[#584528]/55">
+                  Descriere cerere
                 </p>
               </div>
-              <a
-                href={`tel:${c.client_phone}`}
-                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-sm font-semibold text-white bg-primary hover:bg-primary/88 transition-colors duration-200 px-6 py-3"
-              >
-                <Phone className="h-4 w-4" />
-                {c.client_phone}
-              </a>
+              <p className="text-[#3d2e14]/70 leading-relaxed text-[15px] whitespace-pre-line">
+                {c.original_message}
+              </p>
             </section>
-          )}
+
+            {/* Photos */}
+            {photos.length > 0 && (
+              <section className="bg-white px-8 py-7">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-px bg-primary/45" />
+                    <p className="font-condensed text-[10px] tracking-[0.28em] uppercase text-[#584528]/55">
+                      Fotografii
+                    </p>
+                  </div>
+                  {isOwner && pendingCount > 0 && (
+                    <span className="font-condensed text-[9px] tracking-[0.16em] uppercase text-primary/55 border border-primary/20 px-2 py-0.5">
+                      {pendingCount} în așteptare
+                    </span>
+                  )}
+                </div>
+                <CererePhotoCarousel photos={photos} isOwner={isOwner} />
+              </section>
+            )}
+
+            {/* Contact — only for mesters */}
+            {!isOwner && c.client_phone && (
+              <section className="bg-white px-8 py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="w-6 h-px bg-primary/45" />
+                    <p className="font-condensed text-[10px] tracking-[0.28em] uppercase text-[#584528]/55">
+                      Contact client
+                    </p>
+                  </div>
+                  <p className="font-condensed text-sm tracking-wide text-[#584528]/45 mt-2">
+                    Sună pentru a discuta detaliile lucrării
+                  </p>
+                </div>
+                <a
+                  href={`tel:${c.client_phone}`}
+                  className="inline-flex items-center gap-3 font-condensed tracking-[0.18em] uppercase text-sm font-semibold text-white bg-primary hover:bg-primary/88 transition-colors duration-200 px-7 py-3.5 shrink-0"
+                >
+                  <Phone className="h-4 w-4" />
+                  {c.client_phone}
+                </a>
+              </section>
+            )}
+
+          </div>
         </div>
       </main>
 
