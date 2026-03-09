@@ -96,7 +96,7 @@ export function CtaSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-none border-primary/45 text-white hover:bg-primary/12 hover:border-primary font-condensed tracking-[0.2em] uppercase text-sm h-13 px-8 transition-all duration-200"
+                className="rounded-none border-primary bg-primary/12 text-[#a07828] hover:bg-white hover:border-primary/45 hover:text-[#a07828] font-condensed tracking-[0.2em] uppercase text-sm h-13 px-8 transition-all duration-200"
               >
                 Vezi exemplu profil
               </Button>

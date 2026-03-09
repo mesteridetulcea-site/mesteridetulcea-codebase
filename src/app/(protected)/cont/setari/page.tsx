@@ -45,11 +45,11 @@ export default async function SetariPage() {
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
             <Link
-              href="/cont"
+              href="/"
               className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors text-sm mb-4"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Înapoi la cont
+              Înapoi acasă
             </Link>
             <h1 className="text-3xl font-bold">Setări</h1>
             <p className="text-muted-foreground">

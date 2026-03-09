@@ -231,12 +231,6 @@ export function Header() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
-                  <Link href="/cont">
-                    <User className="mr-2 h-4 w-4" />
-                    <span className="font-condensed tracking-wide">Contul meu</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
                   <Link href="/cont/favorite">
                     <Heart className="mr-2 h-4 w-4" />
                     <span className="font-condensed tracking-wide">Favorite</span>

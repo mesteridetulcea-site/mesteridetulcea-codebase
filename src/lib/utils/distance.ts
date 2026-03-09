@@ -11,3 +11,10 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
 export function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`
 }
+
+/** Estimated travel time at ~30 km/h average urban speed */
+export function formatTravelTime(km: number): string {
+  const minutes = Math.round((km / 30) * 60)
+  if (minutes < 1) return "~1 min"
+  return `~${minutes} min`
+}

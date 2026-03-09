@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { getMesterCereri } from "@/actions/cereri"
 import { getTransportCereri } from "@/actions/transport"
-import { haversineKm, formatDistance } from "@/lib/utils/distance"
+import { haversineKm, formatDistance, formatTravelTime } from "@/lib/utils/distance"
 import { FileText, Phone, Clock, Tag, Image as ImageIcon, ArrowUpRight, Truck, MapPin, Navigation } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
@@ -215,6 +215,7 @@ export default async function MesterCereriPage() {
                     {transportCereri.map((tr) => {
                       const distKm = haversineKm(tr.pickup_lat, tr.pickup_lng, tr.dropoff_lat, tr.dropoff_lng)
                       const dist = formatDistance(distKm)
+                      const travelTime = formatTravelTime(distKm)
 
                       return (
                         <Link key={tr.id} href={`/cereri/transport/${tr.id}`}>
@@ -236,8 +237,9 @@ export default async function MesterCereriPage() {
                                     {tr.dropoff_address}
                                   </p>
                                 </div>
-                                <div className="shrink-0 font-condensed text-xs tracking-[0.14em] text-primary border border-primary/30 px-2.5 py-1">
-                                  {dist}
+                                <div className="shrink-0 font-condensed text-xs tracking-[0.14em] text-primary border border-primary/30 px-2.5 py-1 flex flex-col items-center gap-0.5">
+                                  <span>{dist}</span>
+                                  <span className="text-[10px] text-[#584528]/50">{travelTime}</span>
                                 </div>
                               </div>
 

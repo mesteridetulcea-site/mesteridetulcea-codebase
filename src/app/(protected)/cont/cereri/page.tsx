@@ -25,6 +25,7 @@ import { Footer } from "@/components/layout/footer"
 import { toast } from "@/lib/hooks/use-toast"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
+import { haversineKm, formatDistance, formatTravelTime } from "@/lib/utils/distance"
 
 interface CererePhoto {
   id: string
@@ -48,7 +49,11 @@ interface TransportItem {
   kind: "transport"
   id: string
   pickup_address: string
+  pickup_lat: number
+  pickup_lng: number
   dropoff_address: string
+  dropoff_lat: number
+  dropoff_lng: number
   description: string | null
   status: string
   created_at: string
@@ -60,12 +65,20 @@ export default function CereriPage() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
+  const [role, setRole] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+      setRole(profile?.role ?? null)
 
       const [cereriRes, transportRes] = await Promise.all([
         supabase
@@ -75,7 +88,7 @@ export default function CereriPage() {
           .order("created_at", { ascending: false }),
         supabase
           .from("transport_requests")
-          .select("id, pickup_address, dropoff_address, description, status, created_at")
+          .select("id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, description, status, created_at")
           .eq("client_id", user.id)
           .order("created_at", { ascending: false }),
       ])
@@ -133,10 +146,10 @@ export default function CereriPage() {
       <Header />
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto">
-          <Link href="/cont">
+          <Link href="/cont/setari">
             <Button variant="ghost" className="mb-6 -ml-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Înapoi la cont
+              Înapoi la setări
             </Button>
           </Link>
 
@@ -152,7 +165,7 @@ export default function CereriPage() {
                 )}
               </div>
             </div>
-            <Link href="/cereri/nou">
+            <Link href={role === "mester" || role === "admin" ? "/transport" : "/cereri/nou"}>
               <Button size="sm" className="gap-1.5">
                 <Plus className="h-4 w-4" />
                 Cerere nouă
@@ -200,16 +213,26 @@ export default function CereriPage() {
                               </CardTitle>
                             </Link>
                           </div>
-                          <Badge
-                            variant={item.status === "open" ? "default" : "secondary"}
-                            className="shrink-0"
-                          >
-                            {item.status === "open" ? (
-                              <><Clock className="mr-1 h-3 w-3" />Activă</>
-                            ) : (
-                              <><CheckCircle className="mr-1 h-3 w-3" />Încheiată</>
-                            )}
-                          </Badge>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {item.pickup_lat && item.pickup_lng && item.dropoff_lat && item.dropoff_lng && (() => {
+                              const distKm = haversineKm(item.pickup_lat, item.pickup_lng, item.dropoff_lat, item.dropoff_lng)
+                              return (
+                                <span className="text-xs text-primary border border-primary/30 px-2 py-0.5 font-medium">
+                                  {formatDistance(distKm)} · {formatTravelTime(distKm)}
+                                </span>
+                              )
+                            })()}
+                            <Badge
+                              variant={item.status === "open" ? "default" : "secondary"}
+                              className="shrink-0"
+                            >
+                              {item.status === "open" ? (
+                                <><Clock className="mr-1 h-3 w-3" />Activă</>
+                              ) : (
+                                <><CheckCircle className="mr-1 h-3 w-3" />Încheiată</>
+                              )}
+                            </Badge>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent>
