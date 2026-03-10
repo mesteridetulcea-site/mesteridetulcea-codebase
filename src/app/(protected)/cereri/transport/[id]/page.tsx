@@ -34,7 +34,7 @@ export default async function TransportRequestDetailPage({
       <div className="bg-[#0f0b04] border-b border-[#584528]/40 py-10">
         <div className="container max-w-4xl">
           <Link
-            href="/cereri"
+            href="/cont/cereri"
             className="inline-flex items-center gap-2 font-condensed tracking-[0.16em] uppercase text-xs text-white/35 hover:text-white/60 transition-colors mb-6"
           >
             <ArrowLeft className="h-3.5 w-3.5" />

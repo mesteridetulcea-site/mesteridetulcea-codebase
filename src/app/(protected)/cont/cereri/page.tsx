@@ -146,10 +146,10 @@ export default function CereriPage() {
       <Header />
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto">
-          <Link href="/cont/setari">
+          <Link href="/">
             <Button variant="ghost" className="mb-6 -ml-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Înapoi la setări
+              Acasă
             </Button>
           </Link>
 
