@@ -8,6 +8,8 @@ import { ro } from "date-fns/locale"
 import { getTransportRequestById } from "@/actions/transport"
 import { haversineKm, formatDistance } from "@/lib/utils/distance"
 import { TransportRouteMapDynamic } from "@/components/transport/transport-route-map-dynamic"
+import { createClient } from "@/lib/supabase/server"
+import { FinalizeTransportButton } from "./finalize-button"
 
 export default async function TransportRequestDetailPage({
   params,
@@ -15,9 +17,12 @@ export default async function TransportRequestDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const request = await getTransportRequestById(id)
+  const [request, supabase] = await Promise.all([getTransportRequestById(id), createClient()])
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!request) notFound()
+
+  const isOwner = user?.id === request.client_id
 
   const distKm = haversineKm(
     request.pickup_lat,
@@ -33,13 +38,18 @@ export default async function TransportRequestDetailPage({
       {/* Dark header band */}
       <div className="bg-[#0f0b04] border-b border-[#584528]/40 py-10">
         <div className="container max-w-4xl">
-          <Link
-            href="/cont/cereri"
-            className="inline-flex items-center gap-2 font-condensed tracking-[0.16em] uppercase text-xs text-white/35 hover:text-white/60 transition-colors mb-6"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Înapoi la cereri
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              href="/cont/cereri"
+              className="inline-flex items-center gap-2 font-condensed tracking-[0.16em] uppercase text-xs text-white/35 hover:text-white/60 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Înapoi la cereri
+            </Link>
+            {isOwner && request.status === "open" && (
+              <FinalizeTransportButton requestId={request.id} />
+            )}
+          </div>
 
           <div className="flex items-center gap-2 mb-3">
             <Truck className="h-3.5 w-3.5 text-primary/60" />

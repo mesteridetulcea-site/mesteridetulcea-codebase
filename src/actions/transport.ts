@@ -174,6 +174,32 @@ export async function getTransportRequests() {
   return { requests: data }
 }
 
+export async function closeTransportRequest(requestId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "Nu ești autentificat" }
+  }
+
+  const adminClient = await createAdminClient()
+  const { error } = await adminClient
+    .from("transport_requests")
+    .update({ status: "cancelled" } as never)
+    .eq("id", requestId)
+    .eq("client_id", user.id)
+
+  if (error) {
+    return { error: "Nu s-a putut finaliza cererea" }
+  }
+
+  revalidatePath("/transport")
+  revalidatePath("/cont/cereri")
+  return { success: true }
+}
+
 export async function cancelTransportRequest(requestId: string) {
   const supabase = await createClient()
   const {

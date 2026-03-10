@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from "react"
 import Link from "next/link"
 import { ArrowLeft, FileText, Plus, Trash2, CheckCircle, Clock, Truck, MapPin, Navigation } from "lucide-react"
 import { closeCerere, deleteCerere } from "@/actions/cereri"
-import { cancelTransportRequest } from "@/actions/transport"
+import { cancelTransportRequest, closeTransportRequest } from "@/actions/transport"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -129,6 +129,18 @@ export default function CereriPage() {
     })
   }
 
+  async function handleCloseTransport(id: string) {
+    startTransition(async () => {
+      const result = await closeTransportRequest(id)
+      if (result?.error) {
+        toast({ title: "Eroare", description: result.error, variant: "destructive" })
+      } else {
+        setItems((prev) => prev.map((c) => (c.id === id ? { ...c, status: "closed" } : c)))
+        toast({ title: "Cerere finalizată", description: "Cererea de transport a fost marcată ca finalizată." })
+      }
+    })
+  }
+
   async function handleCancelTransport(id: string) {
     startTransition(async () => {
       const result = await cancelTransportRequest(id)
@@ -244,30 +256,36 @@ export default function CereriPage() {
                             {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: ro })}
                           </span>
                           {item.status === "open" && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive rounded-none" disabled={isPending}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Anulezi cererea de transport?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Cererea va fi anulată și nu va mai fi vizibilă transportatorilor.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Înapoi</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => handleCancelTransport(item.id)}
-                                  >
-                                    Anulează cererea
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            <div className="flex items-center gap-1">
+                              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 rounded-none" disabled={isPending} onClick={() => handleCloseTransport(item.id)}>
+                                <CheckCircle className="h-3 w-3" />
+                                Finalizată
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive rounded-none" disabled={isPending}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Anulezi cererea de transport?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Cererea va fi anulată și nu va mai fi vizibilă transportatorilor.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Înapoi</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleCancelTransport(item.id)}
+                                    >
+                                      Anulează cererea
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           )}
                         </div>
                       </CardContent>
