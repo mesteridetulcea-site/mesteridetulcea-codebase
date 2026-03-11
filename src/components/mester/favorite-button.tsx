@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/lib/hooks/use-user"
 import { useRouter } from "next/navigation"
 import { toast } from "@/lib/hooks/use-toast"
 import { toggleFavorite } from "@/actions/favorites"
+import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils/cn"
 
 interface FavoriteButtonProps {
@@ -24,6 +25,19 @@ export function FavoriteButton({
   const [isLoading, setIsLoading] = useState(false)
   const { user, loading } = useUser()
   const router = useRouter()
+
+  // Sync with DB on mount — bypasses router cache stale state
+  useEffect(() => {
+    if (!user) return
+    const supabase = createClient()
+    supabase
+      .from("favorites")
+      .select("client_id")
+      .eq("client_id", user.id)
+      .eq("mester_id", mesterId)
+      .maybeSingle()
+      .then(({ data }) => setIsFavorited(!!data))
+  }, [user, mesterId])
 
   async function handleClick() {
     if (loading) return
@@ -94,7 +108,7 @@ export function FavoriteButton({
       )}
     >
       <Heart className={cn("h-5 w-5", isFavorited && "fill-current")} />
-      {isFavorited ? "Salvat în favorite" : "Adaugă la favorite"}
+      {isFavorited ? "Eliminați din favorite" : "Adaugă la favorite"}
     </Button>
   )
 }

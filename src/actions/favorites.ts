@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_noStore as noStore } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import type { SubscriptionTier, ApprovalStatus } from "@/types/database"
 
@@ -18,22 +18,24 @@ export async function toggleFavorite(mesterId: string) {
   // Check if already favorited
   const { data: existing } = await supabase
     .from("favorites")
-    .select("id")
+    .select("client_id")
     .eq("client_id", user.id)
     .eq("mester_id", mesterId)
-    .single() as { data: { id: string } | null }
+    .maybeSingle() as { data: { client_id: string } | null }
 
   if (existing) {
     const { error } = await supabase
       .from("favorites")
       .delete()
-      .eq("id", existing.id)
+      .eq("client_id", user.id)
+      .eq("mester_id", mesterId)
 
     if (error) {
       return { error: "Nu s-a putut elimina din favorite" }
     }
 
     revalidatePath("/cont/favorite")
+    revalidatePath(`/mester/${mesterId}`)
     return { isFavorited: false }
   } else {
     const { error } = await supabase.from("favorites").insert({
@@ -46,6 +48,7 @@ export async function toggleFavorite(mesterId: string) {
     }
 
     revalidatePath("/cont/favorite")
+    revalidatePath(`/mester/${mesterId}`)
     return { isFavorited: true }
   }
 }
@@ -116,6 +119,7 @@ export async function getFavorites(): Promise<Favorite[]> {
 }
 
 export async function checkIsFavorited(mesterId: string) {
+  noStore()
   const supabase = await createClient()
 
   const {
@@ -128,10 +132,10 @@ export async function checkIsFavorited(mesterId: string) {
 
   const { data } = await supabase
     .from("favorites")
-    .select("id")
+    .select("client_id")
     .eq("client_id", user.id)
     .eq("mester_id", mesterId)
-    .single()
+    .maybeSingle()
 
   return !!data
 }

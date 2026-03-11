@@ -14,6 +14,8 @@ import { getProjectsForMester } from "@/actions/projects"
 import { ProjectsSection } from "@/components/mester/projects-section"
 import type { SubscriptionTier, ReviewWithUser } from "@/types/database"
 
+export const dynamic = "force-dynamic"
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }

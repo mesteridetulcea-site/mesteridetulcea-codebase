@@ -158,28 +158,30 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden sm:flex text-white/28 hover:text-primary hover:bg-white/[0.07] rounded-none h-9 w-9 transition-all duration-200"
+              className="hidden md:flex text-white/28 hover:text-primary hover:bg-white/[0.07] rounded-none h-9 w-9 transition-all duration-200"
             >
               <Search className="h-[14px] w-[14px]" />
               <span className="sr-only">Caută</span>
             </Button>
           </Link>
 
-          {/* Notification bell — only for authenticated users */}
+          {/* Notification bell — desktop only (mobile uses bottom sheet) */}
           {user && (
-            <NotificationBell userId={user.id} />
+            <div className="hidden md:block">
+              <NotificationBell userId={user.id} />
+            </div>
           )}
 
           {/* Separator */}
-          <div className="hidden sm:block w-px h-4 bg-white/[0.1] mx-2" />
+          <div className="hidden md:block w-px h-4 bg-white/[0.1] mx-2" />
 
-          {/* Auth section */}
+          {/* Auth section — hidden on mobile (bottom nav handles it) */}
           {loading ? (
-            <div className="h-7 w-14 bg-white/[0.07] animate-pulse" />
+            <div className="hidden md:block h-7 w-14 bg-white/[0.07] animate-pulse" />
           ) : user && profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 px-2 py-1.5 hover:bg-white/[0.07] transition-colors duration-200 outline-none group">
+                <button className="hidden md:flex items-center gap-1.5 px-2 py-1.5 hover:bg-white/[0.07] transition-colors duration-200 outline-none group">
                   <Avatar className="h-9 w-9 rounded-none">
                     <AvatarImage
                       src={profile.avatar_url || undefined}
@@ -269,7 +271,7 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="hidden sm:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link href="/login">
                 <Button
                   variant="ghost"
@@ -293,13 +295,13 @@ export function Header() {
             </div>
           )}
 
-          {/* Mobile menu */}
+          {/* Mobile menu — hidden (replaced by bottom nav) */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-white/38 hover:text-white/78 hover:bg-white/[0.07] rounded-none h-9 w-9 ml-1"
+                className="hidden text-white/38 hover:text-white/78 hover:bg-white/[0.07] rounded-none h-9 w-9 ml-1"
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Meniu</span>

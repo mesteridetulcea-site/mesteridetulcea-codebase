@@ -2,33 +2,24 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
 import { CerereForm } from "./form"
 import type { Category } from "@/types/database"
 
 export default async function NoaCererePage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/login?redirectTo=/cereri/nou")
 
-  // Check phone — redirect to settings if missing
   const { data: profile } = await supabase
     .from("profiles")
     .select("phone, role")
     .eq("id", user.id)
     .single() as { data: { phone: string | null; role: string } | null }
 
-  if (!profile?.phone?.trim()) {
-    redirect("/cont/setari?required=phone")
-  }
-
-  // Mesters and admins can't post cereri
-  if (profile.role === "mester" || profile.role === "admin") {
-    redirect("/")
-  }
+  if (!profile?.phone?.trim()) redirect("/cont/setari?required=phone")
+  if (profile.role === "mester" || profile.role === "admin") redirect("/")
 
   const { data: categories } = await supabase
     .from("categories")
@@ -36,32 +27,81 @@ export default async function NoaCererePage() {
     .order("sort_order")
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0f0b04]">
+    <div className="flex min-h-screen flex-col" style={{ background: "#faf6ed" }}>
       <Header />
 
-      {/* Dark header band */}
-      <div className="bg-[#0f0b04] border-b border-[#584528]/40 py-10">
-        <div className="container">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-px h-8 bg-primary/50" />
-            <h1 className="font-condensed text-2xl font-bold tracking-[0.12em] uppercase text-white/88">
-              Cerere nouă
-            </h1>
-          </div>
-          <p className="text-white/35 font-condensed tracking-[0.14em] text-sm ml-4">
-            Descrie problema ta și meșterii din categoria potrivită vor putea să te contacteze
-          </p>
-        </div>
-      </div>
+      <main className="flex-1 pb-24 md:pb-0">
 
-      {/* Content */}
-      <main className="flex-1 bg-[#faf7f2] py-10">
-        <div className="container max-w-xl">
+        {/* ── Hero ── */}
+        <section
+          className="relative overflow-hidden -mt-[62px]"
+          style={{ background: "#0d0905", minHeight: "248px" }}
+        >
+          {/* Gold grid */}
+          <div
+            className="absolute inset-0 opacity-[0.038]"
+            style={{
+              backgroundImage: "linear-gradient(rgba(196,146,30,1) 1px, transparent 1px), linear-gradient(90deg, rgba(196,146,30,1) 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 60% at 50% 60%, rgba(196,146,30,0.07) 0%, transparent 70%)" }}
+          />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/28 to-transparent" />
+
+          <div className="container relative z-10 flex flex-col items-center text-center pt-[96px] pb-12 px-6">
+            {/* Ornament */}
+            <div className="flex items-center gap-5 mb-7">
+              <div className="h-px w-14 bg-gradient-to-r from-transparent to-primary/38" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-primary/58 rotate-45" />
+                <div className="w-1 h-1 bg-primary/28 rotate-45" />
+                <div className="w-1.5 h-1.5 bg-primary/58 rotate-45" />
+              </div>
+              <div className="h-px w-14 bg-gradient-to-l from-transparent to-primary/38" />
+            </div>
+
+            <p className="font-condensed text-primary text-[10px] tracking-[0.32em] uppercase mb-3">
+              Cererile mele
+            </p>
+
+            <h1
+              className="font-display text-white/92 leading-[1.06] tracking-tight"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.4rem)", fontWeight: 600 }}
+            >
+              Cerere <em className="text-primary italic">nouă</em>
+            </h1>
+
+            <p className="mt-3 font-condensed tracking-[0.16em] uppercase text-white/28" style={{ fontSize: "10px" }}>
+              Descrie lucrarea și meșterii potriviți te vor contacta direct
+            </p>
+          </div>
+        </section>
+
+        {/* ── Form ── */}
+        <div className="container px-4 md:px-8 lg:px-16 py-10 md:py-14 max-w-xl mx-auto">
+          <div className="mb-6">
+            <a
+              href="/cont/cereri"
+              className="font-condensed tracking-[0.16em] uppercase transition-colors duration-150"
+              style={{ fontSize: "11px", color: "#8a6848" }}
+            >
+              ← Înapoi la cereri
+            </a>
+          </div>
           <CerereForm categories={(categories || []) as Category[]} />
         </div>
+
       </main>
 
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+      <MobileBottomNav />
     </div>
   )
 }

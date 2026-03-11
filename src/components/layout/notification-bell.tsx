@@ -7,7 +7,7 @@ import { useNotifications } from "@/lib/hooks/use-notifications"
 import type { Notification, NotificationType } from "@/types/database"
 import { cn } from "@/lib/utils/cn"
 
-function getIcon(type: NotificationType) {
+export function getIcon(type: NotificationType) {
   switch (type) {
     // Primit de la alții
     case "cerere_noua":
@@ -40,7 +40,7 @@ function getIcon(type: NotificationType) {
   }
 }
 
-function timeAgo(dateStr: string): string {
+export function timeAgo(dateStr: string): string {
   const now = Date.now()
   const diff = Math.floor((now - new Date(dateStr).getTime()) / 1000)
 
