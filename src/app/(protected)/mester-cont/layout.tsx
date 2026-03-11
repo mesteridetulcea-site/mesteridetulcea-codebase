@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { MesterSidebar } from "@/components/dashboard/mester-sidebar"
+import { MesterSidebar, MesterBottomNav } from "@/components/dashboard/mester-sidebar"
 
 export default async function MesterLayout({
   children,
@@ -17,7 +17,6 @@ export default async function MesterLayout({
     redirect("/login?redirectTo=/mester-cont")
   }
 
-  // Check if user has a mester profile
   const { data: mester } = await supabase
     .from("mester_profiles")
     .select("id, approval_status")
@@ -29,13 +28,27 @@ export default async function MesterLayout({
   }
 
   return (
-    <div className="flex h-screen">
-      <aside className="hidden w-64 flex-shrink-0 md:block">
-        <MesterSidebar />
-      </aside>
-      <main className="flex-1 overflow-auto bg-muted/10">
-        <div className="container py-6">{children}</div>
-      </main>
+    <div style={{ background: "white", minHeight: "100dvh" }}>
+      <div className="flex">
+        {/* Desktop sidebar — dark, sticky */}
+        <aside
+          className="dark hidden md:block flex-shrink-0 sticky top-0 self-start"
+          style={{ width: "224px", height: "100dvh" }}
+        >
+          <MesterSidebar />
+        </aside>
+
+        {/* Main content — white, scrolls naturally */}
+        <main
+          className="flex-1 min-w-0 min-h-dvh pb-24 md:pb-0"
+          style={{ background: "white", borderLeft: "1px solid #e0c99a" }}
+        >
+          {children}
+        </main>
+      </div>
+
+      {/* Mobile bottom nav — fixed to viewport, NOT inside overflow:hidden */}
+      <MesterBottomNav />
     </div>
   )
 }

@@ -1,15 +1,18 @@
 import { getMesterProfile } from "@/actions/mester"
 import { createClient } from "@/lib/supabase/server"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, Star, Heart, TrendingUp } from "lucide-react"
+
+const panel = {
+  background: "white",
+  border: "1px solid #e0c99a",
+  borderRadius: "6px",
+} as const
 
 async function getMesterStats() {
   const supabase = await createClient()
-  const mester = await getMesterProfile()
-
+  const mester   = await getMesterProfile()
   if (!mester) return null
 
-  // Get reviews count by rating
   const { data: reviews } = await supabase
     .from("reviews")
     .select("rating")
@@ -20,17 +23,12 @@ async function getMesterStats() {
     count: reviews?.filter((r) => r.rating === rating).length || 0,
   }))
 
-  // Get favorites count
   const { count: favoritesCount } = await supabase
     .from("favorites")
     .select("*", { count: "exact", head: true })
     .eq("mester_id", mester.id)
 
-  return {
-    mester,
-    ratingDistribution,
-    favoritesCount: favoritesCount || 0,
-  }
+  return { mester, ratingDistribution, favoritesCount: favoritesCount || 0 }
 }
 
 export default async function StatisticsPage() {
@@ -38,8 +36,10 @@ export default async function StatisticsPage() {
 
   if (!data) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Nu am putut încărca statisticile.</p>
+      <div className="flex items-center justify-center h-64">
+        <p className="font-condensed tracking-widest uppercase text-sm text-white/30">
+          Nu am putut încărca statisticile.
+        </p>
       </div>
     )
   }
@@ -47,127 +47,152 @@ export default async function StatisticsPage() {
   const { mester, ratingDistribution, favoritesCount } = data
 
   const stats = [
-    {
-      title: "Total vizualizări",
-      value: mester.views_count,
-      icon: Eye,
-      description: "De la înregistrare",
-    },
-    {
-      title: "Rating mediu",
-      value: mester.avg_rating.toFixed(1),
-      icon: Star,
-      description: `Din ${mester.reviews_count} recenzii`,
-    },
-    {
-      title: "Salvări în favorite",
-      value: favoritesCount,
-      icon: Heart,
-      description: "Clienți interesați",
-    },
+    { label: "Total vizualizări", value: mester.views_count,           sub: "De la înregistrare",          icon: Eye },
+    { label: "Rating mediu",      value: mester.avg_rating.toFixed(1), sub: `Din ${mester.reviews_count} recenzii`, icon: Star },
+    { label: "Salvări favorite",  value: favoritesCount,               sub: "Clienți interesați",           icon: Heart },
   ]
 
   const maxRatingCount = Math.max(...ratingDistribution.map((r) => r.count), 1)
 
+  const tips = [
+    "Adaugă fotografii de calitate cu lucrările tale",
+    "Completează toate informațiile din profil",
+    "Răspunde rapid la cererile clienților",
+    "Cere clienților mulțumiți să lase recenzii",
+    "Consideră upgrade la un plan superior pentru mai multă vizibilitate",
+  ]
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Statistici</h1>
-        <p className="text-muted-foreground">
+    <div>
+      {/* Page header */}
+      <div
+        className="px-6 pt-8 pb-8 md:px-10 md:pt-10"
+        style={{ borderBottom: "1px solid #e0c99a" }}
+      >
+        <p className="font-condensed tracking-[0.26em] uppercase text-xs text-primary/70 mb-2">
+          Panou meșter
+        </p>
+        <h1
+          className="font-condensed text-[#1a0f05] leading-[1.1]"
+          style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 600 }}
+        >
+          Statistici
+        </h1>
+        <p className="text-sm text-[#8a6848] mt-2">
           Urmărește performanța profilului tău
         </p>
       </div>
 
-      {/* Main stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <div className="px-6 py-8 md:px-10 space-y-6">
 
-      {/* Rating distribution */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5" />
-            Distribuția ratingurilor
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {mester.reviews_count === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Nu ai primit încă recenzii.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {ratingDistribution.map(({ rating, count }) => (
-                <div key={rating} className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 w-12">
-                    <span className="text-sm font-medium">{rating}</span>
-                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  </div>
-                  <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                    <div
-                      className="h-full bg-amber-400 transition-all"
-                      style={{
-                        width: `${(count / maxRatingCount) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm text-muted-foreground w-8">
-                    {count}
-                  </span>
+        {/* Stats */}
+        <div>
+          <p className="font-condensed tracking-[0.24em] uppercase text-xs text-[#8a6848] mb-3">
+            Metrici principale
+          </p>
+          <div
+            className="grid grid-cols-3 gap-px"
+            style={{ background: "#e0c99a", borderRadius: "6px", overflow: "hidden" }}
+          >
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="px-4 py-5 md:px-6 md:py-7 flex flex-col"
+                style={{ background: "#faf6ed" }}
+              >
+                <stat.icon className="h-4 w-4 text-primary/60 mb-3" />
+                <div
+                  className="font-display text-[#1a0f05] font-semibold mb-1"
+                  style={{ fontSize: "clamp(28px, 4vw, 42px)", lineHeight: 1 }}
+                >
+                  {stat.value}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <p className="font-condensed tracking-[0.12em] uppercase text-xs text-[#8a6848] mb-1">
+                  {stat.label}
+                </p>
+                <p className="text-xs text-[#b8956a] mt-auto">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Tips */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Sfaturi pentru mai multă vizibilitate
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">1.</span>
-              Adaugă fotografii de calitate cu lucrările tale
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">2.</span>
-              Completează toate informațiile din profil
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">3.</span>
-              Răspunde rapid la cererile clienților
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">4.</span>
-              Cere clienților mulțumiți să lase recenzii
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">5.</span>
-              Consideră upgrade la un plan superior pentru mai multă vizibilitate
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+        {/* Rating distribution */}
+        <div style={panel}>
+          <div
+            className="px-6 py-4 flex items-center gap-2.5"
+            style={{ borderBottom: "1px solid #e0c99a" }}
+          >
+            <Star className="h-4 w-4 text-primary/55" />
+            <p className="font-condensed tracking-[0.14em] uppercase text-sm font-semibold text-[#3d2810]">
+              Distribuția ratingurilor
+            </p>
+          </div>
+          <div className="px-6 py-6">
+            {mester.reviews_count === 0 ? (
+              <div className="py-8 text-center">
+                <p className="font-condensed tracking-[0.14em] uppercase text-sm text-[#b8956a]">
+                  Nu ai primit încă recenzii
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {ratingDistribution.map(({ rating, count }) => (
+                  <div key={rating} className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 w-10 shrink-0">
+                      <span className="font-condensed text-sm font-semibold text-[#3d2810]">{rating}</span>
+                      <Star className="h-3 w-3 fill-primary text-primary shrink-0" />
+                    </div>
+                    <div
+                      className="flex-1 h-2 overflow-hidden"
+                      style={{ background: "#f0e8d8", borderRadius: "2px" }}
+                    >
+                      <div
+                        className="h-full bg-primary transition-all duration-700"
+                        style={{
+                          width: `${(count / maxRatingCount) * 100}%`,
+                          borderRadius: "2px",
+                        }}
+                      />
+                    </div>
+                    <span className="font-condensed text-sm text-[#8a6848] w-6 text-right shrink-0">
+                      {count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tips */}
+        <div style={panel}>
+          <div
+            className="px-6 py-4 flex items-center gap-2.5"
+            style={{ borderBottom: "1px solid #e0c99a" }}
+          >
+            <TrendingUp className="h-4 w-4 text-primary/55" />
+            <p className="font-condensed tracking-[0.14em] uppercase text-sm font-semibold text-[#3d2810]">
+              Sfaturi pentru mai multă vizibilitate
+            </p>
+          </div>
+          <div className="px-6 py-6">
+            <ul className="space-y-4">
+              {tips.map((tip, i) => (
+                <li key={i} className="flex items-start gap-4">
+                  <span
+                    className="font-display text-primary/70 shrink-0 font-semibold"
+                    style={{ fontSize: "20px", lineHeight: 1.2 }}
+                  >
+                    {i + 1}.
+                  </span>
+                  <span className="text-sm text-[#8a6848] leading-relaxed">{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+      </div>
     </div>
   )
 }

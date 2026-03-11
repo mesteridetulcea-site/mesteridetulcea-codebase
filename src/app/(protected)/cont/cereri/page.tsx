@@ -77,7 +77,7 @@ export default function CereriPage() {
         .from("profiles")
         .select("role")
         .eq("id", user.id)
-        .single()
+        .single() as { data: { role: string } | null }
       setRole(profile?.role ?? null)
 
       const [cereriRes, transportRes] = await Promise.all([
