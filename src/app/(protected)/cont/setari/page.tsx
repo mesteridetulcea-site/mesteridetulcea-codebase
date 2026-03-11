@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer"
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
 import { MesterSettingsForm } from "@/components/settings/mester-settings-form"
 import { ClientSettingsForm } from "@/components/settings/client-settings-form"
+import { Settings } from "lucide-react"
 import type { Category } from "@/types/database"
 
 async function getPageData() {
@@ -35,12 +36,12 @@ export default async function SetariPage() {
   return (
     <div className="flex min-h-screen flex-col" style={{ background: "#faf6ed" }}>
       <Header />
-      <main className="flex-1 pb-24 md:pb-0">
+      <main className="flex-1 pb-32 md:pb-0">
 
-        {/* ── Hero header ── */}
+        {/* ── Hero ── */}
         <section
           className="relative overflow-hidden -mt-[62px]"
-          style={{ background: "#0d0905", minHeight: "260px" }}
+          style={{ background: "#0d0905", minHeight: "240px" }}
         >
           {/* Gold grid */}
           <div
@@ -52,15 +53,13 @@ export default async function SetariPage() {
               WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%)",
             }}
           />
-          {/* Radial gold glow */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{ background: "radial-gradient(ellipse 70% 60% at 50% 60%, rgba(196,146,30,0.07) 0%, transparent 70%)" }}
           />
-          {/* Bottom line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/28 to-transparent" />
 
-          <div className="container relative z-10 flex flex-col items-center text-center pt-[96px] pb-14 px-6">
+          <div className="container relative z-10 pt-[96px] pb-12 px-4 md:px-8">
             {/* Ornament */}
             <div className="flex items-center gap-5 mb-7">
               <div className="h-px w-14 bg-gradient-to-r from-transparent to-primary/38" />
@@ -72,13 +71,17 @@ export default async function SetariPage() {
               <div className="h-px w-14 bg-gradient-to-l from-transparent to-primary/38" />
             </div>
 
-            <p className="font-condensed text-primary text-[10px] tracking-[0.32em] uppercase mb-3">
-              {isMester ? "Profil meșter" : "Contul meu"}
-            </p>
+            {/* Overline */}
+            <div className="flex items-center gap-2 mb-3">
+              <Settings style={{ width: "11px", height: "11px", color: "hsl(38 68% 44% / 0.7)" }} />
+              <span className="font-condensed tracking-[0.28em] uppercase text-primary" style={{ fontSize: "10px" }}>
+                {isMester ? "Profil meșter" : "Contul meu"}
+              </span>
+            </div>
 
             <h1
-              className="font-display text-white/92 leading-[1.06] tracking-tight"
-              style={{ fontSize: "clamp(2rem, 5vw, 3.4rem)", fontWeight: 600 }}
+              className="font-display text-white/92 leading-[1.06] tracking-tight mb-3"
+              style={{ fontSize: "clamp(1.7rem, 4vw, 2.8rem)", fontWeight: 600 }}
             >
               {isMester ? (
                 <>Setări <em className="text-primary italic">meșter</em></>
@@ -87,14 +90,26 @@ export default async function SetariPage() {
               )}
             </h1>
 
-            <p className="mt-3 font-condensed tracking-[0.16em] uppercase text-white/28" style={{ fontSize: "10px" }}>
-              {isMester ? "Actualizează informațiile profilului tău public" : "Actualizează datele tale personale"}
+            <p className="font-condensed tracking-wide text-white/28" style={{ fontSize: "12px" }}>
+              {isMester
+                ? "Actualizează informațiile profilului tău public"
+                : "Actualizează datele tale personale"}
             </p>
           </div>
         </section>
 
-        {/* ── Form content ── */}
-        <div className="container px-4 md:px-8 lg:px-16 py-10 md:py-14 max-w-2xl mx-auto">
+        {/* ── Content ── */}
+        <div className="container px-4 md:px-8 max-w-2xl mx-auto py-10 md:py-14">
+
+          {/* Back link */}
+          <a
+            href="/cont"
+            className="inline-block font-condensed tracking-[0.16em] uppercase transition-colors duration-150 mb-6"
+            style={{ fontSize: "11px", color: "#8a6848" }}
+          >
+            ← Înapoi la cont
+          </a>
+
           {isMester ? (
             <MesterSettingsForm
               avatarUrl={profile?.avatar_url ?? null}

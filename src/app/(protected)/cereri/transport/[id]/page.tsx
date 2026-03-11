@@ -2,14 +2,19 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { ArrowLeft, Phone, MapPin, Navigation, Clock, Truck, FileText, ExternalLink } from "lucide-react"
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
+import { MapPin, Navigation, Clock, Truck, FileText, ExternalLink, Phone, CheckCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
 import { getTransportRequestById } from "@/actions/transport"
-import { haversineKm, formatDistance } from "@/lib/utils/distance"
+import { haversineKm, formatDistance, formatTravelTime } from "@/lib/utils/distance"
 import { TransportRouteMapDynamic } from "@/components/transport/transport-route-map-dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { FinalizeTransportButton } from "./finalize-button"
+
+const sectionCls = "bg-white p-6 md:p-8"
+const sectionStyle = { border: "1px solid #e0c99a" }
+const labelCls = "font-condensed tracking-[0.22em] uppercase text-[#8a6848]"
 
 export default async function TransportRequestDetailPage({
   params,
@@ -23,157 +28,253 @@ export default async function TransportRequestDetailPage({
   if (!request) notFound()
 
   const isOwner = user?.id === request.client_id
+  const isOpen  = request.status === "open"
 
   const distKm = haversineKm(
-    request.pickup_lat,
-    request.pickup_lng,
-    request.dropoff_lat,
-    request.dropoff_lng
+    request.pickup_lat, request.pickup_lng,
+    request.dropoff_lat, request.dropoff_lng
   )
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0f0b04]">
+    <div className="flex min-h-screen flex-col" style={{ background: "#faf6ed" }}>
       <Header />
 
-      {/* Dark header band */}
-      <div className="bg-[#0f0b04] border-b border-[#584528]/40 py-10">
-        <div className="container max-w-4xl">
-          <div className="flex items-center justify-between mb-6">
-            <Link
-              href="/cont/cereri"
-              className="inline-flex items-center gap-2 font-condensed tracking-[0.16em] uppercase text-xs text-white/35 hover:text-white/60 transition-colors"
+      <main className="flex-1 pb-24 md:pb-0">
+
+        {/* ── Hero ── */}
+        <section
+          className="relative overflow-hidden -mt-[62px]"
+          style={{ background: "#0d0905", minHeight: "260px" }}
+        >
+          {/* Gold grid */}
+          <div
+            className="absolute inset-0 opacity-[0.038]"
+            style={{
+              backgroundImage: "linear-gradient(rgba(196,146,30,1) 1px, transparent 1px), linear-gradient(90deg, rgba(196,146,30,1) 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 60% at 50% 60%, rgba(196,146,30,0.07) 0%, transparent 70%)" }}
+          />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/28 to-transparent" />
+
+          <div className="container relative z-10 pt-[96px] pb-12 px-4 md:px-8">
+            {/* Ornament */}
+            <div className="flex items-center gap-5 mb-7">
+              <div className="h-px w-14 bg-gradient-to-r from-transparent to-primary/38" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-primary/58 rotate-45" />
+                <div className="w-1 h-1 bg-primary/28 rotate-45" />
+                <div className="w-1.5 h-1.5 bg-primary/58 rotate-45" />
+              </div>
+              <div className="h-px w-14 bg-gradient-to-l from-transparent to-primary/38" />
+            </div>
+
+            {/* Overline */}
+            <div className="flex items-center gap-2 mb-3">
+              <Truck style={{ width: "11px", height: "11px", color: "hsl(38 68% 44% / 0.7)" }} />
+              <span className="font-condensed tracking-[0.28em] uppercase text-primary" style={{ fontSize: "10px" }}>
+                Transport marfă
+              </span>
+              {/* Status pill */}
+              <span
+                className="ml-2 font-condensed tracking-[0.14em] uppercase"
+                style={{
+                  fontSize: "9px",
+                  padding: "2px 8px",
+                  border: isOpen ? "1px solid hsl(38 68% 44% / 0.5)" : "1px solid rgba(255,255,255,0.12)",
+                  color: isOpen ? "hsl(38 68% 44%)" : "rgba(255,255,255,0.3)",
+                  background: isOpen ? "hsl(38 68% 44% / 0.1)" : "transparent",
+                }}
+              >
+                {isOpen ? "Activă" : "Încheiată"}
+              </span>
+            </div>
+
+            {/* Route heading */}
+            <h1
+              className="font-display text-white/92 leading-[1.1] tracking-tight mb-4"
+              style={{ fontSize: "clamp(1.4rem, 4vw, 2.6rem)", fontWeight: 600 }}
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Înapoi la cereri
-            </Link>
-            {isOwner && request.status === "open" && (
-              <FinalizeTransportButton requestId={request.id} />
-            )}
-          </div>
+              <span className="text-primary italic">{request.pickup_address.split(",")[0]}</span>
+              <span className="text-white/30 mx-3">→</span>
+              <span>{request.dropoff_address.split(",")[0]}</span>
+            </h1>
 
-          <div className="flex items-center gap-2 mb-3">
-            <Truck className="h-3.5 w-3.5 text-primary/60" />
-            <span className="font-condensed tracking-[0.18em] uppercase text-[11px] text-primary/70">
-              Transport marfă
-            </span>
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <Clock style={{ width: "11px", height: "11px", color: "rgba(255,255,255,0.3)" }} />
+                <span className="font-condensed tracking-wide text-white/30" style={{ fontSize: "11px" }}>
+                  {formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: ro })}
+                </span>
+              </div>
+              <div style={{ width: "1px", height: "12px", background: "rgba(255,255,255,0.1)" }} />
+              <span
+                className="font-condensed tracking-[0.12em] font-semibold"
+                style={{ fontSize: "11px", color: "hsl(38 68% 44% / 0.8)" }}
+              >
+                ~{formatDistance(distKm)} · {formatTravelTime(distKm)}
+              </span>
+              {isOwner && isOpen && (
+                <>
+                  <div style={{ width: "1px", height: "12px", background: "rgba(255,255,255,0.1)" }} />
+                  <FinalizeTransportButton requestId={request.id} />
+                </>
+              )}
+            </div>
           </div>
+        </section>
 
-          <h1
-            className="font-condensed font-bold text-white/90 leading-tight mb-3"
-            style={{ fontSize: "clamp(20px, 4vw, 32px)" }}
+        {/* ── Content ── */}
+        <div className="container px-4 md:px-8 max-w-3xl mx-auto py-10 md:py-14 space-y-4">
+
+          {/* Back link */}
+          <Link
+            href="/cont/cereri"
+            className="inline-block font-condensed tracking-[0.16em] uppercase transition-colors duration-150 mb-2"
+            style={{ fontSize: "11px", color: "#8a6848" }}
           >
-            {request.pickup_address.split(",")[0]} → {request.dropoff_address.split(",")[0]}
-          </h1>
+            ← Înapoi la cereri
+          </Link>
 
-          <div className="flex items-center gap-4 text-white/30 font-condensed tracking-wider text-xs">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: ro })}
+          {/* ── Route section ── */}
+          <div className={sectionCls} style={sectionStyle}>
+            {/* Top gold accent */}
+            <div className="h-px mb-6" style={{ background: "linear-gradient(90deg, transparent, #c4921e 40%, #c4921e 60%, transparent)" }} />
+
+            <p className={labelCls} style={{ fontSize: "10px", marginBottom: "20px" }}>Rută</p>
+
+            <div className="flex items-start gap-5">
+              {/* Visual connector */}
+              <div className="flex flex-col items-center shrink-0 pt-1">
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: "28px", height: "28px", background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.25)" }}
+                >
+                  <MapPin style={{ width: "12px", height: "12px", color: "#16a34a" }} />
+                </div>
+                <div className="w-px flex-1 my-1" style={{ background: "#e0c99a", minHeight: "28px" }} />
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: "28px", height: "28px", background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)" }}
+                >
+                  <Navigation style={{ width: "12px", height: "12px", color: "#dc2626" }} />
+                </div>
+              </div>
+
+              {/* Addresses */}
+              <div className="flex-1 space-y-5">
+                <div>
+                  <p className={labelCls} style={{ fontSize: "9px", marginBottom: "4px" }}>Ridicare</p>
+                  <p className="font-condensed tracking-wide text-[#1a0f05]" style={{ fontSize: "14px" }}>
+                    {request.pickup_address}
+                  </p>
+                </div>
+                <div>
+                  <p className={labelCls} style={{ fontSize: "9px", marginBottom: "4px" }}>Livrare</p>
+                  <p className="font-condensed tracking-wide text-[#1a0f05]" style={{ fontSize: "14px" }}>
+                    {request.dropoff_address}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="w-px h-3 bg-white/10" />
-            <span className="text-primary/60 font-semibold">
-              ~ {formatDistance(distKm)} (în linie dreaptă)
-            </span>
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <main className="flex-1 bg-[#faf7f2] py-10">
-        <div className="container max-w-4xl space-y-6">
-
-          {/* Route details */}
-          <section className="bg-white border border-[#e8dcc8] p-8">
-            <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-5">
-              Rută
-            </h2>
-            <div className="flex items-start gap-4">
-              <div className="flex flex-col items-center gap-1 pt-0.5 shrink-0">
-                <div className="w-7 h-7 bg-green-600/10 border border-green-600/25 flex items-center justify-center">
-                  <MapPin className="h-3.5 w-3.5 text-green-600/70" />
-                </div>
-                <div className="w-px h-8 bg-[#e8dcc8]" />
-                <div className="w-7 h-7 bg-red-500/10 border border-red-500/25 flex items-center justify-center">
-                  <Navigation className="h-3.5 w-3.5 text-red-500/70" />
-                </div>
-              </div>
-              <div className="flex-1 space-y-4">
-                <div>
-                  <p className="font-condensed text-[10px] tracking-[0.20em] uppercase text-[#3d2e1a]/35 mb-1">
-                    Ridicare
-                  </p>
-                  <p className="text-[#1a1208] text-sm leading-relaxed">{request.pickup_address}</p>
-                </div>
-                <div>
-                  <p className="font-condensed text-[10px] tracking-[0.20em] uppercase text-[#3d2e1a]/35 mb-1">
-                    Livrare
-                  </p>
-                  <p className="text-[#1a1208] text-sm leading-relaxed">{request.dropoff_address}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Google Maps route button */}
+          {/* ── Google Maps button ── */}
           <a
             href={`https://www.google.com/maps/dir/?api=1&origin=${request.pickup_lat},${request.pickup_lng}&destination=${request.dropoff_lat},${request.dropoff_lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2.5 w-full py-3.5 border border-[#2563eb]/30 bg-[#2563eb]/5 hover:bg-[#2563eb]/10 transition-colors font-condensed tracking-[0.16em] uppercase text-sm font-semibold text-[#2563eb]"
+            className="flex items-center justify-center gap-2.5 w-full h-11 font-condensed tracking-[0.18em] uppercase font-semibold transition-all duration-200"
+            style={{
+              fontSize: "11px",
+              border: "1px solid rgba(37,99,235,0.3)",
+              color: "#2563eb",
+              background: "rgba(37,99,235,0.04)",
+            }}
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink style={{ width: "13px", height: "13px" }} />
             Navighează ruta în Google Maps
           </a>
 
-          {/* Map with route */}
-          <section className="bg-white border border-[#e8dcc8] p-8">
-            <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-4">
-              Hartă rută
-            </h2>
-            <TransportRouteMapDynamic
-              pickupLat={request.pickup_lat}
-              pickupLng={request.pickup_lng}
-              dropoffLat={request.dropoff_lat}
-              dropoffLng={request.dropoff_lng}
-            />
-          </section>
+          {/* ── Map ── */}
+          <div className={sectionCls} style={sectionStyle}>
+            <p className={labelCls} style={{ fontSize: "10px", marginBottom: "16px" }}>Hartă rută</p>
+            {/* isolation:isolate fixes Leaflet z-index bleeding over sticky navbar */}
+            <div style={{ isolation: "isolate", position: "relative" }}>
+              <TransportRouteMapDynamic
+                pickupLat={request.pickup_lat}
+                pickupLng={request.pickup_lng}
+                dropoffLat={request.dropoff_lat}
+                dropoffLng={request.dropoff_lng}
+              />
+            </div>
+          </div>
 
-          {/* Description */}
+          {/* ── Description ── */}
           {request.description && (
-            <section className="bg-white border border-[#e8dcc8] p-8">
-              <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-4">
-                <FileText className="inline h-3 w-3 mr-1.5" />
-                Descriere marfă
-              </h2>
-              <p className="text-[#3d2e1a]/75 leading-relaxed text-sm whitespace-pre-line">
+            <div className={sectionCls} style={sectionStyle}>
+              <div className="flex items-center gap-2 mb-4">
+                <FileText style={{ width: "13px", height: "13px", color: "hsl(38 68% 44% / 0.6)" }} />
+                <p className={labelCls} style={{ fontSize: "10px" }}>Descriere marfă</p>
+              </div>
+              <p className="font-condensed tracking-wide text-[#4a3520] leading-relaxed whitespace-pre-line" style={{ fontSize: "13px", lineHeight: "1.8" }}>
                 {request.description}
               </p>
-            </section>
+            </div>
           )}
 
-          {/* Contact */}
-          <section className="bg-white border border-[#e8dcc8] p-8 flex items-center justify-between">
+          {/* ── Contact ── */}
+          <div
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 md:p-8"
+            style={{ background: "white", border: "1px solid #e0c99a" }}
+          >
             <div>
-              <h2 className="font-condensed tracking-[0.16em] uppercase text-xs text-[#3d2e1a]/40 mb-1">
-                Contact client
-              </h2>
-              <p className="text-[#3d2e1a]/50 text-sm font-condensed">
-                Sună pentru a discuta detaliile
+              <p className={labelCls} style={{ fontSize: "10px", marginBottom: "4px" }}>Contact client</p>
+              <p className="font-condensed tracking-wide text-[#8a6848]" style={{ fontSize: "12px" }}>
+                Sună pentru a discuta detaliile transportului
               </p>
             </div>
             <a
               href={`tel:${request.phone}`}
-              className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-sm font-semibold text-white bg-primary hover:bg-primary/88 transition-colors duration-200 px-6 py-3"
+              className="shrink-0 inline-flex items-center gap-2.5 h-11 px-6 font-condensed tracking-[0.18em] uppercase font-semibold transition-all duration-200"
+              style={{
+                fontSize: "12px",
+                background: "hsl(38 68% 44%)",
+                color: "white",
+                boxShadow: "0 4px 20px hsl(38 68% 44% / 0.24)",
+              }}
             >
-              <Phone className="h-4 w-4" />
+              <Phone style={{ width: "13px", height: "13px" }} />
               {request.phone}
             </a>
-          </section>
+          </div>
+
+          {/* ── Status closed notice ── */}
+          {!isOpen && (
+            <div
+              className="flex items-center gap-3 p-5"
+              style={{ background: "white", border: "1px solid #e0c99a" }}
+            >
+              <CheckCircle style={{ width: "16px", height: "16px", color: "#8a6848", flexShrink: 0 }} />
+              <p className="font-condensed tracking-wide text-[#8a6848]" style={{ fontSize: "12px" }}>
+                Această cerere de transport a fost finalizată.
+              </p>
+            </div>
+          )}
 
         </div>
       </main>
 
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+      <MobileBottomNav />
     </div>
   )
 }
