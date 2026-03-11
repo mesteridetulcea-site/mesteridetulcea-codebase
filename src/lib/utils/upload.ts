@@ -28,7 +28,7 @@ export async function uploadAvatar(
   }
 
   const { data } = adminClient.storage.from("avatars").getPublicUrl(path)
-  return data.publicUrl
+  return `${data.publicUrl}?v=${Date.now()}`
 }
 
 export async function uploadCererePhoto(

@@ -16,14 +16,18 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirectTo")
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setLoading(true)
     setError(null)
+    const formData = new FormData(e.currentTarget)
     if (redirectTo) formData.append("redirectTo", redirectTo)
     const result = await signIn(formData)
     if (result?.error) {
       setError(result.error)
       setLoading(false)
+    } else if (result?.success) {
+      window.location.href = result.redirectTo
     }
   }
 
@@ -200,7 +204,7 @@ function LoginForm() {
           </div>
 
           {/* Form */}
-          <form action={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3">
 
             {/* Email */}
             <div className="border border-[#3d2e14] focus-within:border-primary/55 transition-colors duration-200">

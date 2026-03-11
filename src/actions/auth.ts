@@ -151,7 +151,7 @@ export async function signIn(formData: FormData) {
 
   const redirectTo = formData.get("redirectTo") as string | null
   revalidatePath("/", "layout")
-  redirect(redirectTo || "/")
+  return { success: true, redirectTo: redirectTo || "/" }
 }
 
 export async function signOut() {

@@ -40,8 +40,16 @@ export function useUser() {
       }
     })
 
+    function handleProfileUpdate() {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) fetchProfile(user.id)
+      })
+    }
+    window.addEventListener("profile-updated", handleProfileUpdate)
+
     return () => {
       subscription.unsubscribe()
+      window.removeEventListener("profile-updated", handleProfileUpdate)
     }
   }, [])
 

@@ -104,6 +104,7 @@ export default function MesterProfilePage() {
         setAvatarUrl(avatarPreview)
         setAvatarPreview(null)
         if (fileInputRef.current) fileInputRef.current.value = ""
+        window.dispatchEvent(new Event("profile-updated"))
       }
     }
     setSaving(false)
