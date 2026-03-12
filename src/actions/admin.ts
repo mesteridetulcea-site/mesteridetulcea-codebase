@@ -574,3 +574,93 @@ export async function rejectProjectPhoto(photoId: string) {
   revalidatePath("/admin/fotografii")
   return { success: true }
 }
+
+export async function getAdminUsers(search?: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error, data: null }
+
+  const supabase = await createAdminClient()
+
+  let query = supabase
+    .from("profiles")
+    .select("id, full_name, email, role, is_banned, avatar_url, created_at")
+    .order("created_at", { ascending: false })
+
+  if (search && search.trim()) {
+    query = query.or(`full_name.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`)
+  }
+
+  const { data, error } = await query as {
+    data: Array<{
+      id: string
+      full_name: string | null
+      email: string
+      role: string
+      is_banned: boolean
+      avatar_url: string | null
+      created_at: string
+    }> | null
+    error: unknown
+  }
+
+  if (error) return { error: "Nu s-au putut încărca utilizatorii", data: null }
+  return { error: null, data: data ?? [] }
+}
+
+export async function banUser(userId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single() as { data: { role: string } | null }
+
+  if (target?.role === "admin") return { error: "Nu poți suspenda un administrator" }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_banned: true } as never)
+    .eq("id", userId)
+
+  if (error) return { error: "Nu s-a putut suspenda utilizatorul" }
+
+  await supabase.from("admin_logs").insert({
+    admin_id: auth.userId!,
+    action: "ban_user",
+    target_type: "profile",
+    target_id: userId,
+    notes: null,
+  } as never)
+
+  revalidatePath("/admin/utilizatori")
+  return { success: true }
+}
+
+export async function unbanUser(userId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_banned: false } as never)
+    .eq("id", userId)
+
+  if (error) return { error: "Nu s-a putut ridica suspendarea" }
+
+  await supabase.from("admin_logs").insert({
+    admin_id: auth.userId!,
+    action: "unban_user",
+    target_type: "profile",
+    target_id: userId,
+    notes: null,
+  } as never)
+
+  revalidatePath("/admin/utilizatori")
+  return { success: true }
+}

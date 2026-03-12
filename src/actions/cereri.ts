@@ -142,13 +142,25 @@ export async function getMesterCereri(): Promise<CerereWithCategory[]> {
 
   if (!primaryCategoryId) return []
 
-  const { data } = await supabase
+  // Exclude requests from banned clients
+  const { data: bannedUsers } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("is_banned", true) as { data: { id: string }[] | null }
+  const bannedClientIds = bannedUsers?.map((u) => u.id) ?? []
+
+  let cerereQuery = supabase
     .from("service_requests")
     .select("id, title, original_message, detected_category_id, client_phone, status, created_at, category:categories(name), cerere_photos(id, url, approval_status)")
     .eq("detected_category_id", primaryCategoryId)
     .eq("status", "open")
     .order("created_at", { ascending: false })
 
+  if (bannedClientIds.length > 0) {
+    cerereQuery = cerereQuery.not("client_id", "in", `(${bannedClientIds.join(",")})`)
+  }
+
+  const { data } = await cerereQuery
   return (data || []) as CerereWithCategory[]
 }
 

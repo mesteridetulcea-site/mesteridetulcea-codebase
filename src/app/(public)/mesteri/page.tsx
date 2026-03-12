@@ -47,10 +47,21 @@ async function getMesters(params: {
 }) {
   const supabase = await createClient()
 
+  // Exclude mesters whose user account is banned
+  const { data: bannedUsers } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("is_banned", true) as { data: { id: string }[] | null }
+  const bannedUserIds = bannedUsers?.map((u) => u.id) ?? []
+
   let queryBuilder = supabase
     .from("mester_profiles")
     .select(`*, mester_categories(category_id, category:categories(*))`, { count: "exact" })
     .eq("approval_status", "approved")
+
+  if (bannedUserIds.length > 0) {
+    queryBuilder = queryBuilder.not("user_id", "in", `(${bannedUserIds.join(",")})`)
+  }
 
   if (params.category) {
     const { data: categoryData } = await supabase

@@ -22,6 +22,7 @@ export interface Database {
           phone: string | null
           avatar_url: string | null
           role: UserRole
+          is_banned: boolean
           created_at: string
           updated_at: string
         }
@@ -32,6 +33,7 @@ export interface Database {
           phone?: string | null
           avatar_url?: string | null
           role?: UserRole
+          is_banned?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -42,6 +44,7 @@ export interface Database {
           phone?: string | null
           avatar_url?: string | null
           role?: UserRole
+          is_banned?: boolean
           created_at?: string
           updated_at?: string
         }

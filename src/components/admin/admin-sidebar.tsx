@@ -9,13 +9,15 @@ import {
   FolderTree,
   Hammer,
   ArrowLeft,
+  ShieldOff,
 } from "lucide-react"
 
 const navLinks = [
-  { href: "/admin",           icon: LayoutDashboard, label: "Dashboard",  short: "Home" },
-  { href: "/admin/mesteri",   icon: Users,           label: "Meșteri",    short: "Meșteri" },
-  { href: "/admin/fotografii",icon: Image,           label: "Fotografii", short: "Foto" },
-  { href: "/admin/categorii", icon: FolderTree,      label: "Categorii",  short: "Categ." },
+  { href: "/admin",             icon: LayoutDashboard, label: "Dashboard",   short: "Home" },
+  { href: "/admin/mesteri",     icon: Users,           label: "Meșteri",     short: "Meșteri" },
+  { href: "/admin/utilizatori", icon: ShieldOff,       label: "Utilizatori", short: "Users" },
+  { href: "/admin/fotografii",  icon: Image,           label: "Fotografii",  short: "Foto" },
+  { href: "/admin/categorii",   icon: FolderTree,      label: "Categorii",   short: "Categ." },
 ]
 
 export function AdminSidebar() {

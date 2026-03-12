@@ -84,6 +84,16 @@ async function getMester(id: string) {
 
   if (!mester) return null
 
+  // Hide profile if the user account is banned (admins can still see it)
+  if (!isAdmin) {
+    const { data: ownerProfile } = await regularClient
+      .from("profiles")
+      .select("is_banned")
+      .eq("id", mester.user_id)
+      .single() as { data: { is_banned: boolean } | null }
+    if (ownerProfile?.is_banned) return null
+  }
+
   const { data: photos } = await supabase
     .from("mester_photos")
     .select("*")

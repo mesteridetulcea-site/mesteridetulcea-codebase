@@ -50,6 +50,24 @@ export async function updateSession(request: NextRequest) {
   const authPaths = ["/login", "/register"]
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path))
 
+  // Fetch profile once for all authenticated users
+  let profile: { role: string; is_banned: boolean } | null = null
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("id", user.id)
+      .single() as { data: { role: string; is_banned: boolean } | null }
+    profile = data
+  }
+
+  // If user is banned, redirect to /banned (except on /banned itself and /admin)
+  if (user && profile?.is_banned && pathname !== "/banned" && !isAdminPath) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/banned"
+    return NextResponse.redirect(url)
+  }
+
   // If trying to access protected route without auth, redirect to login
   if (isProtectedPath && !user) {
     const url = request.nextUrl.clone()
@@ -60,12 +78,6 @@ export async function updateSession(request: NextRequest) {
 
   // If trying to access admin route, check for admin role
   if (isAdminPath && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single() as { data: { role: string } | null }
-
     if (profile?.role !== "admin") {
       const url = request.nextUrl.clone()
       url.pathname = "/"
