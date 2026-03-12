@@ -260,11 +260,11 @@ export default function RegisterClientPage() {
             <p className="text-[10px] text-white/25 font-condensed tracking-wide">
               Poza de profil (opțional)
             </p>
-            <input ref={fileInputRef} type="file" name="avatar" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarChange} />
           </div>
 
           {/* Form */}
           <form action={handleSubmit} className="space-y-2.5">
+            <input ref={fileInputRef} type="file" name="avatar" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarChange} />
 
             <FieldBox label="Nume complet">
               <Input name="fullName" type="text" placeholder="Ion Popescu" required autoComplete="name"

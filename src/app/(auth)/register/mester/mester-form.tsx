@@ -188,7 +188,6 @@ export default function MesterRegisterForm({ categories }: Props) {
                 <Camera className="h-3.5 w-3.5 text-white" />
               </div>
             </button>
-            <input ref={fileInputRef} type="file" name="avatar" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarChange} />
             <div>
               <p className="font-condensed tracking-[0.26em] uppercase text-primary text-[10px] mb-0.5">
                 Înregistrare meșter
@@ -204,6 +203,7 @@ export default function MesterRegisterForm({ categories }: Props) {
 
           {/* ── Form ── */}
           <form action={handleSubmit} className="space-y-2">
+            <input ref={fileInputRef} type="file" name="avatar" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarChange} />
 
             {/* Datele personale */}
             <div className="grid grid-cols-2 gap-2">

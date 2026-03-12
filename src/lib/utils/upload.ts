@@ -5,13 +5,28 @@ import { createAdminClient } from "@/lib/supabase/server"
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"]
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024 // 2MB — matches the Supabase bucket limit
 
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+}
+
+function resolveContentType(file: File): string | null {
+  if (ALLOWED_IMAGE_TYPES.includes(file.type)) return file.type
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? ""
+  return EXT_TO_MIME[ext] ?? null
+}
+
 export async function uploadAvatar(
   userId: string,
   file: File
 ): Promise<string | null> {
   if (!file || file.size === 0) return null
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return null
   if (file.size > MAX_AVATAR_SIZE) return null
+
+  const contentType = resolveContentType(file)
+  if (!contentType) return null
 
   const ext = file.name.split(".").pop() ?? "jpg"
   const path = `${userId}/avatar.${ext}`
@@ -20,7 +35,7 @@ export async function uploadAvatar(
 
   const { error } = await adminClient.storage
     .from("avatars")
-    .upload(path, file, { upsert: true, contentType: file.type })
+    .upload(path, file, { upsert: true, contentType })
 
   if (error) {
     console.error("Avatar upload error:", error)
