@@ -131,13 +131,24 @@ export async function getTransportCereri(): Promise<TransportRequest[]> {
   if (!hasTransport) return []
 
   const adminClient = await createAdminClient()
+
+  // Exclude requests from banned users
+  const { data: bannedProfiles } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("is_banned", true) as { data: { id: string }[] | null }
+
+  const bannedIds = new Set((bannedProfiles || []).map((p) => p.id))
+
   const { data } = await adminClient
     .from("transport_requests")
     .select("id, client_id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, description, phone, status, created_at, updated_at")
     .eq("status", "open")
     .order("created_at", { ascending: false })
 
-  return (data || []) as TransportRequest[]
+  return (data || []).filter(
+    (r) => !r.client_id || !bannedIds.has(r.client_id)
+  ) as TransportRequest[]
 }
 
 export async function getTransportRequestById(id: string): Promise<TransportRequest | null> {
