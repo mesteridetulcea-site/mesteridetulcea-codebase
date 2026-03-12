@@ -146,7 +146,20 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    return { error: error.message }
+    const msg = error.message.toLowerCase()
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+      return { error: "Email sau parolă incorectă." }
+    }
+    if (msg.includes("email not confirmed")) {
+      return { error: "Confirmă-ți adresa de email înainte de a te autentifica." }
+    }
+    if (msg.includes("too many requests") || msg.includes("rate limit")) {
+      return { error: "Prea multe încercări. Așteaptă câteva minute și încearcă din nou." }
+    }
+    if (msg.includes("user not found")) {
+      return { error: "Nu există un cont cu această adresă de email." }
+    }
+    return { error: "A apărut o problemă temporară. Încearcă din nou." }
   }
 
   const redirectTo = formData.get("redirectTo") as string | null

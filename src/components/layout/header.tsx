@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import {
   Search,
-  Menu,
   User,
   LogOut,
   Heart,
@@ -27,13 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { cn } from "@/lib/utils/cn"
 import { NotificationBell } from "@/components/layout/notification-bell"
 
@@ -52,7 +44,6 @@ export function Header() {
     ...staticNavLinks,
     ...(hasMesterProfile ? [{ href: "/cereri", label: "Cereri" }] : []),
   ]
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -295,71 +286,6 @@ export function Header() {
             </div>
           )}
 
-          {/* Mobile menu — hidden (replaced by bottom nav) */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden text-white/38 hover:text-white/78 hover:bg-white/[0.07] rounded-none h-9 w-9 ml-1"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Meniu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="w-[280px] sm:w-[340px] bg-[#0a0804]/97 backdrop-blur-2xl border-l border-white/[0.07] rounded-none"
-            >
-              <SheetHeader className="pb-6 border-b border-white/[0.07]">
-                <SheetTitle className="flex flex-col items-start gap-0.5">
-                  <span className="font-display italic font-light text-white/28 text-[10px] tracking-[0.22em]">
-                    Meșteri de
-                  </span>
-                  <span className="font-condensed font-bold text-white/85 text-xl tracking-[0.26em] uppercase">
-                    Tulcea
-                  </span>
-                </SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col mt-6">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      "font-condensed text-sm tracking-[0.20em] uppercase transition-colors py-4 border-b border-white/[0.06] flex items-center justify-between",
-                      pathname === link.href
-                        ? "text-primary"
-                        : "text-white/40 hover:text-white/76"
-                    )}
-                  >
-                    {link.label}
-                    {pathname === link.href && (
-                      <span className="w-[5px] h-[5px] bg-primary rotate-45 shrink-0" />
-                    )}
-                  </Link>
-                ))}
-                {!user && (
-                  <div className="pt-8 flex flex-col gap-3">
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button
-                        variant="outline"
-                        className="w-full border-white/[0.11] bg-transparent text-white/52 hover:bg-white/[0.06] hover:text-white/78 rounded-none font-condensed tracking-[0.12em] uppercase text-xs"
-                      >
-                        Autentificare
-                      </Button>
-                    </Link>
-                    <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full bg-primary/82 hover:bg-primary text-white rounded-none font-condensed tracking-[0.12em] uppercase text-xs border border-primary/30">
-                        Înregistrare
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </header>
