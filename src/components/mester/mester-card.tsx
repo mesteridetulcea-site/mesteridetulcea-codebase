@@ -3,8 +3,6 @@ import Image from "next/image"
 import { Star, MapPin, ArrowUpRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { MesterWithCategory } from "@/types/database"
-import type { SubscriptionTier } from "@/types/database"
-import { SUBSCRIPTION_TIERS } from "@/lib/constants"
 
 interface MesterCardProps {
   mester: MesterWithCategory
@@ -12,7 +10,7 @@ interface MesterCardProps {
 }
 
 export function MesterCard({ mester, coverPhoto }: MesterCardProps) {
-  const tierConfig = SUBSCRIPTION_TIERS[mester.subscription_tier as SubscriptionTier]
+  const isPremium = mester.subscription_tier === "premium"
   const primaryCategory = mester.mester_categories?.[0]?.category
 
   return (
@@ -52,12 +50,14 @@ export function MesterCard({ mester, coverPhoto }: MesterCardProps) {
           )}
 
           {/* Tier badge */}
-          <Badge
-            variant={mester.subscription_tier as SubscriptionTier}
-            className="absolute top-3 left-3 rounded-none text-xs"
-          >
-            {tierConfig.label}
-          </Badge>
+          {isPremium && (
+            <Badge
+              variant="premium"
+              className="absolute top-3 left-3 rounded-none text-xs"
+            >
+              Premium
+            </Badge>
+          )}
 
           {/* Visit icon overlay on hover */}
           <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

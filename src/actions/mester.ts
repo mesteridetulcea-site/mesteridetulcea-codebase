@@ -181,7 +181,7 @@ export async function applyAsMester(formData: FormData) {
       whatsapp_number: whatsappNumber || null,
       neighborhood: neighborhood || null,
       city: "Tulcea",
-      subscription_tier: "ucenic",
+      subscription_tier: "standard",
       approval_status: "pending",
       is_featured: false,
       avg_rating: 0,

@@ -7,7 +7,6 @@ import { approveMester, rejectMester, toggleMesterFeatured, getAdminMesters } fr
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/lib/hooks/use-toast"
 import type { ApprovalStatus, SubscriptionTier } from "@/types/database"
-import { SUBSCRIPTION_TIERS } from "@/lib/constants"
 
 interface MesterWithDetails {
   id: string
@@ -26,12 +25,7 @@ const panel = {
   borderRadius: "6px",
 } as const
 
-const tierColors: Record<string, string> = {
-  ucenic:  "#b8956a",
-  mester:  "hsl(38 68% 44%)",
-  master:  "hsl(38 80% 42%)",
-  premium: "hsl(38 90% 38%)",
-}
+const premiumColor = "hsl(38 90% 38%)"
 
 export default function AdminMestersPage() {
   const [mesters, setMesters]               = useState<MesterWithDetails[]>([])
@@ -228,7 +222,7 @@ export default function AdminMestersPage() {
               const isLoadingCard = actionLoading === mester.id
               const isPending     = mester.approval_status === "pending"
               const categoryName  = mester.mester_categories?.[0]?.category?.name
-              const tierColor     = tierColors[mester.subscription_tier] || "#b8956a"
+              const isPremium     = mester.subscription_tier === "premium"
 
               return (
                 <div key={mester.id} style={panel}>
@@ -240,18 +234,20 @@ export default function AdminMestersPage() {
                         <h3 className="font-condensed tracking-[0.06em] text-[#1a0f05] font-semibold" style={{ fontSize: "16px" }}>
                           {mester.display_name}
                         </h3>
-                        {/* Tier badge */}
-                        <span
-                          className="font-condensed tracking-[0.16em] uppercase text-[10px] px-2 py-0.5"
-                          style={{
-                            color: tierColor,
-                            background: `${tierColor}14`,
-                            border: `1px solid ${tierColor}40`,
-                            borderRadius: "4px",
-                          }}
-                        >
-                          {SUBSCRIPTION_TIERS[mester.subscription_tier].label}
-                        </span>
+                        {/* Tier badge — only for premium */}
+                        {isPremium && (
+                          <span
+                            className="font-condensed tracking-[0.16em] uppercase text-[10px] px-2 py-0.5"
+                            style={{
+                              color: premiumColor,
+                              background: `${premiumColor}14`,
+                              border: `1px solid ${premiumColor}40`,
+                              borderRadius: "4px",
+                            }}
+                          >
+                            Premium
+                          </span>
+                        )}
                         {mester.is_featured && (
                           <span
                             className="font-condensed tracking-[0.14em] uppercase text-[10px] px-2 py-0.5"

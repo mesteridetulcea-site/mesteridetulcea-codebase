@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type SubscriptionTier = "ucenic" | "mester" | "master" | "premium"
+export type SubscriptionTier = "standard" | "premium"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type UserRole = "client" | "mester" | "admin"
 export type PhotoType = "profile" | "work" | "certificate"

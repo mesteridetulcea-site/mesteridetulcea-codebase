@@ -101,15 +101,6 @@ export default async function SetariPage() {
         {/* ── Content ── */}
         <div className="container px-4 md:px-8 max-w-2xl mx-auto py-10 md:py-14">
 
-          {/* Back link */}
-          <a
-            href="/cont"
-            className="inline-block font-condensed tracking-[0.16em] uppercase transition-colors duration-150 mb-6"
-            style={{ fontSize: "11px", color: "#8a6848" }}
-          >
-            ← Înapoi la cont
-          </a>
-
           {isMester ? (
             <MesterSettingsForm
               avatarUrl={profile?.avatar_url ?? null}
