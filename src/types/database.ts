@@ -351,6 +351,64 @@ export interface Database {
           created_at?: string
         }
       }
+      donations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          phone: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description: string
+          phone: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          phone?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      donation_photos: {
+        Row: {
+          id: string
+          donation_id: string
+          url: string
+          storage_path: string | null
+          approval_status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          donation_id: string
+          url: string
+          storage_path?: string | null
+          approval_status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          donation_id?: string
+          url?: string
+          storage_path?: string | null
+          approval_status?: string
+          created_at?: string
+        }
+      }
       admin_logs: {
         Row: {
           id: string
@@ -409,6 +467,9 @@ export type CererePhoto = Database["public"]["Tables"]["cerere_photos"]["Row"]
 export type MesterProject = Database["public"]["Tables"]["mester_projects"]["Row"]
 export type ProjectPhoto = Database["public"]["Tables"]["project_photos"]["Row"]
 export type ProjectWithPhotos = MesterProject & { project_photos: ProjectPhoto[] }
+export type Donation = Database["public"]["Tables"]["donations"]["Row"]
+export type DonationPhoto = Database["public"]["Tables"]["donation_photos"]["Row"]
+export type DonationWithPhotos = Donation & { donation_photos: DonationPhoto[] }
 
 // Extended types with relations
 export type CategoryRef = {
@@ -444,6 +505,9 @@ export type NotificationType =
   | 'poza_incarcata'
   | 'review_trimis'
   | 'cont_actualizat'
+  | 'donatie_postata'
+  | 'donatie_poza_aprobata'
+  | 'donatie_poza_respinsa'
 
 export type Notification = {
   id: string

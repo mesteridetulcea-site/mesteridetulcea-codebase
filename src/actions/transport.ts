@@ -144,11 +144,11 @@ export async function getTransportCereri(): Promise<TransportRequest[]> {
     .from("transport_requests")
     .select("id, client_id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, description, phone, status, created_at, updated_at")
     .eq("status", "open")
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false }) as { data: TransportRequest[] | null }
 
   return (data || []).filter(
     (r) => !r.client_id || !bannedIds.has(r.client_id)
-  ) as TransportRequest[]
+  )
 }
 
 export async function getTransportRequestById(id: string): Promise<TransportRequest | null> {

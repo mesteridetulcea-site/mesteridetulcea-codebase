@@ -11,6 +11,7 @@ async function getStats() {
     { count: pendingMesterPhotos },
     { count: pendingCererePhotos },
     { count: pendingProjectPhotos },
+    { count: pendingDonationPhotos },
     { count: totalReviews },
   ] = await Promise.all([
     supabase.from("mester_profiles").select("*", { count: "exact", head: true }).eq("approval_status", "approved"),
@@ -18,13 +19,14 @@ async function getStats() {
     supabase.from("mester_photos").select("*", { count: "exact", head: true }).eq("approval_status", "pending"),
     supabase.from("cerere_photos").select("*", { count: "exact", head: true }).eq("approval_status", "pending"),
     supabase.from("project_photos").select("*", { count: "exact", head: true }).eq("approval_status", "pending"),
+    supabase.from("donation_photos").select("*", { count: "exact", head: true }).eq("approval_status", "pending") as unknown as Promise<{ count: number | null }>,
     supabase.from("reviews").select("*", { count: "exact", head: true }),
   ])
 
   return {
     totalMesters:  totalMesters  || 0,
     pendingMesters: pendingMesters || 0,
-    pendingPhotos: (pendingMesterPhotos || 0) + (pendingCererePhotos || 0) + (pendingProjectPhotos || 0),
+    pendingPhotos: (pendingMesterPhotos || 0) + (pendingCererePhotos || 0) + (pendingProjectPhotos || 0) + (pendingDonationPhotos || 0),
     totalReviews:  totalReviews  || 0,
   }
 }

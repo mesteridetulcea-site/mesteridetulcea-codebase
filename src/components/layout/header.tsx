@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ClipboardList,
   Truck,
+  Gift,
 } from "lucide-react"
 import { useUser } from "@/lib/hooks/use-user"
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,7 @@ const staticNavLinks = [
   { href: "/mesteri", label: "Meșteri" },
   { href: "/cauta", label: "Caută" },
   { href: "/transport", label: "Transport" },
+  { href: "/donatii", label: "Donații" },
 ]
 
 export function Header() {
@@ -227,6 +229,12 @@ export function Header() {
                   <Link href="/cont/favorite">
                     <Heart className="mr-2 h-4 w-4" />
                     <span className="font-condensed tracking-wide">Favorite</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-white/50 focus:text-primary focus:bg-primary/10 rounded-none">
+                  <Link href="/cont/donatii">
+                    <Gift className="mr-2 h-4 w-4" />
+                    <span className="font-condensed tracking-wide">Donațiile mele</span>
                   </Link>
                 </DropdownMenuItem>
                 {profile.role === "client" && !hasMesterProfile && (

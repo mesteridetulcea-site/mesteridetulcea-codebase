@@ -640,6 +640,84 @@ export async function banUser(userId: string) {
   return { success: true }
 }
 
+export async function approveDonationPhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: donationPhoto } = await supabase
+    .from("donation_photos")
+    .select("donation_id, donation:donations(user_id, title)")
+    .eq("id", photoId)
+    .single() as {
+      data: {
+        donation_id: string
+        donation: { user_id: string; title: string } | null
+      } | null
+    }
+
+  const { error } = await supabase
+    .from("donation_photos")
+    .update({ approval_status: "approved" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut aproba fotografia" }
+
+  if (donationPhoto?.donation?.user_id) {
+    await createNotification({
+      userId: donationPhoto.donation.user_id,
+      type: "donatie_poza_aprobata",
+      title: "Fotografia donației a fost aprobată",
+      message: `O fotografie adăugată la donația „${donationPhoto.donation.title}" este acum vizibilă.`,
+      entityType: "donation_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
+  return { success: true }
+}
+
+export async function rejectDonationPhoto(photoId: string) {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error }
+
+  const supabase = await createAdminClient()
+
+  const { data: donationPhoto } = await supabase
+    .from("donation_photos")
+    .select("donation_id, donation:donations(user_id, title)")
+    .eq("id", photoId)
+    .single() as {
+      data: {
+        donation_id: string
+        donation: { user_id: string; title: string } | null
+      } | null
+    }
+
+  const { error } = await supabase
+    .from("donation_photos")
+    .update({ approval_status: "rejected" } as never)
+    .eq("id", photoId)
+
+  if (error) return { error: "Nu s-a putut respinge fotografia" }
+
+  if (donationPhoto?.donation?.user_id) {
+    await createNotification({
+      userId: donationPhoto.donation.user_id,
+      type: "donatie_poza_respinsa",
+      title: "Fotografia donației a fost respinsă",
+      message: `O fotografie adăugată la donația „${donationPhoto.donation.title}" nu respectă ghidurile platformei.`,
+      entityType: "donation_photo",
+      entityId: photoId,
+    })
+  }
+
+  revalidatePath("/admin/fotografii")
+  return { success: true }
+}
+
 export async function unbanUser(userId: string) {
   const auth = await checkIsAdmin()
   if (!auth.isAdmin) return { error: auth.error }
@@ -663,4 +741,23 @@ export async function unbanUser(userId: string) {
 
   revalidatePath("/admin/utilizatori")
   return { success: true }
+}
+
+export async function getPendingDonationPhotos() {
+  const auth = await checkIsAdmin()
+  if (!auth.isAdmin) return { error: auth.error, data: null }
+
+  const supabase = await createAdminClient()
+
+  const { data, error } = await supabase
+    .from("donation_photos")
+    .select("id, url, created_at, donation:donations(title)")
+    .eq("approval_status", "pending")
+    .order("created_at", { ascending: false }) as {
+      data: { id: string; url: string; created_at: string; donation: { title: string } | null }[] | null
+      error: unknown
+    }
+
+  if (error) return { error: "Nu s-au putut încărca fotografiile", data: null }
+  return { data: data ?? [], error: null }
 }

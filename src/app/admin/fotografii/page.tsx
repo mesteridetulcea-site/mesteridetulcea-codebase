@@ -11,6 +11,9 @@ import {
   rejectCererePhoto,
   approveProjectPhoto,
   rejectProjectPhoto,
+  approveDonationPhoto,
+  rejectDonationPhoto,
+  getPendingDonationPhotos,
 } from "@/actions/admin"
 import { toast } from "@/lib/hooks/use-toast"
 
@@ -37,6 +40,13 @@ interface CererePhotoWithCerere {
   url: string
   created_at: string
   cerere: { title: string | null; original_message: string } | null
+}
+
+interface DonationPhotoWithDonation {
+  id: string
+  url: string
+  created_at: string
+  donation: { title: string } | null
 }
 
 const panel = {
@@ -84,12 +94,13 @@ function RejectBtn({ onClick, loading }: { onClick: () => void; loading: boolean
 }
 
 export default function AdminPhotosPage() {
-  const [tab, setTab]                       = useState<"mesteri" | "cereri">("mesteri")
-  const [mesterPhotos, setMesterPhotos]     = useState<PhotoWithMester[]>([])
-  const [projectPhotos, setProjectPhotos]   = useState<ProjectPhotoWithProject[]>([])
-  const [cererePhotos, setCererePhotos]     = useState<CererePhotoWithCerere[]>([])
-  const [loading, setLoading]               = useState(true)
-  const [actionLoading, setActionLoading]   = useState<string | null>(null)
+  const [tab, setTab]                           = useState<"mesteri" | "cereri" | "donatii">("mesteri")
+  const [mesterPhotos, setMesterPhotos]         = useState<PhotoWithMester[]>([])
+  const [projectPhotos, setProjectPhotos]       = useState<ProjectPhotoWithProject[]>([])
+  const [cererePhotos, setCererePhotos]         = useState<CererePhotoWithCerere[]>([])
+  const [donationPhotos, setDonationPhotos]     = useState<DonationPhotoWithDonation[]>([])
+  const [loading, setLoading]                   = useState(true)
+  const [actionLoading, setActionLoading]       = useState<string | null>(null)
 
   useEffect(() => { loadAll() }, [])
 
@@ -115,9 +126,12 @@ export default function AdminPhotosPage() {
         .order("created_at", { ascending: false }),
     ])
 
+    const dpResult = await getPendingDonationPhotos()
+
     setMesterPhotos((mp as PhotoWithMester[]) || [])
     setProjectPhotos((pp as ProjectPhotoWithProject[]) || [])
     setCererePhotos((cp as CererePhotoWithCerere[]) || [])
+    setDonationPhotos((dpResult.data as DonationPhotoWithDonation[]) || [])
     setLoading(false)
   }
 
@@ -136,12 +150,14 @@ export default function AdminPhotosPage() {
     setActionLoading(null)
   }
 
-  const mesterTabCount = mesterPhotos.length + projectPhotos.length
-  const cerereTabCount = cererePhotos.length
+  const mesterTabCount  = mesterPhotos.length + projectPhotos.length
+  const cerereTabCount  = cererePhotos.length
+  const donatiiTabCount = donationPhotos.length
 
   const tabList = [
-    { key: "mesteri" as const, label: "Meșteri",  count: mesterTabCount },
-    { key: "cereri"  as const, label: "Cereri",   count: cerereTabCount },
+    { key: "mesteri"  as const, label: "Meșteri",  count: mesterTabCount  },
+    { key: "cereri"   as const, label: "Cereri",   count: cerereTabCount  },
+    { key: "donatii"  as const, label: "Donații",  count: donatiiTabCount },
   ]
 
   return (
@@ -161,7 +177,7 @@ export default function AdminPhotosPage() {
           Aprobare fotografii
         </h1>
         <p className="text-sm text-[#8a6848] mt-2">
-          {tab === "mesteri" ? mesterTabCount : cerereTabCount} fotografii în așteptare
+          {tab === "mesteri" ? mesterTabCount : tab === "cereri" ? cerereTabCount : donatiiTabCount} fotografii în așteptare
         </p>
       </div>
 
@@ -301,7 +317,44 @@ export default function AdminPhotosPage() {
 
             </div>
           )
-        ) : cererePhotos.length === 0 ? (
+        ) : tab === "cereri" ? (
+          cererePhotos.length === 0 ? (
+            <div className="py-16 flex flex-col items-center gap-3" style={panel}>
+              <Upload className="h-8 w-8 text-[#d4c0a0]" />
+              <p className="font-condensed tracking-[0.14em] uppercase text-sm text-[#b8956a]">
+                Nu există fotografii în așteptare
+              </p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {cererePhotos.map((photo) => {
+                const isLoading = actionLoading === photo.id
+                const title =
+                  photo.cerere?.title ||
+                  photo.cerere?.original_message?.slice(0, 40) ||
+                  "Cerere"
+                return (
+                  <div key={photo.id} style={{ ...panel, overflow: "hidden" }}>
+                    <div className="relative aspect-[4/3]" style={{ background: "#f0e8d8" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photo.url} alt="Fotografie cerere" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="p-4">
+                      <p className="font-condensed tracking-[0.06em] text-sm font-semibold text-[#1a0f05] truncate">{title}</p>
+                      <p className="text-xs text-[#b8956a] mt-0.5">
+                        {new Date(photo.created_at).toLocaleDateString("ro-RO")}
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <ApproveBtn onClick={() => handle(photo.id, approveCererePhoto)} loading={isLoading} />
+                        <RejectBtn  onClick={() => handle(photo.id, rejectCererePhoto)}  loading={isLoading} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        ) : donationPhotos.length === 0 ? (
           <div className="py-16 flex flex-col items-center gap-3" style={panel}>
             <Upload className="h-8 w-8 text-[#d4c0a0]" />
             <p className="font-condensed tracking-[0.14em] uppercase text-sm text-[#b8956a]">
@@ -310,26 +363,24 @@ export default function AdminPhotosPage() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {cererePhotos.map((photo) => {
+            {donationPhotos.map((photo) => {
               const isLoading = actionLoading === photo.id
-              const title =
-                photo.cerere?.title ||
-                photo.cerere?.original_message?.slice(0, 40) ||
-                "Cerere"
               return (
                 <div key={photo.id} style={{ ...panel, overflow: "hidden" }}>
                   <div className="relative aspect-[4/3]" style={{ background: "#f0e8d8" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="Fotografie cerere" className="w-full h-full object-cover" />
+                    <img src={photo.url} alt="Fotografie donație" className="w-full h-full object-cover" />
                   </div>
                   <div className="p-4">
-                    <p className="font-condensed tracking-[0.06em] text-sm font-semibold text-[#1a0f05] truncate">{title}</p>
+                    <p className="font-condensed tracking-[0.06em] text-sm font-semibold text-[#1a0f05] truncate">
+                      {photo.donation?.title || "Donație"}
+                    </p>
                     <p className="text-xs text-[#b8956a] mt-0.5">
                       {new Date(photo.created_at).toLocaleDateString("ro-RO")}
                     </p>
                     <div className="flex gap-2 mt-3">
-                      <ApproveBtn onClick={() => handle(photo.id, approveCererePhoto)} loading={isLoading} />
-                      <RejectBtn  onClick={() => handle(photo.id, rejectCererePhoto)}  loading={isLoading} />
+                      <ApproveBtn onClick={() => handle(photo.id, approveDonationPhoto)} loading={isLoading} />
+                      <RejectBtn  onClick={() => handle(photo.id, rejectDonationPhoto)}  loading={isLoading} />
                     </div>
                   </div>
                 </div>

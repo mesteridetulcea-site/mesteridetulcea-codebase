@@ -73,6 +73,33 @@ export async function uploadCererePhoto(
   return data.publicUrl
 }
 
+export async function uploadDonationPhoto(
+  userId: string,
+  donationId: string,
+  file: File
+): Promise<{ url: string; storagePath: string } | null> {
+  if (!file || file.size === 0) return null
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return null
+  if (file.size > MAX_AVATAR_SIZE) return null
+
+  const ext = file.name.split(".").pop() ?? "jpg"
+  const path = `${userId}/${donationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const adminClient = await createAdminClient()
+
+  const { error } = await adminClient.storage
+    .from("donation-photos")
+    .upload(path, file, { upsert: false, contentType: file.type })
+
+  if (error) {
+    console.error("Donation photo upload error:", error)
+    return null
+  }
+
+  const { data } = adminClient.storage.from("donation-photos").getPublicUrl(path)
+  return { url: data.publicUrl, storagePath: path }
+}
+
 export async function uploadProjectPhoto(
   mesterId: string,
   projectId: string,
