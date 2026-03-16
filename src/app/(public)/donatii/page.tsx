@@ -76,7 +76,7 @@ export default async function DonatiiPage() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
           <span className="font-display font-bold leading-none tracking-tighter whitespace-nowrap"
             style={{ fontSize: "clamp(56px, 16vw, 200px)", color: "rgba(255,255,255,0.022)" }}>
-            DONAȚII
+            
           </span>
         </div>
 
@@ -137,7 +137,7 @@ export default async function DonatiiPage() {
           CONTENT
       ══════════════════════════════════════════ */}
       <div className="bg-white">
-        <div className="container py-12">
+        <div className="container py-8 md:py-12 pb-24 md:pb-12">
 
           {/* Header row */}
           <div className="flex items-center justify-between mb-8">
@@ -178,7 +178,7 @@ export default async function DonatiiPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-[#584528]/08">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-[#584528]/08">
               {donations.map((donation) => (
                 <DonationCard
                   key={donation.id}

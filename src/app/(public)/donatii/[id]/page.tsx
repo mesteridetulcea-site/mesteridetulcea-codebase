@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Phone, Clock, Gift } from "lucide-react"
+import { ArrowLeft, Phone, Clock, Gift, PhoneCall } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ro } from "date-fns/locale"
 import { createClient } from "@/lib/supabase/server"
@@ -104,8 +104,37 @@ export default async function DonatiePage({ params }: Props) {
       {/* ══════════════════════════════════════════
           CONTENT
       ══════════════════════════════════════════ */}
+      {/* ── MOBILE STICKY BOTTOM CONTACT BAR ── */}
+      {!isOwner && donation.status !== "closed" && (
+        <div
+          className="lg:hidden fixed left-0 right-0 z-40 flex items-center gap-3 px-4 py-3"
+          style={{
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 58px)",
+            background: "#0d0905",
+            borderTop: "1px solid rgba(196,146,30,0.18)",
+          }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="font-condensed tracking-[0.1em] uppercase text-[10px] text-white/35 truncate">
+              Contactează donatorul
+            </p>
+            <p className="font-condensed tracking-widest text-white/80 text-sm truncate">
+              {donation.phone}
+            </p>
+          </div>
+          <a
+            href={`tel:${donation.phone}`}
+            className="shrink-0 flex items-center gap-2 bg-primary hover:bg-primary/88 text-white px-5 h-11 font-condensed tracking-[0.18em] uppercase text-sm transition-colors duration-200"
+            style={{ borderRadius: "8px" }}
+          >
+            <PhoneCall className="h-4 w-4" />
+            Sună
+          </a>
+        </div>
+      )}
+
       <div className="bg-white">
-        <div className="container py-12">
+        <div className="container py-12 pb-36 lg:pb-12">
           <div className="grid lg:grid-cols-3 gap-8">
 
             {/* Main content */}
@@ -170,8 +199,8 @@ export default async function DonatiePage({ params }: Props) {
               )}
             </div>
 
-            {/* Sidebar — contact */}
-            <div className="lg:col-span-1">
+            {/* Sidebar — contact (hidden on mobile, shown via sticky bar) */}
+            <div className="hidden lg:block lg:col-span-1">
               <div className="bg-[#faf7f0] border border-[#584528]/12 p-6 sticky top-24">
 
                 <div className="flex items-center gap-3 mb-5">

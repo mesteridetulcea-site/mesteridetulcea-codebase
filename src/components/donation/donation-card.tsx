@@ -61,29 +61,29 @@ export function DonationCard({ donation, currentUserId }: DonationCardProps) {
         </div>
 
         {/* Content */}
-        <div className="px-5 pt-4 pb-5">
+        <div className="px-3 pt-3 pb-4 sm:px-5 sm:pt-4 sm:pb-5">
           <h2
-            className="font-display text-[#1a1208] group-hover:text-primary transition-colors duration-200 leading-snug mb-2 line-clamp-2"
-            style={{ fontSize: "clamp(1rem, 2vw, 1.2rem)", fontWeight: 500 }}
+            className="font-display text-[#1a1208] group-hover:text-primary transition-colors duration-200 leading-snug mb-1.5 line-clamp-2"
+            style={{ fontSize: "clamp(0.85rem, 2vw, 1.2rem)", fontWeight: 500 }}
           >
             {donation.title}
           </h2>
 
-          <p className="text-[#3d2e14]/60 text-sm leading-relaxed line-clamp-2 mb-3">
+          <p className="hidden sm:block text-[#3d2e14]/60 text-sm leading-relaxed line-clamp-2 mb-3">
             {donation.description}
           </p>
 
-          <div className="flex items-center justify-between">
-            <time className="flex items-center gap-1.5 font-condensed text-[10px] tracking-[0.14em] uppercase text-[#584528]/35">
-              <Clock className="h-3 w-3" />
+          <div className="flex items-center justify-between mt-2">
+            <time className="flex items-center gap-1 font-condensed text-[9px] sm:text-[10px] tracking-[0.12em] uppercase text-[#584528]/35">
+              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true, locale: ro })}
             </time>
 
             {approvedPhotos.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                <ImageIcon className="h-3 w-3 text-[#584528]/35" />
-                <span className="font-condensed text-[10px] tracking-[0.14em] uppercase text-[#584528]/40">
-                  {approvedPhotos.length} {approvedPhotos.length === 1 ? "foto" : "poze"}
+              <div className="flex items-center gap-1">
+                <ImageIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#584528]/35" />
+                <span className="font-condensed text-[9px] sm:text-[10px] tracking-[0.12em] uppercase text-[#584528]/40">
+                  {approvedPhotos.length}
                 </span>
               </div>
             )}

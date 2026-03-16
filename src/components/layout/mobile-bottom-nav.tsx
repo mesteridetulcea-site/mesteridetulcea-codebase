@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Users, Search, Truck, Heart, Settings, LogOut, LayoutDashboard, ClipboardList, User, Bell, CheckCheck } from "lucide-react"
+import { Users, Search, Truck, Heart, Settings, LogOut, LayoutDashboard, ClipboardList, User, Bell, CheckCheck, Gift } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useUser } from "@/lib/hooks/use-user"
 import { useNotifications } from "@/lib/hooks/use-notifications"
@@ -89,6 +89,7 @@ export function MobileBottomNav() {
   const navItems = [
     { href: "/mesteri",   icon: Users,    label: "Meșteri",   matchExact: false },
     { href: "/cauta",     icon: Search,   label: "Caută",     matchExact: false },
+    { href: "/donatii",   icon: Gift,     label: "Donații",   matchExact: false },
     { href: "/transport", icon: Truck,    label: "Transport", matchExact: false },
     ...(user ? [{ href: "/cont/favorite", icon: Heart, label: "Favorite", matchExact: false }] : []),
   ]
