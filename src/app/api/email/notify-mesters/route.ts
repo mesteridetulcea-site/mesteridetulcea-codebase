@@ -1,16 +1,47 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient, createClient } from "@/lib/supabase/server"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+/** Escape HTML special characters to prevent injection in email body */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;")
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: Request) {
   try {
-    const { query, categoryId, userId } = await request.json()
+    const body = await request.json()
+    const { query, categoryId } = body
 
-    if (!query) {
+    if (!query || typeof query !== "string") {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
+    if (query.trim().length < 3) {
+      return NextResponse.json({ error: "Query too short" }, { status: 400 })
+    }
+    if (query.length > 500) {
+      return NextResponse.json({ error: "Query too long" }, { status: 400 })
+    }
+    if (categoryId && !UUID_REGEX.test(categoryId)) {
+      return NextResponse.json({ error: "Invalid categoryId" }, { status: 400 })
+    }
+
+    // Require authenticated session — reject unauthenticated requests
+    const userClient = await createClient()
+    const { data: { user: sessionUser } } = await userClient.auth.getUser()
+    if (!sessionUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = sessionUser.id
 
     const supabase = await createAdminClient()
 
@@ -76,12 +107,12 @@ export async function POST(request: Request) {
           html: `
             <h2>Ai primit o nouă cerere de servicii!</h2>
             <p>Un potențial client caută serviciile tale pe Meșteri de Tulcea.</p>
-            <p><strong>Cererea:</strong> ${query}</p>
+            <p><strong>Cererea:</strong> ${escapeHtml(query)}</p>
             <p>
               Intră în panoul tău pentru a vedea mai multe detalii și a contacta clientul.
             </p>
             <p>
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/mester-cont">
+              <a href="${escapeHtml(process.env.NEXT_PUBLIC_APP_URL ?? "")}/mester-cont">
                 Mergi la Panoul Meșter
               </a>
             </p>
