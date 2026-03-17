@@ -60,7 +60,7 @@ export async function signUpMester(formData: FormData) {
   const phone = formData.get("phone") as string | null
   const avatarFile = formData.get("avatar") as File | null
   const businessName = formData.get("businessName") as string
-  const categoryId = formData.get("categoryId") as string
+  const categoryIds = formData.getAll("categoryId") as string[]
   const description = formData.get("description") as string
   const experienceYears = formData.get("experienceYears") as string
   const whatsappNumber = formData.get("whatsappNumber") as string
@@ -122,12 +122,14 @@ export async function signUpMester(formData: FormData) {
       .select("id")
       .single()
 
-    // Associate category
-    if (newMester && categoryId) {
-      await adminClient.from("mester_categories").insert({
-        mester_id: (newMester as { id: string }).id,
-        category_id: categoryId,
-      } as never)
+    // Associate categories (multiple)
+    if (newMester && categoryIds.length > 0) {
+      await adminClient.from("mester_categories").insert(
+        categoryIds.map((id) => ({
+          mester_id: (newMester as { id: string }).id,
+          category_id: id,
+        })) as never[]
+      )
     }
   }
 
@@ -220,5 +222,5 @@ export async function updatePassword(formData: FormData) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/cont")
+  redirect("/")
 }

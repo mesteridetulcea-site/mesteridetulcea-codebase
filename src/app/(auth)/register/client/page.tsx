@@ -76,6 +76,7 @@ export default function RegisterClientPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,6 +89,11 @@ export default function RegisterClientPage() {
     setLoading(true)
     setError(null)
 
+    if (!termsAccepted) {
+      setError("Trebuie să accepți Termenii și Condițiile pentru a continua")
+      setLoading(false)
+      return
+    }
     const password = formData.get("password") as string
     const confirmPassword = formData.get("confirmPassword") as string
     if (password !== confirmPassword) {
@@ -356,6 +362,9 @@ export default function RegisterClientPage() {
                       className="h-12 px-4 bg-transparent border-0 text-white text-[15px] placeholder:text-white/22 font-sans rounded-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                   </MobileFieldBox>
 
+                  {/* Terms checkbox */}
+                  <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
+
                   {error && (
                     <div className="border border-destructive/30 bg-destructive/[0.08] px-4 py-2.5">
                       <p className="text-destructive text-xs font-condensed tracking-wide">{error}</p>
@@ -488,6 +497,9 @@ export default function RegisterClientPage() {
                 </DesktopFieldBox>
               </div>
 
+              {/* Terms checkbox */}
+              <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
+
               {error && (
                 <div className="border border-destructive/30 bg-destructive/[0.08] px-4 py-2.5">
                   <p className="text-destructive text-xs font-condensed tracking-wide">{error}</p>
@@ -530,6 +542,46 @@ export default function RegisterClientPage() {
       </div>
 
     </div>
+  )
+}
+
+/* ── Terms checkbox ── */
+function TermsCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer !mt-4 group">
+      <div className="relative shrink-0 mt-0.5">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only"
+        />
+        <div
+          className="w-4 h-4 border transition-colors duration-150 flex items-center justify-center"
+          style={{
+            borderColor: checked ? "#a07828" : "rgba(160,112,32,0.35)",
+            background: checked ? "rgba(160,112,32,0.18)" : "transparent",
+          }}
+        >
+          {checked && (
+            <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+              <path d="M1 3.5L3.5 6L8 1" stroke="#a07828" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      </div>
+      <span className="font-condensed tracking-wide leading-relaxed" style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
+        Am citit și sunt de acord cu{" "}
+        <Link href="/termeni" target="_blank" className="underline underline-offset-2 decoration-primary/40 hover:text-primary transition-colors duration-150" style={{ color: "#a07828" }}>
+          Termenii și Condițiile
+        </Link>{" "}
+        și cu{" "}
+        <Link href="/confidentialitate" target="_blank" className="underline underline-offset-2 decoration-primary/40 hover:text-primary transition-colors duration-150" style={{ color: "#a07828" }}>
+          Politica de Confidențialitate
+        </Link>
+        .
+      </span>
+    </label>
   )
 }
 

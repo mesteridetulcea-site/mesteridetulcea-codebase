@@ -111,7 +111,7 @@ export default async function SetariPage() {
                 experienceYears: mester.years_experience?.toString() || "",
                 whatsappNumber: mester.whatsapp_number || "",
                 address: mester.neighborhood || "",
-                categoryId: mester.mester_categories?.[0]?.category_id || "",
+                categoryIds: mester.mester_categories?.map((c) => c.category_id) || [],
               }}
             />
           ) : (

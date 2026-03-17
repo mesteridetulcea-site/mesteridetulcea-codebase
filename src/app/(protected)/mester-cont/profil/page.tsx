@@ -7,14 +7,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/lib/hooks/use-toast"
 import type { Category } from "@/types/database"
 
@@ -42,13 +34,13 @@ export default function MesterProfilePage() {
   const [avatarUrl, setAvatarUrl]         = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef                      = useRef<HTMLInputElement>(null)
+  const [categoryIds, setCategoryIds]     = useState<string[]>([])
   const [formData, setFormData]           = useState({
     businessName:    "",
     description:     "",
     experienceYears: "",
     whatsappNumber:  "",
     address:         "",
-    categoryId:      "",
   })
 
   useEffect(() => {
@@ -74,8 +66,8 @@ export default function MesterProfilePage() {
           experienceYears: mester.years_experience?.toString() || "",
           whatsappNumber:  mester.whatsapp_number || "",
           address:         mester.neighborhood || "",
-          categoryId:      mester.mester_categories?.[0]?.category_id || "",
         })
+        setCategoryIds(mester.mester_categories?.map((c) => c.category_id) || [])
       }
       setLoading(false)
     }
@@ -93,6 +85,7 @@ export default function MesterProfilePage() {
     setSaving(true)
     const form = new FormData()
     Object.entries(formData).forEach(([k, v]) => form.append(k, v))
+    categoryIds.forEach((id) => form.append("categoryId", id))
     const file = fileInputRef.current?.files?.[0]
     if (file) form.append("avatar", file)
     const result = await updateMesterProfile(form)
@@ -211,20 +204,32 @@ export default function MesterProfilePage() {
                 </div>
 
                 <div>
-                  <FieldLabel>Categorie *</FieldLabel>
-                  <Select
-                    value={formData.categoryId}
-                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
-                  >
-                    <SelectTrigger className="bg-[#faf6ed] border-[#d4c0a0] text-[#1a0f05] rounded-[4px] h-11 focus:ring-0 focus:ring-offset-0 text-sm">
-                      <SelectValue placeholder="Selectează categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FieldLabel>Calificări / Categorii *</FieldLabel>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {categories.map((cat) => {
+                      const active = categoryIds.includes(cat.id)
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() =>
+                            setCategoryIds(
+                              active ? categoryIds.filter((x) => x !== cat.id) : [...categoryIds, cat.id]
+                            )
+                          }
+                          className="font-condensed tracking-[0.1em] uppercase text-xs transition-colors duration-150 px-3 py-1.5"
+                          style={{
+                            border: `1px solid ${active ? "#a07828" : "#d4c0a0"}`,
+                            background: active ? "rgba(160,112,32,0.1)" : "#faf6ed",
+                            color: active ? "#7a5a18" : "#8a6848",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          {cat.name}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 <div>

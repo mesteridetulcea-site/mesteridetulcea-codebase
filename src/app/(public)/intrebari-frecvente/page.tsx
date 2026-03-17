@@ -1,35 +1,35 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Întrebări frecvente — Meșteri de Tulcea",
   description:
-    "Răspunsuri la cele mai frecvente întrebări despre platforma Meșteri de Tulcea, atât pentru clienți cât și pentru meșteri.",
+    "Răspunsuri la cele mai frecvente întrebări despre platforma Meșteri de Tulcea — pentru clienți și meșteri.",
 }
 
-const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = [
+const faq: { id: string; category: string; items: { q: string; a: React.ReactNode }[] }[] = [
   {
+    id: "generale",
     category: "Întrebări generale",
     items: [
       {
         q: "Ce este Meșteri de Tulcea?",
-        a: "Meșteri de Tulcea este o platformă online care conectează locuitorii din județul Tulcea cu meșteri locali verificați — electricieni, instalatori, zidari, zugravi, tâmplari și multe alte specialități. Scopul nostru este să faci mai ușor și mai sigur procesul de a găsi un meșter de încredere.",
+        a: "Meșteri de Tulcea este un site de prezentare și listare prin care poți găsi meșteri și prestatori de servicii din județul Tulcea. Publicarea unui profil pe platformă nu constituie o recomandare, o garanție sau o certificare a calității serviciilor prestate.",
       },
       {
         q: "Este gratuit să folosesc platforma?",
-        a: "Da. Căutarea meșterilor și vizualizarea profilurilor este complet gratuită pentru clienți. Crearea unui cont de client (necesar pentru a lăsa recenzii) este de asemenea gratuită. Meșterii se pot înregistra gratuit pe platformă.",
+        a: "Da. Căutarea meșterilor și vizualizarea profilurilor este complet gratuită pentru clienți, fără cont necesar. Crearea unui cont de client (necesar pentru recenzii și favorite) este de asemenea gratuită.",
       },
       {
-        q: "Platforma funcționează doar în Tulcea?",
-        a: "Da. Ne concentrăm exclusiv pe județul Tulcea. Toți meșterii listați activează în această zonă. Această focalizare ne permite să verificăm mai bine calitatea profilurilor și să fim cu adevărat utili comunității locale.",
+        q: "Platforma funcționează doar în județul Tulcea?",
+        a: "Da. Ne concentrăm exclusiv pe județul Tulcea și zona limitrofă. Toți meșterii listați activează în această zonă.",
       },
       {
         q: "Cum pot contacta echipa Meșteri de Tulcea?",
         a: (
           <>
             Ne poți scrie la{" "}
-            <a href="mailto:contact@mesteritulcea.ro" className="text-primary hover:underline">
+            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
               contact@mesteritulcea.ro
             </a>
             . Răspundem de obicei în 1–2 zile lucrătoare.
@@ -39,50 +39,51 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
     ],
   },
   {
+    id: "clienti",
     category: "Pentru clienți",
     items: [
       {
         q: "Cum găsesc un meșter?",
         a: (
           <>
-            Folosește bara de căutare de pe pagina principală (ex: &quot;electrician&quot;, &quot;instalator
-            termică&quot;, &quot;montat gresie&quot;) sau navighează direct pe{" "}
-            <Link href="/mesteri" className="text-primary hover:underline">
+            Folosește bara de căutare de pe pagina principală (ex: „electrician", „instalator
+            termică", „montat gresie") sau navighează direct pe{" "}
+            <Link href="/mesteri" style={{ color: "#a07828" }} className="hover:underline">
               pagina Meșteri
             </Link>{" "}
-            și filtrează după specialitate. Fiecare profil afișează informații complete și
-            recenzii de la alți clienți.
+            și filtrează după specialitate.
           </>
         ),
       },
       {
-        q: "Meșterii sunt verificați?",
-        a: "Fiecare profil de meșter este revizuit manual de echipa noastră înainte de publicare. Verificăm că informațiile furnizate sunt coerente și că profilul este complet. Totuși, nu verificăm autorizațiile profesionale ale meșterilor — îți recomandăm să soliciți tu dovezi de calificare direct meșterului înainte de a contracta lucrări de amploare.",
+        q: "Profilurile meșterilor sunt verificate?",
+        a: "Fiecare profil este revizuit manual de echipa noastră înainte de publicare — verificăm că informațiile sunt coerente și că profilul este complet. Nu verificăm autorizațiile profesionale sau calificările meșterilor. Îți recomandăm să soliciți tu dovezi de calificare direct meșterului înainte de a contracta lucrări.",
       },
       {
         q: "Pot contacta un meșter fără să am cont?",
-        a: "Da. Numărul de telefon și butonul WhatsApp sunt vizibile pe profilul meșterului fără a fi necesar un cont. Contul este necesar doar dacă vrei să lași o recenzie sau să salvezi meșteri la favorite.",
+        a: "Da. Datele de contact sunt vizibile pe profilul meșterului fără cont. Contul este necesar doar pentru a lăsa recenzii sau a salva meșteri la favorite.",
       },
       {
         q: "Platforma intermediază plata sau contractul?",
-        a: "Nu. Meșteri de Tulcea nu este parte a contractului dintre tine și meșter și nu procesează plăți. Toate negocierile, acordurile și plățile au loc direct între tine și meșter.",
+        a: "Nu. Meșteri de Tulcea nu este parte a contractului dintre tine și meșter și nu procesează plăți. Toate negocierile, acordurile și plățile au loc direct între tine și meșter, în afara platformei.",
       },
       {
-        q: "Ce fac dacă am o problemă cu un meșter găsit pe platformă?",
-        a: "Soluționarea disputelor este responsabilitatea ta și a meșterului — noi nu suntem parte contractantă. Poți lăsa o recenzie negativă pentru a avertiza alți clienți. Dacă consideri că un profil conține informații false sau înșelătoare, ne poți scrie la contact@mesteritulcea.ro și vom analiza situația.",
+        q: "Ce fac dacă am o problemă cu un meșter?",
+        a: "Soluționarea disputelor este responsabilitatea ta și a meșterului — platforma nu este parte contractantă și nu poate interveni în litigii. Poți lăsa o recenzie pentru a informa alți utilizatori. Dacă un profil conține informații false sau înșelătoare, scrie-ne la contact@mesteritulcea.ro.",
       },
     ],
   },
   {
+    id: "recenzii",
     category: "Recenzii",
     items: [
       {
         q: "Cum pot lăsa o recenzie?",
-        a: "Trebuie să ai un cont activ pe platformă. Intră pe profilul meșterului, apasă pe \"Lasă o recenzie\", selectează un rating (1–5 stele) și opțional adaugă un titlu și un comentariu.",
+        a: "Trebuie să ai un cont activ. Intră pe profilul meșterului, apasă butonul Lasă o recenzie, selectează un rating (1–5 stele) și adaugă opțional un comentariu.",
       },
       {
         q: "Pot modifica o recenzie după ce am trimis-o?",
-        a: "Nu, recenziile nu pot fi editate după trimitere. Poți în schimb șterge recenzia ta și posta una nouă.",
+        a: "Nu. Recenziile nu pot fi editate după trimitere. Poți șterge recenzia și posta una nouă.",
       },
       {
         q: "Pot lăsa mai multe recenzii pentru același meșter?",
@@ -90,26 +91,27 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "Recenziile sunt moderate?",
-        a: "Da. Echipa noastră poate elimina recenziile care conțin limbaj ofensator, sunt în mod evident false sau au scop de spam/concurență neloială. Recenziile autentice, chiar negative, nu sunt eliminate.",
+        a: "Da. Echipa noastră poate elimina recenziile care conțin limbaj ofensator, sunt în mod evident false sau au scop de spam. Recenziile autentice, inclusiv cele negative, nu sunt eliminate.",
       },
     ],
   },
   {
+    id: "mesteri",
     category: "Pentru meșteri",
     items: [
       {
         q: "Cum mă înregistrez ca meșter?",
         a: (
           <>
-            Creează un cont pe platformă (sau folosește contul existent), apoi accesează{" "}
-            <strong>Panou Meșter</strong> din meniu și completează formularul de înregistrare.
-            Profilul tău va fi revizuit de echipa noastră înainte de a fi publicat.
+            Creează un cont pe platformă selectând opțiunea „Meșter" la înregistrare și completează
+            formularul de profil. Profilul tău va fi revizuit manual de echipa noastră înainte
+            de publicare.
           </>
         ),
       },
       {
         q: "Cât durează aprobarea profilului?",
-        a: "De obicei 1–2 zile lucrătoare. Dacă profilul este respins, vei primi un mesaj cu motivul și poți corecta și retrimite.",
+        a: "De obicei 1–2 zile lucrătoare. Dacă profilul este respins, vei primi un mesaj cu motivul și poți corecta informațiile și retrimite.",
       },
       {
         q: "Este gratuit pentru meșteri?",
@@ -121,15 +123,16 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
       },
       {
         q: "Cum primesc notificări despre clienți interesați?",
-        a: "Când un client caută o specialitate similară cu a ta în zona ta, sistemul poate trimite o notificare pe email. Poți gestiona preferințele de notificare din profilul tău.",
+        a: "Când un utilizator caută o specialitate similară cu a ta în zona ta, sistemul poate trimite o notificare pe email. Poți gestiona preferințele din setările contului.",
       },
       {
         q: "Pot fi eliminat de pe platformă?",
-        a: "Da. Ne rezervăm dreptul de a suspenda sau elimina profiluri care conțin informații false, primesc multiple reclamații justificate sau încalcă Termenii și Condițiile platformei.",
+        a: "Da. Ne rezervăm dreptul de a suspenda sau elimina profiluri care conțin informații false, primesc reclamații justificate repetate sau încalcă Termenii și Condițiile platformei.",
       },
     ],
   },
   {
+    id: "cont",
     category: "Cont și date personale",
     items: [
       {
@@ -137,11 +140,11 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
         a: (
           <>
             Scrie-ne la{" "}
-            <a href="mailto:contact@mesteritulcea.ro" className="text-primary hover:underline">
+            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
               contact@mesteritulcea.ro
             </a>{" "}
-            cu subiectul &quot;Ștergere cont&quot; de pe adresa de email asociată contului. Vom
-            procesa cererea în termen de 30 de zile conform GDPR.
+            cu subiectul „Ștergere cont" de pe adresa asociată contului. Vom procesa cererea în
+            termen de 30 de zile conform GDPR.
           </>
         ),
       },
@@ -150,10 +153,10 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
         a: (
           <>
             Detalii complete găsești în{" "}
-            <Link href="/confidentialitate" className="text-primary hover:underline">
+            <Link href="/confidentialitate" style={{ color: "#a07828" }} className="hover:underline">
               Politica de confidențialitate
             </Link>
-            . Pe scurt: adresă de email, nume, și informațiile pe care le adaugi tu în profil.
+            . Pe scurt: adresă de email, nume și informațiile pe care le adaugi tu în profil.
           </>
         ),
       },
@@ -164,54 +167,175 @@ const faq: { category: string; items: { q: string; a: React.ReactNode }[] }[] = 
 export default function IntrebariFrecventePage() {
   return (
     <>
-      <div className="bg-[#0f0b04] border-b border-[#584528]">
-        <div className="container py-10 md:py-14">
-          <Link
-            href="/"
-            className="inline-flex items-center text-white/50 hover:text-primary transition-colors text-sm mb-6"
+      {/* ── Dark hero band ── */}
+      <div
+        className="-mt-[62px]"
+        style={{ background: "#0d0905", borderBottom: "1px solid #3d2e14" }}
+      >
+        <div className="container px-4 md:px-8 pt-[110px] md:pt-[140px] pb-12 md:pb-20">
+          <p className="font-condensed tracking-[0.32em] uppercase text-xs mb-5" style={{ color: "#a07828" }}>
+            Ajutor
+          </p>
+          <h1
+            className="font-display leading-[1.06] text-white"
+            style={{ fontSize: "clamp(30px, 5vw, 56px)", fontWeight: 600, maxWidth: "640px" }}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Înapoi acasă
-          </Link>
-          <h1 className="font-display text-3xl md:text-4xl text-white font-semibold">
-            Întrebări frecvente
+            Întrebări{" "}
+            <em style={{ color: "#a07828", fontStyle: "italic" }}>frecvente</em>
           </h1>
-          <p className="mt-3 text-white/40 max-w-lg leading-relaxed">
+          <p
+            className="font-condensed tracking-wide mt-5"
+            style={{ fontSize: "15px", color: "rgba(255,255,255,0.4)", maxWidth: "480px", lineHeight: 1.7 }}
+          >
             Nu găsești răspunsul?{" "}
-            <a href="mailto:contact@mesteritulcea.ro" className="text-primary/70 hover:text-primary transition-colors">
+            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
               Scrie-ne
-            </a>
-            .
+            </a>{" "}
+            și răspundem în 1–2 zile lucrătoare.
           </p>
         </div>
       </div>
 
-      <div className="container py-12 md:py-16">
-        <div className="max-w-3xl mx-auto space-y-14">
-          {faq.map((section) => (
-            <div key={section.category}>
-              <h2 className="text-base font-semibold text-foreground mb-6 pb-2 border-b border-border">
-                {section.category}
-              </h2>
-              <div className="space-y-0 divide-y divide-border">
-                {section.items.map((item) => (
-                  <details key={item.q} className="group py-4">
-                    <summary className="flex items-start justify-between gap-4 cursor-pointer list-none">
-                      <span className="font-medium text-foreground text-sm pr-4">
-                        {item.q}
-                      </span>
-                      <span className="text-primary shrink-0 mt-0.5 text-base leading-none group-open:rotate-45 transition-transform duration-200">
-                        +
-                      </span>
-                    </summary>
-                    <div className="mt-3 text-sm text-muted-foreground leading-relaxed pr-8">
-                      {item.a}
-                    </div>
-                  </details>
-                ))}
+      {/* ── Content ── */}
+      <div style={{ background: "#f9f5ec" }}>
+        <div className="container px-4 md:px-8 py-14 md:py-20">
+
+          <div className="md:grid md:gap-16" style={{ gridTemplateColumns: "200px 1fr" }}>
+
+            {/* ── Sidebar nav — desktop only ── */}
+            <div className="hidden md:block">
+              <div className="sticky" style={{ top: "82px" }}>
+                <p className="font-condensed tracking-[0.28em] uppercase mb-4" style={{ fontSize: "10px", color: "rgba(13,9,5,0.35)" }}>
+                  Categorii
+                </p>
+                <nav className="flex flex-col gap-0" style={{ borderLeft: "1px solid rgba(160,112,32,0.2)" }}>
+                  {faq.map((section) => (
+                    <a
+                      key={section.id}
+                      href={`#${section.id}`}
+                      className="font-condensed tracking-wide transition-colors duration-200 hover:text-[#a07828]"
+                      style={{
+                        fontSize: "13px",
+                        color: "rgba(13,9,5,0.5)",
+                        padding: "8px 0 8px 16px",
+                        borderLeft: "2px solid transparent",
+                        marginLeft: "-1px",
+                      }}
+                    >
+                      {section.category}
+                    </a>
+                  ))}
+                </nav>
+
+                {/* Ornament */}
+                <div className="mt-8 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rotate-45 shrink-0" style={{ background: "rgba(160,112,32,0.35)" }} />
+                  <div className="flex-1 h-px" style={{ background: "rgba(160,112,32,0.15)" }} />
+                </div>
               </div>
             </div>
-          ))}
+
+            {/* ── FAQ sections ── */}
+            <div className="space-y-14">
+              {faq.map((section, si) => (
+                <div key={section.id} id={section.id}>
+
+                  {/* Category header */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <h2
+                      className="font-display shrink-0 leading-none"
+                      style={{ fontSize: "clamp(18px, 2vw, 22px)", fontWeight: 600, color: "#0d0905" }}
+                    >
+                      {section.category}
+                    </h2>
+                    <div className="flex-1 h-px" style={{ background: "rgba(160,112,32,0.2)" }} />
+                    <span
+                      className="font-condensed shrink-0"
+                      style={{ fontSize: "11px", color: "rgba(160,112,32,0.5)" }}
+                    >
+                      {String(si + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  {/* Accordion items */}
+                  <div style={{ borderTop: "1px solid rgba(160,112,32,0.15)" }}>
+                    {section.items.map((item) => (
+                      <details
+                        key={item.q}
+                        className="group"
+                        style={{ borderBottom: "1px solid rgba(160,112,32,0.15)" }}
+                      >
+                        <summary
+                          className="flex items-start justify-between gap-5 cursor-pointer list-none py-5"
+                          style={{ WebkitAppearance: "none" } as React.CSSProperties}
+                        >
+                          <span
+                            className="font-display leading-snug"
+                            style={{ fontSize: "clamp(15px, 1.6vw, 17px)", fontWeight: 600, color: "#0d0905" }}
+                          >
+                            {item.q}
+                          </span>
+                          {/* + / × toggle */}
+                          <span
+                            className="shrink-0 flex items-center justify-center transition-transform duration-200 group-open:rotate-45 mt-0.5"
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              border: "1px solid rgba(160,112,32,0.3)",
+                              color: "#a07828",
+                              fontSize: "16px",
+                              lineHeight: 1,
+                              flexShrink: 0,
+                            }}
+                          >
+                            +
+                          </span>
+                        </summary>
+                        <div
+                          className="font-condensed tracking-wide leading-relaxed pb-6 pr-10"
+                          style={{ fontSize: "15px", color: "rgba(13,9,5,0.58)", lineHeight: 1.8 }}
+                        >
+                          {item.a}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+
+                </div>
+              ))}
+
+              {/* Bottom contact nudge */}
+              <div
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 px-7 py-6"
+                style={{ background: "#0d0905" }}
+              >
+                <div>
+                  <p
+                    className="font-display text-white leading-snug mb-1"
+                    style={{ fontSize: "clamp(16px, 1.8vw, 20px)", fontWeight: 600 }}
+                  >
+                    Nu ai găsit ce căutai?
+                  </p>
+                  <p className="font-condensed tracking-wide" style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)" }}>
+                    Scrie-ne și îți răspundem în 1–2 zile lucrătoare.
+                  </p>
+                </div>
+                <a
+                  href="mailto:contact@mesteritulcea.ro"
+                  className="font-condensed tracking-[0.14em] uppercase shrink-0 transition-colors duration-200"
+                  style={{
+                    background: "#a07828",
+                    color: "#fff",
+                    padding: "12px 24px",
+                    fontSize: "12px",
+                  }}
+                >
+                  contact@mesteritulcea.ro
+                </a>
+              </div>
+
+            </div>
+          </div>
 
         </div>
       </div>

@@ -22,7 +22,7 @@ export async function updateMesterProfile(formData: FormData) {
   const yearsExperience = formData.get("experienceYears") as string
   const whatsappNumber = formData.get("whatsappNumber") as string
   const neighborhood = formData.get("address") as string
-  const categoryId = formData.get("categoryId") as string
+  const categoryIds = formData.getAll("categoryId") as string[]
   const avatarFile = formData.get("avatar") as File | null
 
   // Get existing mester profile
@@ -65,17 +65,19 @@ export async function updateMesterProfile(formData: FormData) {
     return { error: "Nu s-a putut actualiza profilul" }
   }
 
-  // Update category: replace existing entry
-  if (categoryId) {
+  // Update categories: replace all existing entries
+  if (categoryIds.length > 0) {
     await supabase
       .from("mester_categories")
       .delete()
       .eq("mester_id", (mester as { id: string }).id)
 
-    await supabase.from("mester_categories").insert({
-      mester_id: (mester as { id: string }).id,
-      category_id: categoryId,
-    } as never)
+    await supabase.from("mester_categories").insert(
+      categoryIds.map((id) => ({
+        mester_id: (mester as { id: string }).id,
+        category_id: id,
+      })) as never[]
+    )
   }
 
   await createNotification({

@@ -15,24 +15,62 @@ interface SearchApiResult {
   categories: Array<{ id: string; name: string; slug: string }>
 }
 
-const POPULAR = [
-  { label: "Electricieni", slug: "electrician" },
-  { label: "Instalatori", slug: "instalator"  },
-  { label: "Zidari",       slug: "zidar"       },
-  { label: "Zugravii",     slug: "zugrav"      },
+/* ── Crossfade images ── */
+const BG_IMAGES = [
+  "https://images.unsplash.com/photo-1685631188070-e5d4c9b2df6d?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1516216628859-9bccecab13ca?q=80&w=1470&auto=format&fit=crop",
 ]
 
-export function HeroSearch() {
-  const router = useRouter()
-  const { profile, hasMesterProfile } = useUser()
+/* ── Cycling trades ── */
+const TRADES = ["Electricieni", "Instalatori", "Zidari", "Zugravi", "Tâmplari"]
 
-  const [inputValue,      setInputValue]      = useState("")
-  const [suggestions,     setSuggestions]     = useState<SearchApiResult | null>(null)
-  const [showDropdown,    setShowDropdown]    = useState(false)
-  const [acLoading,       setAcLoading]       = useState(false)
+const POPULAR = [
+  { label: "Electricieni", slug: "electrician" },
+  { label: "Instalatori",  slug: "instalator"  },
+  { label: "Zidari",       slug: "zidar"       },
+  { label: "Zugravi",      slug: "zugrav"      },
+]
+
+/* ── Entrance animation helper ── */
+function useEntrance() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t) }, [])
+  return (delay = 0): React.CSSProperties => ({
+    opacity: mounted ? 1 : 0,
+    transform: mounted ? "translateY(0px)" : "translateY(20px)",
+    transition: `opacity 0.75s ease ${delay}ms, transform 0.75s ease ${delay}ms`,
+  })
+}
+
+export function HeroSearch() {
+  const router  = useRouter()
+  const { profile, hasMesterProfile } = useUser()
+  const entrance = useEntrance()
+
+  /* search state */
+  const [inputValue,   setInputValue]   = useState("")
+  const [suggestions,  setSuggestions]  = useState<SearchApiResult | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [acLoading,    setAcLoading]    = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef    = useRef<HTMLInputElement>(null)
+
+  /* background crossfade */
+  const [bgIndex, setBgIndex] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setBgIndex(i => (i + 1) % BG_IMAGES.length), 7000)
+    return () => clearInterval(t)
+  }, [])
+
+  /* trade highlight cycling */
+  const [tradeIndex, setTradeIndex] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setTradeIndex(i => (i + 1) % TRADES.length), 2200)
+    return () => clearInterval(t)
+  }, [])
 
   /* click outside → close dropdown */
   useEffect(() => {
@@ -71,38 +109,41 @@ export function HeroSearch() {
     router.push(`/cauta?q=${encodeURIComponent(q)}`)
   }
 
-  function pickCategory(slug: string) {
-    setShowDropdown(false)
-    router.push(`/mesteri?categorie=${slug}`)
-  }
-
-  function pickMester(id: string) {
-    setShowDropdown(false)
-    router.push(`/mester/${id}`)
-  }
+  function pickCategory(slug: string) { setShowDropdown(false); router.push(`/mesteri?categorie=${slug}`) }
+  function pickMester(id: string)     { setShowDropdown(false); router.push(`/mester/${id}`) }
 
   return (
     <section className="relative bg-[#0d0905] min-h-[88vh] flex flex-col justify-center overflow-hidden -mt-[62px]">
 
-      {/* ── Background photo ── */}
+      {/* ── Crossfading background images ── */}
       <div className="absolute inset-0">
-        <Image
-          src="https://images.unsplash.com/photo-1685631188070-e5d4c9b2df6d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center opacity-[0.22]"
-        />
+        {BG_IMAGES.map((src, i) => (
+          <div
+            key={src}
+            className="absolute inset-0"
+            style={{
+              opacity: i === bgIndex ? 0.22 : 0,
+              transition: "opacity 2500ms ease-in-out",
+            }}
+          >
+            <Image
+              src={src}
+              alt=""
+              fill
+              priority={i === 0}
+              className="object-cover object-center"
+            />
+          </div>
+        ))}
       </div>
 
+      {/* ── Overlays ── */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0905]/90 via-[#0d0905]/55 to-[#0d0905]/90" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0d0905]/82 via-transparent to-[#0d0905]/82" />
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 38%, rgba(13,9,5,0.72) 100%)" }}
       />
-
       <div
         className="absolute inset-0 opacity-[0.042]"
         style={{
@@ -112,12 +153,10 @@ export function HeroSearch() {
           WebkitMaskImage: "radial-gradient(ellipse 68% 72% at 50% 50%, black 20%, transparent 100%)",
         }}
       />
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 80% 55% at 50% 50%, rgba(196,146,30,0.08) 0%, transparent 70%)" }}
       />
-
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent" />
 
       {/* ── Content ── */}
@@ -125,7 +164,7 @@ export function HeroSearch() {
         <div className="mx-auto max-w-3xl text-center">
 
           {/* Ornament */}
-          <div className="flex items-center justify-center gap-5 mb-10">
+          <div className="flex items-center justify-center gap-5 mb-10" style={entrance(0)}>
             <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/45" />
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 bg-primary/65 rotate-45" />
@@ -138,7 +177,7 @@ export function HeroSearch() {
           {/* Headline */}
           <h1
             className="font-display text-white leading-[1.06] tracking-tight"
-            style={{ fontSize: "clamp(40px, 7vw, 84px)", fontWeight: 600 }}
+            style={{ fontSize: "clamp(40px, 7vw, 84px)", fontWeight: 600, ...entrance(120) }}
           >
             Găsește meșteri de{" "}
             <em className="text-primary" style={{ fontStyle: "italic", fontWeight: 600 }}>
@@ -147,13 +186,29 @@ export function HeroSearch() {
             în Tulcea
           </h1>
 
-          <p className="mt-6 text-white/40 font-condensed tracking-[0.2em] text-sm uppercase">
-            Electricieni &nbsp;·&nbsp; Instalatori &nbsp;·&nbsp; Zidari &nbsp;·&nbsp;
-            Zugravii &nbsp;·&nbsp; Tâmplari
-          </p>
+          {/* Cycling trades */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-1 gap-y-1" style={entrance(240)}>
+            {TRADES.map((trade, i) => (
+              <span key={trade} className="flex items-center">
+                <span
+                  className="font-condensed tracking-[0.2em] text-sm uppercase"
+                  style={{
+                    color: i === tradeIndex ? "hsl(38,68%,58%)" : "rgba(255,255,255,0.28)",
+                    transition: "color 0.6s ease",
+                    fontWeight: i === tradeIndex ? 600 : 400,
+                  }}
+                >
+                  {trade}
+                </span>
+                {i < TRADES.length - 1 && (
+                  <span className="mx-2.5 text-white/12 font-condensed text-sm">·</span>
+                )}
+              </span>
+            ))}
+          </div>
 
-          {/* ── Search bar — identic cu /cauta ── */}
-          <form onSubmit={handleSubmit} className="mt-12 mx-auto max-w-2xl relative">
+          {/* Search bar */}
+          <form onSubmit={handleSubmit} className="mt-12 mx-auto max-w-2xl relative" style={entrance(360)}>
             <div className="flex border border-[#4a3820] focus-within:border-primary/60 transition-colors duration-300 shadow-[0_0_50px_rgba(196,146,30,0.07)]">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25 pointer-events-none" />
@@ -163,7 +218,7 @@ export function HeroSearch() {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Ce lucrare ai de făcut? (ex: repară prize, zugravit)"
+                  placeholder="Ce lucrare ai de făcut? (ex: reparare prize, zugrăvit)"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onFocus={() => suggestions && setShowDropdown(true)}
@@ -187,16 +242,10 @@ export function HeroSearch() {
               >
                 {suggestions.categories.length > 0 && (
                   <div className="border-b border-white/[0.06]">
-                    <p className="font-condensed text-[9px] tracking-[0.22em] uppercase text-white/25 px-4 pt-3 pb-1">
-                      Categorii
-                    </p>
+                    <p className="font-condensed text-[9px] tracking-[0.22em] uppercase text-white/25 px-4 pt-3 pb-1">Categorii</p>
                     {suggestions.categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => pickCategory(cat.slug)}
-                        className="w-full text-left px-4 py-2.5 font-condensed text-[12px] tracking-[0.08em] text-white/55 hover:text-primary hover:bg-white/[0.04] transition-colors duration-150"
-                      >
+                      <button key={cat.id} type="button" onClick={() => pickCategory(cat.slug)}
+                        className="w-full text-left px-4 py-2.5 font-condensed text-[12px] tracking-[0.08em] text-white/55 hover:text-primary hover:bg-white/[0.04] transition-colors duration-150">
                         {cat.name}
                       </button>
                     ))}
@@ -204,18 +253,12 @@ export function HeroSearch() {
                 )}
                 {suggestions.mesters.length > 0 && (
                   <div>
-                    <p className="font-condensed text-[9px] tracking-[0.22em] uppercase text-white/25 px-4 pt-3 pb-1">
-                      Meșteri
-                    </p>
+                    <p className="font-condensed text-[9px] tracking-[0.22em] uppercase text-white/25 px-4 pt-3 pb-1">Meșteri</p>
                     {suggestions.mesters.map((m) => {
                       const catName = m.mester_categories?.[0]?.category?.name
                       return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => pickMester(m.id)}
-                          className="w-full text-left px-4 py-2.5 flex items-center justify-between font-condensed text-[12px] tracking-[0.08em] text-white/55 hover:text-primary hover:bg-white/[0.04] transition-colors duration-150"
-                        >
+                        <button key={m.id} type="button" onClick={() => pickMester(m.id)}
+                          className="w-full text-left px-4 py-2.5 flex items-center justify-between font-condensed text-[12px] tracking-[0.08em] text-white/55 hover:text-primary hover:bg-white/[0.04] transition-colors duration-150">
                           <span>{m.display_name}</span>
                           {catName && <span className="text-white/25 text-[10px]">{catName}</span>}
                         </button>
@@ -228,10 +271,8 @@ export function HeroSearch() {
           </form>
 
           {/* Popular searches */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
-            <span className="text-white/22 font-condensed tracking-[0.18em] text-[10px] uppercase">
-              Popular
-            </span>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2" style={entrance(480)}>
+            <span className="text-white/22 font-condensed tracking-[0.18em] text-[10px] uppercase">Popular</span>
             {POPULAR.map((item, i) => (
               <span key={item.slug} className="flex items-center gap-3">
                 {i > 0 && <span className="text-white/12">·</span>}
@@ -246,38 +287,30 @@ export function HeroSearch() {
           </div>
 
           {/* Role-based CTA */}
-          <div className="mt-6">
+          <div className="mt-6" style={entrance(560)}>
             {profile?.role === "admin" ? (
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
-              >
+              <Link href="/admin"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5">
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 Panou Admin
               </Link>
             ) : hasMesterProfile || profile?.role === "mester" ? (
-              <Link
-                href="/mester-cont"
-                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
-              >
+              <Link href="/mester-cont"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5">
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 Panou Meșter
               </Link>
             ) : profile ? (
-              <div className="flex flex-col items-center gap-3">
-                <Link
-                  href="/cereri/nou"
-                  className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.2em] uppercase text-sm px-8 py-3 transition-colors duration-200"
-                >
-                  Creează o cerere
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
+              <Link href="/cereri/nou"
+                className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.2em] uppercase text-sm px-8 py-3 transition-colors duration-200">
+                Creează o cerere
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             ) : null}
           </div>
 
           {/* Trust badges */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-5 md:gap-8">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-5 md:gap-8" style={entrance(640)}>
             {[
               { icon: Shield, label: "Meșteri verificați" },
               { icon: Star,   label: "Recenzii autentice" },
@@ -293,22 +326,22 @@ export function HeroSearch() {
           </div>
 
           {!profile && (
-            <div className="mt-6">
-              <Link
-                href="/devino-mester"
-                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5"
-              >
+            <div className="mt-6" style={entrance(720)}>
+              <Link href="/devino-mester"
+                className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5">
                 Ești meșter? Înregistrează-te →
               </Link>
             </div>
           )}
+
         </div>
       </div>
 
       {/* Scroll cue */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-10 animate-bounce">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-10 animate-bounce" style={entrance(800)}>
         <ChevronDown className="h-4 w-4 text-primary/35" />
       </div>
+
     </section>
   )
 }

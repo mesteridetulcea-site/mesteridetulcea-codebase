@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { Loader2, Camera, User, Briefcase, MessageCircle, MapPin, Clock, FileText } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Loader2, Camera, User, Briefcase, MessageCircle, MapPin, Clock, FileText, Lock, Plus } from "lucide-react"
+import Link from "next/link"
 import { updateMesterProfile } from "@/actions/mester"
+import { createClient } from "@/lib/supabase/client"
 import { toast } from "@/lib/hooks/use-toast"
 import type { Category } from "@/types/database"
 
@@ -15,7 +17,7 @@ interface MesterSettingsFormProps {
     experienceYears: string
     whatsappNumber: string
     address: string
-    categoryId: string
+    categoryIds: string[]
   }
 }
 
@@ -42,7 +44,38 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
   const [avatarUrl, setAvatarUrl]         = useState<string | null>(initialAvatarUrl)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [formData, setFormData] = useState(initialData)
+  // locked = categories from DB, cannot be removed — loaded fresh client-side
+  const [lockedCategoryIds, setLockedCategoryIds] = useState<string[]>(initialData.categoryIds)
+  // extra = newly added categories this session
+  const [extraCategoryIds, setExtraCategoryIds] = useState<string[]>([])
+
+  // Load current categories fresh from DB (avoids RLS / cache issues with server props)
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data: mesterRow } = await supabase
+        .from("mester_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle() as { data: { id: string } | null }
+      if (!mesterRow) return
+      const { data: cats } = await supabase
+        .from("mester_categories")
+        .select("category_id")
+        .eq("mester_id", mesterRow.id) as { data: { category_id: string }[] | null }
+      if (cats && cats.length > 0) {
+        setLockedCategoryIds(cats.map((c) => c.category_id))
+      }
+    })
+  }, [])
+  const [formData, setFormData] = useState({
+    businessName: initialData.businessName,
+    description: initialData.description,
+    experienceYears: initialData.experienceYears,
+    whatsappNumber: initialData.whatsappNumber,
+    address: initialData.address,
+  })
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -55,6 +88,7 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
     setSaving(true)
     const form = new FormData()
     Object.entries(formData).forEach(([key, value]) => form.append(key, value))
+    ;[...lockedCategoryIds, ...extraCategoryIds].forEach((id) => form.append("categoryId", id))
     const file = fileInputRef.current?.files?.[0]
     if (file) form.append("avatar", file)
     const result = await updateMesterProfile(form)
@@ -155,24 +189,82 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
           </div>
         </div>
 
-        {/* Categorie */}
+        {/* Categorii */}
         <div>
-          <label htmlFor="categoryId" className={labelCls} style={{ fontSize: "11px" }}>
-            Categorie <span className="text-primary">*</span>
-          </label>
-          <select
-            id="categoryId"
-            required
-            value={formData.categoryId}
-            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-            className={inputCls}
-            style={{ appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b8956a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center" }}
-          >
-            <option value="">Selectează categoria</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
+          <p className={labelCls} style={{ fontSize: "11px" }}>Calificări / Categorii</p>
+
+          {/* Locked categories */}
+          {lockedCategoryIds.length > 0 && (
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {lockedCategoryIds.map((id) => {
+                  const cat = categories.find((c) => c.id === id)
+                  return cat ? (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1.5 font-condensed tracking-[0.12em] uppercase px-3 py-1.5"
+                      style={{ fontSize: "11px", border: "1px solid #d4c0a0", background: "#f5eed8", color: "#7a5a18" }}
+                    >
+                      <Lock style={{ width: "9px", height: "9px", color: "#b8956a" }} />
+                      {cat.name}
+                    </span>
+                  ) : null
+                })}
+              </div>
+              {/* Info message */}
+              <div
+                className="flex items-start gap-2.5 px-3 py-2.5"
+                style={{ background: "rgba(160,112,32,0.06)", border: "1px solid rgba(160,112,32,0.18)" }}
+              >
+                <Lock style={{ width: "11px", height: "11px", color: "#a07828", marginTop: "2px", flexShrink: 0 }} />
+                <p className="font-condensed tracking-wide leading-relaxed" style={{ fontSize: "11px", color: "#8a6848" }}>
+                  Categoriile principale pot fi modificate doar prin contact direct.{" "}
+                  <a href="mailto:contact@mesteritulcea.ro?subject=Modificare%20categorii%20profil" className="underline underline-offset-2" style={{ color: "#a07828" }}>
+                    Trimite un email
+                  </a>
+                  .
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Addable categories */}
+          {categories.filter((c) => !lockedCategoryIds.includes(c.id)).length > 0 && (
+            <div>
+              <p className="font-condensed tracking-[0.16em] uppercase mb-2" style={{ fontSize: "10px", color: "#b8956a" }}>
+                <Plus style={{ display: "inline", width: "9px", height: "9px", marginRight: "4px", verticalAlign: "middle" }} />
+                Adaugă calificări suplimentare
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {categories
+                  .filter((c) => !lockedCategoryIds.includes(c.id))
+                  .map((cat) => {
+                    const active = extraCategoryIds.includes(cat.id)
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() =>
+                          setExtraCategoryIds(
+                            active ? extraCategoryIds.filter((x) => x !== cat.id) : [...extraCategoryIds, cat.id]
+                          )
+                        }
+                        className="font-condensed tracking-[0.12em] uppercase transition-colors duration-150 px-3 py-1.5"
+                        style={{
+                          fontSize: "11px",
+                          border: `1px solid ${active ? "#a07828" : "#d4c0a0"}`,
+                          background: active ? "rgba(160,112,32,0.1)" : "transparent",
+                          color: active ? "#7a5a18" : "#b8956a",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {active ? "✓ " : ""}{cat.name}
+                      </button>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Descriere */}

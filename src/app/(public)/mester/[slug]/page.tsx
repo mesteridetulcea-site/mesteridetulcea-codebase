@@ -278,10 +278,22 @@ export default async function MesterProfilePage({ params }: PageProps) {
             {/* Name, meta, CTA — all above the fold */}
             <div className="flex-1 text-center sm:text-left space-y-4">
 
-              {/* Category overline */}
-              <p className="font-condensed text-[11px] tracking-[0.30em] uppercase text-primary">
-                {primaryCategory?.name || "Meșter"}
-              </p>
+              {/* Categories overline */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                {mester.mester_categories?.length > 0
+                  ? mester.mester_categories.map(({ category }) =>
+                      category ? (
+                        <span
+                          key={category.id}
+                          className="font-condensed text-[10px] tracking-[0.26em] uppercase text-primary border border-primary/30 px-2.5 py-0.5"
+                        >
+                          {category.name}
+                        </span>
+                      ) : null
+                    )
+                  : <span className="font-condensed text-[11px] tracking-[0.30em] uppercase text-primary">Meșter</span>
+                }
+              </div>
 
               {/* Name */}
               <h1

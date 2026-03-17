@@ -76,7 +76,8 @@ export default function MesterRegisterForm({ categories }: Props) {
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [categoryId, setCategoryId] = useState("")
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,12 +89,13 @@ export default function MesterRegisterForm({ categories }: Props) {
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
+    if (!termsAccepted) { setError("Trebuie să accepți Termenii și Condițiile pentru a continua"); setLoading(false); return }
     const password = formData.get("password") as string
     const confirmPassword = formData.get("confirmPassword") as string
     if (password !== confirmPassword) { setError("Parolele nu coincid"); setLoading(false); return }
     if (password.length < 6) { setError("Parola trebuie să aibă minim 6 caractere"); setLoading(false); return }
-    if (!categoryId) { setError("Selectează o categorie"); setLoading(false); return }
-    formData.set("categoryId", categoryId)
+    if (categoryIds.length === 0) { setError("Selectează cel puțin o categorie"); setLoading(false); return }
+    categoryIds.forEach((id) => formData.append("categoryId", id))
     const result = await signUpMester(formData)
     if (result?.error) setError(result.error)
     else if (result?.success) setSuccess(result.message ?? null)
@@ -347,29 +349,8 @@ export default function MesterRegisterForm({ categories }: Props) {
                     <Input name="businessName" type="text" placeholder="ex. Instalații Ion" required className={minp} />
                   </MF>
 
-                  {/* Category select */}
-                  <div
-                    className="border border-[#3d2e14] focus-within:border-primary/55 transition-colors duration-200"
-                    style={{ borderRadius: "8px" }}
-                  >
-                    <div className="px-4 pt-2.5">
-                      <span className="block font-condensed tracking-[0.16em] uppercase text-[11px] font-semibold text-white/55">
-                        Categorie *
-                      </span>
-                    </div>
-                    <select
-                      required
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                      className="w-full h-12 px-4 bg-transparent border-0 text-white font-sans text-[15px] focus:outline-none appearance-none cursor-pointer"
-                      style={{ colorScheme: "dark", borderRadius: "0 0 8px 8px" }}
-                    >
-                      <option value="" disabled style={{ background: "#1a1208", color: "rgba(255,255,255,0.3)" }}>Selectează categoria</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id} style={{ background: "#1a1208", color: "white" }}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Category checkboxes */}
+                  <CategoryCheckboxes categories={categories} selected={categoryIds} onChange={setCategoryIds} size="lg" />
 
                   {/* Descriere */}
                   <div
@@ -401,6 +382,9 @@ export default function MesterRegisterForm({ categories }: Props) {
                   <MF label="Adresă / Zonă (opțional)">
                     <Input name="address" type="text" placeholder="Strada, nr., Tulcea" className={minp} />
                   </MF>
+
+                  {/* Terms checkbox */}
+                  <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
 
                   {error && (
                     <div className="border border-destructive/30 bg-destructive/[0.08] px-4 py-2.5" style={{ borderRadius: "8px" }}>
@@ -525,28 +509,12 @@ export default function MesterRegisterForm({ categories }: Props) {
                 <div className="flex-1 h-px bg-white/[0.07]" />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <F label="Nume firmă / Business *">
-                  <Input name="businessName" type="text" placeholder="ex. Instalații Ion" required className={dinp} />
-                </F>
-                <div className="border border-[#3d2e14] focus-within:border-primary/55 transition-colors duration-200">
-                  <div className="px-3 pt-1.5">
-                    <span className="font-condensed tracking-[0.16em] uppercase text-[9px] text-white/28">Categorie *</span>
-                  </div>
-                  <select
-                    required
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full h-8 px-3 pb-1.5 pt-0 bg-transparent border-0 text-white font-sans text-[13px] focus:outline-none appearance-none cursor-pointer"
-                    style={{ colorScheme: "dark" }}
-                  >
-                    <option value="" disabled style={{ background: "#1a1208", color: "rgba(255,255,255,0.3)" }}>Selectează</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id} style={{ background: "#1a1208", color: "white" }}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <F label="Nume firmă / Business *">
+                <Input name="businessName" type="text" placeholder="ex. Instalații Ion" required className={dinp} />
+              </F>
+
+              {/* Category checkboxes */}
+              <CategoryCheckboxes categories={categories} selected={categoryIds} onChange={setCategoryIds} size="sm" />
 
               <div className="border border-[#3d2e14] focus-within:border-primary/55 transition-colors duration-200">
                 <div className="px-3 pt-1.5">
@@ -572,6 +540,9 @@ export default function MesterRegisterForm({ categories }: Props) {
               <F label="Adresă / Zonă (opțional)">
                 <Input name="address" type="text" placeholder="Strada, nr., Tulcea" className={dinp} />
               </F>
+
+              {/* Terms checkbox */}
+              <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
 
               {error && (
                 <div className="border border-destructive/30 bg-destructive/[0.08] px-3 py-2">
@@ -611,6 +582,88 @@ export default function MesterRegisterForm({ categories }: Props) {
       </div>
 
     </div>
+  )
+}
+
+/* ── Category checkboxes ── */
+function CategoryCheckboxes({
+  categories,
+  selected,
+  onChange,
+  size = "sm",
+}: {
+  categories: { id: string; name: string }[]
+  selected: string[]
+  onChange: (ids: string[]) => void
+  size?: "sm" | "lg"
+}) {
+  function toggle(id: string) {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id])
+  }
+  return (
+    <div className="border border-[#3d2e14]" style={{ borderRadius: size === "lg" ? "8px" : undefined }}>
+      <div className={size === "lg" ? "px-4 pt-2.5 pb-2" : "px-3 pt-1.5 pb-1.5"}>
+        <span
+          className={`block font-condensed tracking-[0.16em] uppercase font-semibold text-white/55 ${size === "lg" ? "text-[11px] mb-2" : "text-[9px] text-white/28 mb-1.5"}`}
+        >
+          Calificări / Categorii *
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {categories.map((cat) => {
+            const active = selected.includes(cat.id)
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => toggle(cat.id)}
+                className="font-condensed tracking-[0.1em] uppercase transition-colors duration-150"
+                style={{
+                  fontSize: size === "lg" ? "11px" : "10px",
+                  padding: size === "lg" ? "4px 10px" : "3px 8px",
+                  border: `1px solid ${active ? "#a07828" : "rgba(160,112,32,0.28)"}`,
+                  background: active ? "rgba(160,112,32,0.18)" : "transparent",
+                  color: active ? "#c49a30" : "rgba(255,255,255,0.38)",
+                }}
+              >
+                {cat.name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Terms checkbox ── */
+function TermsCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer !mt-4 group">
+      <div className="relative shrink-0 mt-0.5">
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only" />
+        <div
+          className="w-4 h-4 border transition-colors duration-150 flex items-center justify-center"
+          style={{ borderColor: checked ? "#a07828" : "rgba(160,112,32,0.35)", background: checked ? "rgba(160,112,32,0.18)" : "transparent" }}
+        >
+          {checked && (
+            <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+              <path d="M1 3.5L3.5 6L8 1" stroke="#a07828" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      </div>
+      <span className="font-condensed tracking-wide leading-relaxed" style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
+        Am citit și sunt de acord cu{" "}
+        <Link href="/termeni" target="_blank" className="underline underline-offset-2 decoration-primary/40 hover:text-primary transition-colors duration-150" style={{ color: "#a07828" }}>
+          Termenii și Condițiile
+        </Link>{" "}
+        și cu{" "}
+        <Link href="/confidentialitate" target="_blank" className="underline underline-offset-2 decoration-primary/40 hover:text-primary transition-colors duration-150" style={{ color: "#a07828" }}>
+          Politica de Confidențialitate
+        </Link>
+        .
+      </span>
+    </label>
   )
 }
 

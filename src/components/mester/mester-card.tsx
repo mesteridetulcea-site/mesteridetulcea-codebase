@@ -75,8 +75,8 @@ export function MesterCard({ mester, coverPhoto }: MesterCardProps) {
             {mester.display_name}
           </h3>
         </Link>
-        <p className="font-condensed text-xs tracking-[0.14em] uppercase text-muted-foreground mt-0.5">
-          {primaryCategory?.name || "Servicii diverse"}
+        <p className="font-condensed text-xs tracking-[0.14em] uppercase text-muted-foreground mt-0.5 line-clamp-1">
+          {mester.mester_categories?.map((c) => c.category?.name).filter(Boolean).join(" · ") || "Servicii diverse"}
         </p>
 
         {/* Meta row */}

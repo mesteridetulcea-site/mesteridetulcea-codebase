@@ -1,3 +1,6 @@
+"use client"
+
+import { useRef, useState, useEffect } from "react"
 import { Search, UserCheck, MessageSquare, Star } from "lucide-react"
 
 const steps = [
@@ -16,7 +19,7 @@ const steps = [
   {
     icon: MessageSquare,
     title: "Contactează",
-    description: "Trimite mesaj direct pe WhatsApp meșterului ales. Fără intermediari.",
+    description: "Trimite un mesaj direct pe WhatsApp meșterului ales. Fără intermediari.",
     num: "03",
   },
   {
@@ -28,6 +31,35 @@ const steps = [
 ]
 
 export function HowItWorks() {
+  const headerRef   = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const [headerVisible,   setHeaderVisible]   = useState(false)
+  const [timelineVisible, setTimelineVisible] = useState(false)
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = []
+
+    if (headerRef.current) {
+      const o = new IntersectionObserver(
+        ([e]) => { if (e.isIntersecting) { setHeaderVisible(true); o.disconnect() } },
+        { threshold: 0.3 }
+      )
+      o.observe(headerRef.current)
+      observers.push(o)
+    }
+
+    if (timelineRef.current) {
+      const o = new IntersectionObserver(
+        ([e]) => { if (e.isIntersecting) { setTimelineVisible(true); o.disconnect() } },
+        { threshold: 0.05 }
+      )
+      o.observe(timelineRef.current)
+      observers.push(o)
+    }
+
+    return () => observers.forEach((o) => o.disconnect())
+  }, [])
+
   return (
     <section className="relative overflow-hidden py-16 md:py-28" style={{ background: "#faf6ed" }}>
 
@@ -44,17 +76,37 @@ export function HowItWorks() {
 
       <div className="relative z-10">
 
-        {/* ── Header ── */}
+        {/* ── Header — fade + slide up ── */}
         <div className="container px-4 md:px-8">
-          <div className="flex flex-col items-center text-center mb-10 md:mb-16">
+          <div
+            ref={headerRef}
+            className="flex flex-col items-center text-center mb-10 md:mb-16"
+            style={{
+              opacity: headerVisible ? 1 : 0,
+              transform: headerVisible ? "translateY(0)" : "translateY(20px)",
+              transition: "opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1)",
+            }}
+          >
             <div className="flex items-center gap-5 mb-6">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/38" />
+              <div
+                className="h-px bg-gradient-to-r from-transparent to-primary/38"
+                style={{
+                  width: headerVisible ? "48px" : "0px",
+                  transition: "width 0.6s ease 0.2s",
+                }}
+              />
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 bg-primary/55 rotate-45" />
                 <div className="w-1 h-1 bg-primary/25 rotate-45" />
                 <div className="w-1.5 h-1.5 bg-primary/55 rotate-45" />
               </div>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/38" />
+              <div
+                className="h-px bg-gradient-to-l from-transparent to-primary/38"
+                style={{
+                  width: headerVisible ? "48px" : "0px",
+                  transition: "width 0.6s ease 0.2s",
+                }}
+              />
             </div>
             <p className="font-condensed text-primary text-[10px] tracking-[0.32em] uppercase mb-3">Simplu și rapid</p>
             <h2
@@ -66,72 +118,109 @@ export function HowItWorks() {
           </div>
         </div>
 
-        {/* ── Mobile: swipeable cards ── */}
-        <div
-          className="lg:hidden flex gap-3 overflow-x-auto pb-5"
-          style={{
-            scrollSnapType: "x mandatory",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            paddingLeft: "16px",
-            paddingRight: "16px",
-          }}
-        >
-          {steps.map((step, i) => (
+        {/* ── Mobile: vertical connected timeline with entrance animations ── */}
+        <div className="lg:hidden container px-4">
+          <div ref={timelineRef} className="relative">
+
+            {/* Vertical gold line — grows downward */}
             <div
-              key={step.title}
-              className="relative shrink-0 flex flex-col p-6"
+              className="absolute"
               style={{
-                width: "72vw",
-                maxWidth: "280px",
-                scrollSnapAlign: "start",
-                background: "white",
-                border: "1px solid rgba(88,69,40,0.14)",
+                left: "19px",
+                top: "20px",
+                width: "1px",
+                transformOrigin: "top",
+                height: timelineVisible ? "calc(100% - 40px)" : "0%",
+                background: "linear-gradient(to bottom, rgba(160,112,32,0.55) 0%, rgba(160,112,32,0.12) 100%)",
+                transition: `height 1.1s cubic-bezier(0.16,1,0.3,1) 150ms`,
               }}
-            >
-              {/* Giant ghost numeral */}
-              <div
-                aria-hidden="true"
-                className="font-display font-bold leading-none select-none pointer-events-none mb-1"
-                style={{ fontSize: "56px", color: "rgba(196,146,30,0.18)", lineHeight: 1 }}
-              >
-                {step.num}
-              </div>
+            />
 
-              {/* Top accent */}
-              <div style={{ width: "28px", height: "2px", background: "hsl(38 68% 44% / 0.5)", marginBottom: "16px", marginTop: "4px" }} />
+            <div className="flex flex-col">
+              {steps.map((step, i) => (
+                <div
+                  key={step.title}
+                  className="relative flex gap-5"
+                  style={{
+                    opacity: timelineVisible ? 1 : 0,
+                    transform: timelineVisible ? "translateX(0)" : "translateX(-18px)",
+                    transition: `opacity 0.6s ease ${i * 140 + 200}ms, transform 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 140 + 200}ms`,
+                  }}
+                >
+                  {/* Left column: icon node — pops in */}
+                  <div
+                    className="relative z-10 shrink-0 flex flex-col items-center"
+                    style={{ width: "40px" }}
+                  >
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        background: "#faf6ed",
+                        border: "1px solid rgba(160,112,32,0.55)",
+                        marginTop: "4px",
+                        transform: timelineVisible ? "scale(1)" : "scale(0.5)",
+                        opacity: timelineVisible ? 1 : 0,
+                        transition: `transform 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 140 + 350}ms, opacity 0.3s ease ${i * 140 + 350}ms`,
+                      }}
+                    >
+                      <step.icon style={{ width: "15px", height: "15px", color: "#a07828" }} />
+                    </div>
+                  </div>
 
-              {/* Icon */}
-              <div
-                className="flex items-center justify-center mb-4"
-                style={{ width: "38px", height: "38px", border: "1px solid hsl(38 68% 44% / 0.35)", background: "white" }}
-              >
-                <step.icon style={{ width: "15px", height: "15px", color: "hsl(38 68% 44%)" }} />
-              </div>
+                  {/* Right column: content card */}
+                  <div
+                    className="flex-1 mb-4"
+                    style={{
+                      background: "white",
+                      border: "1px solid rgba(88,69,40,0.12)",
+                      padding: "20px 20px 18px",
+                    }}
+                  >
+                    {/* Ghost number */}
+                    <div
+                      aria-hidden="true"
+                      className="font-display font-bold leading-none select-none pointer-events-none float-right -mt-1 -mr-1"
+                      style={{ fontSize: "52px", color: "rgba(196,146,30,0.13)", lineHeight: 1 }}
+                    >
+                      {step.num}
+                    </div>
 
-              <h3 className="font-display text-[#1a0f05] mb-2 leading-snug" style={{ fontSize: "19px", fontWeight: 600 }}>
-                {step.title}
-              </h3>
-              <p className="font-condensed tracking-wide text-[#6b4f35]" style={{ fontSize: "12px", lineHeight: "1.75" }}>
-                {step.description}
-              </p>
+                    <p className="font-condensed tracking-[0.24em] uppercase mb-1" style={{ fontSize: "9px", color: "rgba(160,112,32,0.55)" }}>
+                      Pasul {i + 1}
+                    </p>
+                    <h3 className="font-display text-[#1a0f05] leading-snug mb-2" style={{ fontSize: "22px", fontWeight: 600 }}>
+                      {step.title}
+                    </h3>
+                    <p className="font-condensed tracking-wide text-[#6b4f35]" style={{ fontSize: "13px", lineHeight: 1.75 }}>
+                      {step.description}
+                    </p>
 
-              {/* Step badge bottom */}
-              <div className="mt-auto pt-5 flex items-center gap-2">
-                <div style={{ width: "16px", height: "1px", background: "hsl(38 68% 44% / 0.3)" }} />
-                <span className="font-condensed tracking-[0.18em] uppercase text-primary" style={{ fontSize: "9px" }}>
-                  Pas {i + 1}
-                </span>
-              </div>
+                    {/* Connector arrow — fades in slightly after the card */}
+                    {i < steps.length - 1 && (
+                      <div
+                        className="flex items-center gap-2 mt-4"
+                        style={{
+                          borderTop: "1px solid rgba(88,69,40,0.08)",
+                          paddingTop: "12px",
+                          opacity: timelineVisible ? 1 : 0,
+                          transition: `opacity 0.5s ease ${i * 140 + 500}ms`,
+                        }}
+                      >
+                        <div style={{ width: "20px", height: "1px", background: "rgba(160,112,32,0.3)" }} />
+                        <div style={{ width: "5px", height: "5px", borderRight: "1px solid rgba(160,112,32,0.5)", borderBottom: "1px solid rgba(160,112,32,0.5)", transform: "rotate(-45deg)", marginLeft: "-6px" }} />
+                        <span className="font-condensed tracking-[0.16em] uppercase" style={{ fontSize: "9px", color: "rgba(160,112,32,0.4)" }}>
+                          următorul pas
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-          <div className="shrink-0 w-1" aria-hidden="true" />
+          </div>
         </div>
-        <p className="lg:hidden text-center font-condensed tracking-[0.18em] uppercase text-[#8a6848]/40 pb-2" style={{ fontSize: "9px" }}>
-          ← →
-        </p>
-
 
         {/* ── Desktop: 4-column horizontal ── */}
         <div className="container px-4 md:px-8">
