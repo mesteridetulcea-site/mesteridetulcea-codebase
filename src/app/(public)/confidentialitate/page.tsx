@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 const LAST_UPDATED = "1 martie 2025"
 
 // ─── Placeholder-uri de completat ────────────────────────────────────────────
-const COMPANY_NAME    = "[DENUMIRE SOCIETATE]"
-const COMPANY_CUI     = "[CUI: RO________]"
-const COMPANY_REG     = "[Nr. Reg. Com.: J__/__/____]"
-const COMPANY_ADDRESS = "[ADRESĂ SEDIU SOCIAL], Tulcea, România"
+const COMPANY_NAME    = "WORLD TEAM INSTAL S.R.L."
+const COMPANY_CUI     = "CUI: RO49712990"
+const COMPANY_REG     = "Nr. Reg. Com.: J2024000138363"
+const COMPANY_ADDRESS = "Strada Nalbelor Nr. 26, Municipiul Tulcea, Județul Tulcea, România"
 const COMPANY_EMAIL   = "contact@mesteritulcea.ro"
 // ─────────────────────────────────────────────────────────────────────────────
 

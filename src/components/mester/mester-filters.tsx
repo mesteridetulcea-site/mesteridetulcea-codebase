@@ -152,6 +152,7 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25 pointer-events-none" />
             <input
+              key={currentQuery}
               type="text"
               placeholder="Caută meșter..."
               defaultValue={currentQuery}
@@ -205,7 +206,7 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
               }}
               className={`shrink-0 h-7 px-3.5 font-condensed text-[10px] tracking-[0.18em] uppercase border transition-all duration-150 whitespace-nowrap${currentCategory === cat.slug ? " bg-primary/20 border-primary/40 text-primary" : " border-white/[0.09] text-white/30 hover:text-white/60 hover:border-white/20 hover:bg-white/[0.05]"}`}
             >
-              {cat.icon && <span className="mr-1.5">{cat.icon}</span>}
+              {cat.icon && cat.icon.length <= 2 && <span className="mr-1.5">{cat.icon}</span>}
               {cat.name}
             </button>
           ))}
@@ -439,7 +440,7 @@ export function MesterFilters({ categories }: MesterFiltersProps) {
                           color: active ? "hsl(38 68% 44%)" : "rgba(255,255,255,0.4)",
                         }}
                       >
-                        {cat.icon && <span style={{ fontSize: "13px" }}>{cat.icon}</span>}
+                        {cat.icon && cat.icon.length <= 2 && <span style={{ fontSize: "13px" }}>{cat.icon}</span>}
                         <span className="truncate">{cat.name}</span>
                       </button>
                     )
