@@ -2,6 +2,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
 import { CookieBanner } from "@/components/layout/cookie-banner"
+import { AccessibilityWidget } from "@/components/layout/accessibility-widget"
 
 export default function PublicLayout({
   children,
@@ -17,6 +18,7 @@ export default function PublicLayout({
       </div>
       <MobileBottomNav />
       <CookieBanner />
+      <AccessibilityWidget />
     </div>
   )
 }
