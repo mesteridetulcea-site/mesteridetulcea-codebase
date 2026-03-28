@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Meșteri de Tulcea
 
-## Getting Started
+Marketplace de servicii pentru regiunea Tulcea, România. Conectează clienții cu meșteri locali verificați — instalatori, electricieni, zugravi, tâmplari și altele.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 16 (App Router) + React 19 + TypeScript 5
+- **Database / Auth**: Supabase (PostgreSQL + Auth + Storage)
+- **Styling**: Tailwind CSS v4 (config în `globals.css` via `@theme`)
+- **UI**: Radix UI + shadcn/ui
+- **Email**: Resend
+- **Forms**: react-hook-form + Zod
+
+## Funcționalități
+
+- Listare și căutare meșteri
+- Profiluri detaliate cu poze, recenzii și rating
+- Autentificare completă (email/parolă, recuperare parolă)
+- Favorite, recenzii, cereri de servicii
+- Upload și moderare poze (admin)
+- Sistem donații cu moderare admin
+- Notificări email automate
+
+## Structura rutelor
+
+```
+src/app/
+  (auth)/       # /login, /register, /reset-password
+  (public)/     # /, /mesteri, /mester/[slug], /cauta
+  (protected)/  # /cont, /mester-cont — necesită autentificare
+  admin/        # /admin — necesită rol admin
+  api/          # /api/search, /api/email/notify-mesters
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Instalare și rulare locală
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Instalează dependențele
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Copiază și completează variabilele de mediu
+cp .env.example .env.local
 
-## Learn More
+# Pornește serverul de development
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Aplicația va fi disponibilă la [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Variabile de mediu
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=
+RESEND_API_KEY=
+EMAIL_FROM=
+```
 
-## Deploy on Vercel
+## Comenzi disponibile
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev      # Server de development
+npm run build    # Build de producție
+npm run lint     # Verificare ESLint
+```

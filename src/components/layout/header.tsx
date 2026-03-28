@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -109,13 +110,23 @@ export function Header() {
       <div className="container grid h-[62px] grid-cols-[1fr_auto_1fr] items-center px-8 md:px-16 lg:px-20">
 
         {/* ── Logo ── */}
-        <Link href="/" className="group flex flex-col leading-none shrink-0">
-          <span className="font-display italic font-light text-white/30 text-[9px] tracking-[0.26em] group-hover:text-primary/65 transition-colors duration-300">
-            Meșteri de
-          </span>
-          <span className="font-condensed font-bold text-white/88 text-[16px] tracking-[0.28em] uppercase group-hover:text-primary transition-colors duration-300">
-            Tulcea
-          </span>
+        <Link href="/" className="group flex items-center gap-2.5 leading-none shrink-0">
+          <Image
+            src="/logo-mesteri.png"
+            alt="Meșteri de Tulcea"
+            width={54}
+            height={54}
+            unoptimized
+            className="object-contain rounded-xl"
+          />
+          <div className="flex flex-col">
+            <span className="font-display italic font-light text-white/30 text-[9px] tracking-[0.26em] group-hover:text-primary/65 transition-colors duration-300">
+              Meșteri de
+            </span>
+            <span className="font-condensed font-bold text-white/88 text-[16px] tracking-[0.28em] uppercase group-hover:text-primary transition-colors duration-300">
+              Tulcea
+            </span>
+          </div>
         </Link>
 
         {/* ── Desktop nav — pill group with shared border ── */}
