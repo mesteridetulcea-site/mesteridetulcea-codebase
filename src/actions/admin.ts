@@ -225,6 +225,10 @@ export async function createCategory(formData: FormData) {
 
   const name = formData.get("name") as string
   const icon = formData.get("icon") as string
+  const keywordsRaw = formData.get("keywords") as string
+  const keywords = keywordsRaw
+    ? keywordsRaw.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
+    : []
 
   const slug = name
     .toLowerCase()
@@ -247,6 +251,7 @@ export async function createCategory(formData: FormData) {
     slug,
     icon: icon || null,
     sort_order: nextSortOrder,
+    keywords: keywords.length > 0 ? keywords : null,
   } as never)
 
   if (error) {
@@ -273,12 +278,17 @@ export async function updateCategory(categoryId: string, formData: FormData) {
 
   const name = formData.get("name") as string
   const icon = formData.get("icon") as string
+  const keywordsRaw = formData.get("keywords") as string
+  const keywords = keywordsRaw
+    ? keywordsRaw.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
+    : []
 
   const { error } = await supabase
     .from("categories")
     .update({
       name,
       icon: icon || null,
+      keywords: keywords.length > 0 ? keywords : null,
     } as never)
     .eq("id", categoryId)
 
