@@ -113,7 +113,7 @@ export function HeroSearch() {
   function pickMester(id: string)     { setShowDropdown(false); router.push(`/mester/${id}`) }
 
   return (
-    <section className="relative bg-[#0d0905] min-h-[88vh] flex flex-col justify-center overflow-hidden -mt-[62px]">
+    <section className="relative bg-[#0d0905] min-h-[88vh] flex flex-col justify-center -mt-[62px]">
 
       {/* ── Crossfading background images ── */}
       <div className="absolute inset-0">
@@ -208,7 +208,7 @@ export function HeroSearch() {
           </div>
 
           {/* Search bar */}
-          <form onSubmit={handleSubmit} className="mt-12 mx-auto max-w-2xl relative" style={entrance(360)}>
+          <form onSubmit={handleSubmit} className="mt-12 mx-auto max-w-2xl relative z-10" style={entrance(360)}>
             <div className="flex border border-[#4a3820] focus-within:border-primary/60 transition-colors duration-300 shadow-[0_0_50px_rgba(196,146,30,0.07)]">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25 pointer-events-none" />
@@ -238,7 +238,7 @@ export function HeroSearch() {
             {showDropdown && suggestions && (suggestions.categories.length > 0 || suggestions.mesters.length > 0) && (
               <div
                 ref={dropdownRef}
-                className="absolute top-full left-0 right-0 mt-px bg-[#0e0b07]/98 border border-[#3d2e14] shadow-[0_16px_48px_rgba(0,0,0,0.65)] z-50"
+                className="absolute top-full left-0 right-0 mt-px bg-[#0e0b07]/98 border border-[#3d2e14] shadow-[0_16px_48px_rgba(0,0,0,0.65)] z-[100]"
               >
                 {suggestions.categories.length > 0 && (
                   <div className="border-b border-white/[0.06]">
@@ -301,11 +301,17 @@ export function HeroSearch() {
                 Panou Meșter
               </Link>
             ) : profile ? (
-              <Link href="/cereri/nou"
-                className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.2em] uppercase text-sm px-8 py-3 transition-colors duration-200">
-                Creează o cerere
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <div className="flex flex-col items-center gap-3">
+                <Link href="/cereri/nou"
+                  className="inline-flex items-center gap-2.5 bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.2em] uppercase text-sm px-8 py-3 transition-colors duration-200">
+                  Creează o cerere
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/devino-mester"
+                  className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-xs text-primary hover:text-primary/80 transition-colors duration-200 border border-primary/45 hover:border-primary hover:bg-primary/10 px-5 py-2.5">
+                  Devino Meșter →
+                </Link>
+              </div>
             ) : null}
           </div>
 

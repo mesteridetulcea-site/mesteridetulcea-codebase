@@ -167,7 +167,7 @@ export async function applyAsMester(formData: FormData) {
   }
 
   const displayName = formData.get("businessName") as string
-  const categoryId = formData.get("categoryId") as string
+  const categoryIds = formData.getAll("categoryId") as string[]
   const bio = formData.get("description") as string
   const yearsExperience = formData.get("experienceYears") as string
   const whatsappNumber = formData.get("whatsappNumber") as string
@@ -198,12 +198,14 @@ export async function applyAsMester(formData: FormData) {
     return { error: "Nu s-a putut crea profilul de meșter" }
   }
 
-  // Insert category association
-  if (categoryId) {
-    await supabase.from("mester_categories").insert({
-      mester_id: (newMester as { id: string }).id,
-      category_id: categoryId,
-    } as never)
+  // Insert category associations (multiple)
+  if (categoryIds.length > 0) {
+    await supabase.from("mester_categories").insert(
+      categoryIds.map((catId) => ({
+        mester_id: (newMester as { id: string }).id,
+        category_id: catId,
+      })) as never
+    )
   }
 
   // NOTE: Do NOT change profiles.role here.

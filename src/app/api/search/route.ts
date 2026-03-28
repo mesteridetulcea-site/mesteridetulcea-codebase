@@ -19,20 +19,21 @@ export async function GET(request: Request) {
     slug: string
     icon: string | null
     sort_order: number
+    keywords: string[] | null
   }
 
-  // Get all categories
+  // Get all categories including keywords
   const { data: categories } = await supabase
     .from("categories")
-    .select("*")
+    .select("id, name, slug, icon, sort_order, keywords")
     .order("sort_order") as { data: Category[] | null }
 
-  // Score each category by name match (no keywords column in real DB)
+  // Score each category by name + keywords match
   const scoredCategories =
     categories
       ?.map((category) => ({
         ...category,
-        score: calculateCategoryMatch(query, category.name, null),
+        score: calculateCategoryMatch(query, category.name, category.keywords),
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score) || []

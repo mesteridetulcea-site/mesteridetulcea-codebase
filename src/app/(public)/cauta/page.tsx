@@ -3,12 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Image from "next/image"
-import { Loader2, Send, CheckCircle, Search, ArrowRight } from "lucide-react"
+import { Loader2, Send, Search, ArrowRight } from "lucide-react"
 import { MesterCard } from "@/components/mester/mester-card"
 import { useUser } from "@/lib/hooks/use-user"
 import { toast } from "@/lib/hooks/use-toast"
 import type { MesterWithCategory } from "@/types/database"
-import { cn } from "@/lib/utils/cn"
 
 interface SearchApiResult {
   mesters: Array<MesterWithCategory & { coverPhoto: string | null }>
@@ -28,7 +27,7 @@ const POPULAR = [
 export default function SearchPage() {
   const searchParams  = useSearchParams()
   const router        = useRouter()
-  const { user }      = useUser()
+  useUser()
 
   const initialQuery = searchParams.get("q") || ""
 
@@ -36,8 +35,6 @@ export default function SearchPage() {
   const [inputValue,       setInputValue]       = useState(initialQuery)
   const [results,          setResults]          = useState<SearchApiResult | null>(null)
   const [isLoading,        setIsLoading]        = useState(false)
-  const [isNotifying,      setIsNotifying]      = useState(false)
-  const [notificationSent, setNotificationSent] = useState(false)
 
   /* autocomplete */
   const [suggestions,   setSuggestions]   = useState<SearchApiResult | null>(null)
@@ -84,7 +81,6 @@ export default function SearchPage() {
   async function performSearch(q: string) {
     if (!q.trim()) return
     setIsLoading(true)
-    setNotificationSent(false)
     setShowDropdown(false)
     try {
       const res  = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=12`)
@@ -106,7 +102,7 @@ export default function SearchPage() {
     performSearch(q)
   }
 
-  function pickCategory(slug: string, name: string) {
+  function pickCategory(slug: string) {
     setShowDropdown(false)
     router.push(`/mesteri?categorie=${slug}`)
   }
@@ -116,26 +112,6 @@ export default function SearchPage() {
     router.push(`/mester/${id}`)
   }
 
-  async function handleNotifyMesters() {
-    if (!results?.matchedCategory) return
-    setIsNotifying(true)
-    try {
-      const res  = await fetch("/api/email/notify-mesters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, categoryId: results.matchedCategory.id, userId: user?.id || null }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setNotificationSent(true)
-        toast({ title: "Meșteri notificați!", description: `Am trimis cererea ta către ${data.notifiedCount} meșteri.` })
-      } else throw new Error(data.error)
-    } catch {
-      toast({ title: "Eroare", description: "Nu am putut trimite notificările.", variant: "destructive" })
-    } finally {
-      setIsNotifying(false)
-    }
-  }
 
   const hasResults = results && results.mesters.length > 0
 
@@ -144,7 +120,7 @@ export default function SearchPage() {
       {/* ══════════════════════════════════════════════════
           HERO — behind navbar, photo + gold grid (same as /mesteri)
       ══════════════════════════════════════════════════ */}
-      <section className="relative bg-[#0d0905] overflow-hidden -mt-[62px]" style={{ minHeight: 460 }}>
+      <section className="relative bg-[#0d0905] -mt-[62px]" style={{ minHeight: 460 }}>
 
         {/* Background photo */}
         <div className="absolute inset-0">
@@ -218,7 +194,7 @@ export default function SearchPage() {
           </h1>
 
           {/* Search form */}
-          <form onSubmit={handleSubmit} className="mt-10 w-full max-w-2xl mx-auto relative">
+          <form onSubmit={handleSubmit} className="mt-10 w-full max-w-2xl mx-auto relative z-10">
             <div className="flex border border-[#4a3820] focus-within:border-primary/60 transition-colors duration-300 shadow-[0_0_50px_rgba(196,146,30,0.07)]">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25 pointer-events-none" />
@@ -248,7 +224,7 @@ export default function SearchPage() {
             {showDropdown && suggestions && (suggestions.categories.length > 0 || suggestions.mesters.length > 0) && (
               <div
                 ref={dropdownRef}
-                className="absolute top-full left-0 right-0 mt-px bg-[#0e0b07]/98 border border-[#3d2e14] shadow-[0_16px_48px_rgba(0,0,0,0.65)] z-50"
+                className="absolute top-full left-0 right-0 mt-px bg-[#0e0b07]/98 border border-[#3d2e14] shadow-[0_16px_48px_rgba(0,0,0,0.65)] z-[100]"
               >
                 {suggestions.categories.length > 0 && (
                   <div className="border-b border-white/[0.06]">
@@ -259,7 +235,7 @@ export default function SearchPage() {
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => pickCategory(cat.slug, cat.name)}
+                        onClick={() => pickCategory(cat.slug)}
                         className="w-full text-left px-4 py-2.5 font-condensed text-[12px] tracking-[0.08em] text-white/55 hover:text-primary hover:bg-white/[0.04] transition-colors duration-150"
                       >
                         {cat.name}
@@ -356,24 +332,13 @@ export default function SearchPage() {
                     </p>
                   </div>
 
-                  {notificationSent ? (
-                    <div className="shrink-0 flex items-center gap-2 px-5 py-3 border border-emerald-400/30 bg-emerald-400/[0.06] font-condensed text-[11px] tracking-[0.16em] uppercase text-emerald-600/70">
-                      <CheckCircle className="h-4 w-4" />
-                      Cerere trimisă
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleNotifyMesters}
-                      disabled={isNotifying}
-                      className="shrink-0 flex items-center gap-2 px-5 py-3 bg-primary/90 hover:bg-primary text-white font-condensed text-[11px] tracking-[0.18em] uppercase transition-colors duration-200 disabled:opacity-50"
-                    >
-                      {isNotifying
-                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                        : <Send className="h-4 w-4" />
-                      }
-                      Trimite cererea
-                    </button>
-                  )}
+                  <button
+                    onClick={() => router.push(`/cereri/nou?q=${encodeURIComponent(query)}`)}
+                    className="shrink-0 flex items-center gap-2 px-5 py-3 bg-primary/90 hover:bg-primary text-white font-condensed text-[11px] tracking-[0.18em] uppercase transition-colors duration-200"
+                  >
+                    <Send className="h-4 w-4" />
+                    Trimite cererea
+                  </button>
                 </div>
               )}
 

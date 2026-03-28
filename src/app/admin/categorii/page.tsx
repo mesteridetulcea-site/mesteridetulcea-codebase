@@ -200,7 +200,7 @@ export default function AdminCategoriesPage() {
                     </button>
                   </div>
                 </div>
-                <div className="px-5 py-3 space-y-1">
+                <div className="px-5 py-3 space-y-1.5">
                   <p className="text-xs text-[#8a6848]">
                     <span className="text-[#b8956a]">Slug:</span> {category.slug}
                   </p>
@@ -208,6 +208,17 @@ export default function AdminCategoriesPage() {
                     <p className="text-xs text-[#8a6848]">
                       <span className="text-[#b8956a]">Icon:</span> {category.icon}
                     </p>
+                  )}
+                  {category.keywords && category.keywords.length > 0 ? (
+                    <p className="text-xs text-[#8a6848]">
+                      <span className="text-[#b8956a]">Keywords:</span>{" "}
+                      {category.keywords.slice(0, 4).join(", ")}
+                      {category.keywords.length > 4 && (
+                        <span className="text-[#b8956a]"> +{category.keywords.length - 4}</span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[#d4b896] italic">Fără cuvinte cheie</p>
                   )}
                 </div>
               </div>
@@ -258,6 +269,19 @@ export default function AdminCategoriesPage() {
                   defaultValue={editingCategory?.icon || ""}
                   placeholder="electrician, instalator, etc."
                 />
+              </div>
+              <div>
+                <FieldLabel>Cuvinte cheie pentru căutare</FieldLabel>
+                <textarea
+                  name="keywords"
+                  defaultValue={editingCategory?.keywords?.join(", ") || ""}
+                  placeholder="prize, curent, tablou, sigurante, cablu..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm bg-[#faf6ed] border border-[#d4c0a0] text-[#1a0f05] placeholder:text-[#b8956a] focus:outline-none focus:border-primary/60 rounded-[4px] resize-none"
+                />
+                <p className="mt-1 text-xs text-[#b8956a]">
+                  Separate prin virgulă. Ex: prize, curent, tablou, bec
+                </p>
               </div>
               <div
                 className="flex gap-3 justify-end pt-2"

@@ -47,44 +47,47 @@ export function calculateCategoryMatch(
   const normalizedQuery = normalizeText(query)
   const normalizedCategoryName = normalizeText(categoryName)
 
-  // Direct match with category name
-  if (normalizedQuery.includes(normalizedCategoryName)) {
-    return 100
-  }
+  // 1. Direct full match with category name
+  if (normalizedQuery.includes(normalizedCategoryName)) return 100
+  if (normalizedCategoryName.includes(normalizedQuery)) return 90
 
-  if (normalizedCategoryName.includes(normalizedQuery)) {
-    return 90
-  }
+  // Extract meaningful query words (min 3 chars)
+  const queryWords = normalizedQuery.split(/\s+/).filter((w) => w.length >= 3)
 
-  // Keyword matching
-  if (keywords) {
+  // 2. Keyword matching — word-by-word with prefix support for Romanian inflections
+  // e.g. "priza" matches keyword "prize" via 4-char prefix "priz"
+  //      "repar" matches keyword "reparare" via substring
+  if (keywords && keywords.length > 0) {
     for (const keyword of keywords) {
-      const normalizedKeyword = normalizeText(keyword)
-      if (normalizedQuery.includes(normalizedKeyword)) {
-        return 80
-      }
-      if (normalizedKeyword.includes(normalizedQuery)) {
-        return 70
+      const nk = normalizeText(keyword)
+
+      // Full phrase in query
+      if (normalizedQuery.includes(nk)) return 80
+
+      // Word-level matching
+      for (const qw of queryWords) {
+        // Substring: "reparare".includes("repar") or "prize".includes("priz")
+        if (nk.includes(qw)) return 75
+        if (qw.includes(nk)) return 70
+
+        // 4-char prefix match for Romanian inflections
+        // "priza" vs "prize" → both start with "priz" → match
+        if (qw.length >= 4 && nk.length >= 4 && qw.slice(0, 4) === nk.slice(0, 4)) {
+          return 60
+        }
       }
     }
   }
 
-  // Partial word matching
-  const queryWords = normalizedQuery.split(/\s+/)
+  // 3. Partial word matching against category name
   const categoryWords = normalizedCategoryName.split(/\s+/)
-
   let matchCount = 0
-  for (const qWord of queryWords) {
-    for (const cWord of categoryWords) {
-      if (qWord.length >= 3 && cWord.includes(qWord)) {
-        matchCount++
-      }
+  for (const qw of queryWords) {
+    for (const cw of categoryWords) {
+      if (cw.includes(qw)) matchCount++
     }
   }
-
-  if (matchCount > 0) {
-    return 50 + matchCount * 10
-  }
+  if (matchCount > 0) return 50 + matchCount * 10
 
   return 0
 }

@@ -1,42 +1,92 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { applyAsMester } from "@/actions/mester"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 interface Props {
   categories: { id: string; name: string }[]
 }
 
+/* ── Field wrapper (light bg editorial style) ── */
+function F({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="border border-[#584528]/30 focus-within:border-primary/70 transition-colors duration-200">
+      <div className="px-4 pt-2.5">
+        <span className="block font-condensed tracking-[0.18em] uppercase text-[11px] font-semibold text-[#584528]/70">
+          {label}
+        </span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+const inp = "h-11 px-4 pb-2 pt-0.5 bg-transparent border-0 text-[#1a1208] placeholder:text-[#584528]/40 font-sans text-[15px] rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full"
+
+/* ── Category multi-select pills ── */
+function CategoryPills({
+  categories,
+  selected,
+  onChange,
+}: {
+  categories: { id: string; name: string }[]
+  selected: string[]
+  onChange: (ids: string[]) => void
+}) {
+  function toggle(id: string) {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id])
+  }
+  return (
+    <div className="border border-[#584528]/30 transition-colors duration-200">
+      <div className="px-4 pt-2.5 pb-3">
+        <span className="block font-condensed tracking-[0.18em] uppercase text-[11px] font-semibold text-[#584528]/70 mb-3">
+          Calificări / Categorii *
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => {
+            const active = selected.includes(cat.id)
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => toggle(cat.id)}
+                className="font-condensed tracking-[0.1em] uppercase text-xs px-3 py-1.5 transition-all duration-150"
+                style={{
+                  border: `1px solid ${active ? "hsl(38 68% 44%)" : "rgba(88,69,40,0.22)"}`,
+                  background: active ? "hsl(38 68% 44%)" : "transparent",
+                  color: active ? "white" : "rgba(88,69,40,0.6)",
+                }}
+              >
+                {cat.name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function BecomeMesterForm({ categories }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [categoryId, setCategoryId] = useState("")
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
 
-    formData.set("categoryId", categoryId)
+    if (categoryIds.length === 0) {
+      setError("Selectează cel puțin o categorie")
+      setLoading(false)
+      return
+    }
+
+    categoryIds.forEach((id) => formData.append("categoryId", id))
 
     const result = await applyAsMester(formData)
     if (result?.error) {
@@ -47,109 +97,127 @@ export default function BecomeMesterForm({ categories }: Props) {
   }
 
   return (
-    <Card className="w-full max-w-xl">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Devino meșter</CardTitle>
-        <CardDescription>
-          Completează informațiile despre business-ul tău pentru a apărea în lista de meșteri din Tulcea
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={handleSubmit} className="space-y-5">
-          {/* Business info */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="businessName">Nume business</Label>
+    <div>
+
+      {/* Section label */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-6 h-px bg-primary/60" />
+        <span className="font-condensed text-[12px] tracking-[0.28em] uppercase text-[#584528]/75 font-semibold">
+          Informații business
+        </span>
+      </div>
+
+      <form action={handleSubmit}>
+        <div className="space-y-px">
+
+          {/* Business name */}
+          <F label="Nume business *">
+            <Input
+              name="businessName"
+              type="text"
+              placeholder="ex. Instalații Ionescu"
+              required
+              className={inp}
+            />
+          </F>
+
+          {/* Categories */}
+          <CategoryPills
+            categories={categories}
+            selected={categoryIds}
+            onChange={setCategoryIds}
+          />
+
+          {/* Description */}
+          <div className="border border-[#584528]/30 focus-within:border-primary/70 transition-colors duration-200">
+            <div className="px-4 pt-2.5">
+              <span className="block font-condensed tracking-[0.18em] uppercase text-[11px] font-semibold text-[#584528]/70">
+                Descriere (opțional)
+              </span>
+            </div>
+            <Textarea
+              name="description"
+              placeholder="Descrie serviciile tale, experiența, tipuri de lucrări..."
+              rows={3}
+              className="px-4 pb-3 pt-1.5 bg-transparent border-0 text-[#1a1208] placeholder:text-[#584528]/40 font-sans text-[15px] rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none w-full"
+            />
+          </div>
+
+          {/* Experience + WhatsApp */}
+          <div className="grid grid-cols-2">
+            <F label="Ani experiență">
               <Input
-                id="businessName"
-                name="businessName"
-                type="text"
-                placeholder="ex. Instalații Ionescu"
-                required
+                name="experienceYears"
+                type="number"
+                placeholder="ex. 10"
+                min={0}
+                max={60}
+                className={inp}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoryId">Categorie</Label>
-              <Select onValueChange={setCategoryId} required>
-                <SelectTrigger id="categoryId">
-                  <SelectValue placeholder="Selectează categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descriere (opțional)</Label>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Descrie serviciile tale, experiența, etc."
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="experienceYears">Ani experiență</Label>
-                <Input
-                  id="experienceYears"
-                  name="experienceYears"
-                  type="number"
-                  placeholder="ex. 10"
-                  min={0}
-                  max={60}
-                />
+            </F>
+            <div className="border border-[#584528]/30 border-l-0 focus-within:border-primary/70 transition-colors duration-200">
+              <div className="px-4 pt-2.5">
+                <span className="block font-condensed tracking-[0.18em] uppercase text-[11px] font-semibold text-[#584528]/70">
+                  WhatsApp (opțional)
+                </span>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="whatsappNumber">WhatsApp (opțional)</Label>
-                <Input
-                  id="whatsappNumber"
-                  name="whatsappNumber"
-                  type="tel"
-                  placeholder="0712 345 678"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Adresă (opțional)</Label>
               <Input
-                id="address"
-                name="address"
-                type="text"
-                placeholder="Strada, nr., Tulcea"
+                name="whatsappNumber"
+                type="tel"
+                placeholder="0712 345 678"
+                className={inp}
               />
             </div>
           </div>
 
-          {error && (
-            <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-              {error}
-            </div>
-          )}
+          {/* Address */}
+          <F label="Adresă / Zonă (opțional)">
+            <Input
+              name="address"
+              type="text"
+              placeholder="Strada, nr., Tulcea"
+              className={inp}
+            />
+          </F>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Se creează profilul...
-              </>
-            ) : (
-              "Devino meșter"
-            )}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="text-sm text-center text-muted-foreground">
-        Profilul tău va fi verificat de un administrator înainte de a fi publicat.
-      </CardFooter>
-    </Card>
+        </div>
+
+        {/* Divider */}
+        <div className="my-8 h-px bg-[#584528]/08" />
+
+        {error && (
+          <div className="mb-5 border border-red-200 bg-red-50 px-4 py-3">
+            <p className="text-red-700 text-xs font-condensed tracking-wide">{error}</p>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-primary hover:bg-primary/88 text-white font-condensed tracking-[0.24em] uppercase text-sm font-semibold transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-60"
+          style={{ height: "52px" }}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Se creează profilul...
+            </>
+          ) : (
+            "Trimite aplicația"
+          )}
+        </button>
+
+        <p className="mt-5 text-center text-xs font-condensed tracking-wide text-[#584528]/38">
+          Profilul tău va fi verificat de un administrator înainte de a fi publicat.{" "}
+          <Link
+            href="/termeni"
+            className="text-primary/65 hover:text-primary transition-colors duration-150 underline underline-offset-2 decoration-primary/30"
+          >
+            Termeni și condiții
+          </Link>
+        </p>
+
+      </form>
+    </div>
   )
 }

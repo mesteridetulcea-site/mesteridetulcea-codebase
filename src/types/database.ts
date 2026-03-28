@@ -56,6 +56,7 @@ export interface Database {
           slug: string
           icon: string | null
           sort_order: number
+          keywords: string[] | null
           created_at: string
         }
         Insert: {
@@ -64,6 +65,7 @@ export interface Database {
           slug: string
           icon?: string | null
           sort_order?: number
+          keywords?: string[] | null
           created_at?: string
         }
         Update: {
@@ -72,6 +74,7 @@ export interface Database {
           slug?: string
           icon?: string | null
           sort_order?: number
+          keywords?: string[] | null
           created_at?: string
         }
       }
