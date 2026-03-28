@@ -56,7 +56,7 @@ export interface Database {
           slug: string
           icon: string | null
           sort_order: number
-          keywords: string[] | null
+          keywords?: string[] | null
           created_at: string
         }
         Insert: {
