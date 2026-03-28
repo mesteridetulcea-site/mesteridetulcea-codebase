@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -94,6 +95,32 @@ export default async function NoaCererePage() {
             </a>
           </div>
           <CerereForm categories={(categories || []) as Category[]} />
+
+          {/* Devino Meșter CTA */}
+          <div
+            className="mt-10 px-5 py-5 flex flex-col sm:flex-row sm:items-center gap-4"
+            style={{ border: "1px solid #e0c99a", background: "#fdf9f0" }}
+          >
+            <div className="flex-1">
+              <p className="font-condensed tracking-[0.12em] uppercase text-xs text-[#8a6848] mb-1">
+                Ești meșter?
+              </p>
+              <p className="text-sm text-[#584528]/80 leading-relaxed">
+                Înregistrează-te ca meșter și primești cereri direct pe telefon.
+              </p>
+            </div>
+            <Link
+              href="/devino-mester"
+              className="shrink-0 font-condensed tracking-[0.18em] uppercase text-xs px-5 py-2.5 transition-colors duration-150"
+              style={{
+                background: "#0d0905",
+                color: "#c4921e",
+                border: "1px solid #584528",
+              }}
+            >
+              Devino Meșter →
+            </Link>
+          </div>
         </div>
 
       </main>
