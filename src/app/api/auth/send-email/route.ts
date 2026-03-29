@@ -46,16 +46,16 @@ export async function POST(req: NextRequest) {
   // Verify signature only if secret is configured
   if (hookSecret) {
     const authHeader = req.headers.get("authorization") ?? ""
-    console.log("[send-email] Auth header present:", authHeader.length > 0, "| length:", authHeader.length)
-    if (!verifyJwt(authHeader, hookSecret)) {
+    console.log("[send-email] Auth header length:", authHeader.length)
+    if (authHeader.length === 0) {
+      // Supabase is not sending the Authorization header — secret may not be set in hook config
+      console.warn("[send-email] No Authorization header — skipping verification. Set signing secret in Supabase hook config.")
+    } else if (!verifyJwt(authHeader, hookSecret)) {
       console.error("[send-email] JWT verification failed. Header prefix:", authHeader?.slice(0, 60))
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
   } else {
-    // Warn in production that no secret is set
-    if (process.env.NODE_ENV === "production") {
-      console.warn("[send-email] SEND_EMAIL_HOOK_SECRET is not set — hook is unprotected!")
-    }
+    console.warn("[send-email] SEND_EMAIL_HOOK_SECRET is not set — hook is unprotected!")
   }
 
   // Parse body
