@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing email action type" }, { status: 400 })
   }
 
-  const { email_action_type, token_hash, redirect_to, site_url } = emailData
+  const { email_action_type, token_hash, site_url } = emailData
   const toEmail = user.email
   const name = user.user_metadata?.full_name ?? user.user_metadata?.name ?? ""
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   // For SSR apps, the link must go through the app's /auth/confirm route
   // which calls verifyOtp — NOT directly to Supabase /auth/v1/verify
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? site_url ?? ""
-  const next = redirect_to ? new URL(redirect_to).pathname : "/"
+  const next = "/"
   const actionUrl =
     `${appUrl}/auth/confirm` +
     `?token_hash=${token_hash}` +
