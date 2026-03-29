@@ -182,6 +182,15 @@ export function Header() {
           {/* Auth section — hidden on mobile (bottom nav handles it) */}
           {loading ? (
             <div className="hidden md:block h-7 w-14 bg-white/[0.07] animate-pulse" />
+          ) : user && !profile ? (
+            // Logged in but profile missing — show minimal sign-out button
+            <button
+              onClick={handleSignOut}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-white/40 hover:text-red-400/80 hover:bg-white/[0.07] transition-colors duration-200 font-condensed tracking-[0.14em] uppercase text-[11px]"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Ieși din cont
+            </button>
           ) : user && profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
