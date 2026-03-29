@@ -35,6 +35,11 @@ export async function GET(request: Request) {
         }
       }
 
+      // For password recovery, redirect to the reset password page
+      if (type === "recovery") {
+        return NextResponse.redirect(`${origin}/reset-password`)
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
 
