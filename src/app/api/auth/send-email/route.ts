@@ -11,13 +11,23 @@ import {
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Verify Supabase HS256 JWT hook signature
+// Supabase hook secrets have format: "v1,whsec_<base64>" — the signing key
+// is the base64-decoded bytes of the part after "whsec_"
 function verifyJwt(authHeader: string, secret: string): boolean {
   try {
     const token = authHeader.replace(/^Bearer\s+/i, "")
     const parts = token.split(".")
     if (parts.length !== 3) return false
     const [header, payload, signature] = parts
-    const expected = createHmac("sha256", secret)
+
+    // Decode the Supabase hook secret: strip "v1,whsec_" prefix and base64-decode
+    let signingKey: Buffer | string = secret
+    const whsecMatch = secret.match(/(?:v\d+,)?whsec_(.+)/)
+    if (whsecMatch) {
+      signingKey = Buffer.from(whsecMatch[1], "base64")
+    }
+
+    const expected = createHmac("sha256", signingKey)
       .update(`${header}.${payload}`)
       .digest("base64url")
     // Constant-time comparison to avoid timing attacks
@@ -36,8 +46,9 @@ export async function POST(req: NextRequest) {
   // Verify signature only if secret is configured
   if (hookSecret) {
     const authHeader = req.headers.get("authorization") ?? ""
+    console.log("[send-email] Auth header present:", authHeader.length > 0, "| length:", authHeader.length)
     if (!verifyJwt(authHeader, hookSecret)) {
-      console.error("[send-email] JWT verification failed. Header:", authHeader?.slice(0, 40))
+      console.error("[send-email] JWT verification failed. Header prefix:", authHeader?.slice(0, 60))
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
   } else {
