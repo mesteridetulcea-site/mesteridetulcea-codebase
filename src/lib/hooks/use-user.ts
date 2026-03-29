@@ -59,23 +59,8 @@ export function useUser() {
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("mester_profiles").select("id").eq("user_id", userId).maybeSingle(),
     ])
-    let profileData = (profileResult as unknown as { data: Profile | null }).data
+    const profileData = (profileResult as unknown as { data: Profile | null }).data
     const mesterData = (mesterResult as unknown as { data: { id: string } | null }).data
-
-    // Profile missing (e.g. user registered before hook) — create it on the fly
-    if (!profileData) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: created } = await supabase.from("profiles").insert({
-          id: user.id,
-          email: user.email!,
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-          avatar_url: user.user_metadata?.avatar_url || null,
-          role: "client" as const,
-        }).select("*").single()
-        profileData = created
-      }
-    }
 
     setProfile(profileData)
     setHasMesterProfile(!!mesterData)
