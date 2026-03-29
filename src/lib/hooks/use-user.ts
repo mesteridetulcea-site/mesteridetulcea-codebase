@@ -62,6 +62,14 @@ export function useUser() {
     const profileData = (profileResult as unknown as { data: Profile | null }).data
     const mesterData = (mesterResult as unknown as { data: { id: string } | null }).data
 
+    // No profile row → sign out automatically
+    if (!profileData) {
+      await supabase.auth.signOut()
+      setUser(null)
+      setLoading(false)
+      return
+    }
+
     setProfile(profileData)
     setHasMesterProfile(!!mesterData)
     setMesterProfileId(mesterData?.id ?? null)
