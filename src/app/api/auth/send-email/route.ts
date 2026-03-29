@@ -94,14 +94,15 @@ export async function POST(req: NextRequest) {
   const name = user.user_metadata?.full_name ?? user.user_metadata?.name ?? ""
 
   // Build the confirmation/action URL
+  // For SSR apps, the link must go through the app's /auth/confirm route
+  // which calls verifyOtp — NOT directly to Supabase /auth/v1/verify
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? site_url ?? ""
-  const redirectTo = redirect_to || appUrl
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""
+  const next = redirect_to ? new URL(redirect_to).pathname : "/"
   const actionUrl =
-    `${supabaseUrl}/auth/v1/verify` +
-    `?token=${token_hash}` +
+    `${appUrl}/auth/confirm` +
+    `?token_hash=${token_hash}` +
     `&type=${email_action_type}` +
-    `&redirect_to=${encodeURIComponent(redirectTo)}`
+    `&next=${encodeURIComponent(next)}`
 
   // Select template
   let subject: string
