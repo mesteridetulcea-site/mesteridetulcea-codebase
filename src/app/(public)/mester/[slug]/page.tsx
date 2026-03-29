@@ -145,16 +145,35 @@ export async function generateMetadata({ params }: PageProps) {
 
   const { data: mester } = await supabase
     .from("mester_profiles")
-    .select(`display_name, bio, mester_categories(category:categories(name))`)
+    .select(`display_name, bio, city, mester_categories(category:categories(name)), mester_photos(public_url, photo_type)`)
     .eq("id", id)
-    .single() as { data: { display_name: string; bio: string | null; mester_categories: { category: { name: string } | null }[] } | null }
+    .single() as { data: { display_name: string; bio: string | null; city: string; mester_categories: { category: { name: string } | null }[]; mester_photos: { public_url: string; photo_type: string }[] } | null }
 
   if (!mester) return { title: "Meșter negăsit" }
 
   const categoryName = mester.mester_categories?.[0]?.category?.name
+  const title = `${mester.display_name} — ${categoryName || "Meșter"} în ${mester.city || "Tulcea"}`
+  const description = mester.bio || `${mester.display_name} este ${categoryName || "meșter"} în ${mester.city || "Tulcea"}. Contactează direct, fără intermediari.`
+  const coverPhoto = mester.mester_photos?.find((p) => p.photo_type === "profile") || mester.mester_photos?.[0]
+  const APP_URL = "https://mesteridetulcea.ro"
+
   return {
-    title: mester.display_name,
-    description: mester.bio || `${mester.display_name} - ${categoryName || "Meșter"} în Tulcea`,
+    title,
+    description,
+    alternates: { canonical: `${APP_URL}/mester/${id}` },
+    openGraph: {
+      title,
+      description,
+      url: `${APP_URL}/mester/${id}`,
+      type: "profile",
+      images: coverPhoto ? [{ url: coverPhoto.public_url, width: 800, height: 600, alt: mester.display_name }] : [{ url: `${APP_URL}/og-image.jpg` }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: coverPhoto ? [coverPhoto.public_url] : [`${APP_URL}/og-image.jpg`],
+    },
   }
 }
 
