@@ -12,6 +12,7 @@ import {
   Code2,
   Sparkles,
   Scissors,
+  LayoutGrid,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 
@@ -29,6 +30,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   programator: Code2,
   manichiura: Sparkles,
   frizerie: Scissors,
+  altele: LayoutGrid,
 }
 
 /* Unsplash photos — free for commercial use under Unsplash License */
@@ -55,6 +57,8 @@ const categoryImages: Record<string, string> = {
     "https://images.unsplash.com/photo-1604654894611-6973b376cbde?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   frizerie:
     "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  altele:
+    "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 }
 
 async function getCategories() {
