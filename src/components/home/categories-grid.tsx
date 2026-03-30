@@ -9,8 +9,13 @@ import {
   Truck,
   Cog,
   Home,
+  Code2,
+  Sparkles,
+  Scissors,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+
+const GRID_LIMIT = 8
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   electrician: Zap,
@@ -21,6 +26,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   transport: Truck,
   mecanica: Cog,
   constructii: Home,
+  programator: Code2,
+  manichiura: Sparkles,
+  frizerie: Scissors,
 }
 
 /* Unsplash photos — free for commercial use under Unsplash License */
@@ -41,6 +49,12 @@ const categoryImages: Record<string, string> = {
     "https://images.unsplash.com/photo-1645445522156-9ac06bc7a767?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   constructii:
     "https://images.unsplash.com/photo-1755168648692-ef8937b7e63e?q=80&w=954&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  programator:
+    "https://images.unsplash.com/photo-1556792189-55769c8dfbac?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  manichiura:
+    "https://images.unsplash.com/photo-1604654894611-6973b376cbde?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  frizerie:
+    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 }
 
 async function getCategories() {
@@ -60,14 +74,16 @@ export async function CategoriesGrid() {
     { id: "1", name: "Electricieni", slug: "electrician", icon: "electrician" },
     { id: "2", name: "Instalatori", slug: "instalator", icon: "instalator" },
     { id: "3", name: "Zidari", slug: "zidar", icon: "zidar" },
-    { id: "4", name: "Zugravii", slug: "zugrav", icon: "zugrav" },
+    { id: "4", name: "Zugravi", slug: "zugrav", icon: "zugrav" },
     { id: "5", name: "Tâmplari", slug: "tamplar", icon: "tamplar" },
     { id: "6", name: "Transport", slug: "transport", icon: "transport" },
     { id: "7", name: "Mecanică auto", slug: "mecanica", icon: "mecanica" },
     { id: "8", name: "Construcții", slug: "constructii", icon: "constructii" },
   ]
 
-  const displayCategories = categories.length > 0 ? categories : defaultCategories
+  const allCategories = categories.length > 0 ? categories : defaultCategories
+  const displayCategories = allCategories.slice(0, GRID_LIMIT)
+  const hasMore = allCategories.length > GRID_LIMIT
 
   return (
     <section className="py-20 bg-white">
@@ -140,13 +156,13 @@ export async function CategoriesGrid() {
           })}
         </div>
 
-        {/* Mobile CTA */}
-        <div className="mt-7 text-center md:hidden">
+        {/* CTA button — always shown, prominent when there are more categories */}
+        <div className="mt-8 text-center">
           <Link
             href="/mesteri"
-            className="inline-flex items-center gap-2 font-condensed tracking-[0.14em] uppercase text-xs text-primary/60 hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 font-condensed tracking-[0.18em] uppercase text-sm font-semibold border border-[#584528]/30 hover:border-primary hover:text-primary text-[#584528]/60 transition-colors duration-200 px-7 py-3"
           >
-            Explorează toți meșterii →
+            {hasMore ? `Toate serviciile (${allCategories.length})` : "Toți meșterii"} →
           </Link>
         </div>
       </div>
