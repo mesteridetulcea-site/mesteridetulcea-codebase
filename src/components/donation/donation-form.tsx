@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useTransition } from "react"
+import { compressImage } from "@/lib/utils/compress-image"
 import { useRouter } from "next/navigation"
 import { X, Upload, ImageIcon, Plus, Loader2 } from "lucide-react"
 import {
@@ -54,14 +55,14 @@ export function DonationForm({ open, onClose, isLoggedIn, hasPhone }: DonationFo
     onClose()
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
 
     const formData = new FormData(e.currentTarget)
-    previews.forEach((p, i) => {
-      formData.append(`photo_${i}`, p.file)
-    })
+    await Promise.all(previews.map(async (p, i) => {
+      formData.append(`photo_${i}`, await compressImage(p.file))
+    }))
 
     startTransition(async () => {
       const result = await createDonation(formData)

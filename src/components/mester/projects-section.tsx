@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { compressImage } from "@/lib/utils/compress-image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Camera, FolderOpen, Plus, X, Loader2, Pencil } from "lucide-react"
@@ -96,7 +97,7 @@ export function ProjectsSection({ projects: initialProjects, mesterId, isOwner =
     const file = e.target.files?.[0]
     if (!file) return
     setUploadingPhoto(true)
-    const result = await addProjectPhoto(editingProject.id, file)
+    const result = await addProjectPhoto(editingProject.id, await compressImage(file))
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })
     } else {

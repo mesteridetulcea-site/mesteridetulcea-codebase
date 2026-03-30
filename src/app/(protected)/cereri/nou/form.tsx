@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { Loader2, ImagePlus, X, FileText, Tag, AlignLeft } from "lucide-react"
+import { compressImage } from "@/lib/utils/compress-image"
 import { createCerere } from "@/actions/cereri"
 import { toast } from "@/lib/hooks/use-toast"
 import type { Category } from "@/types/database"
@@ -23,12 +24,13 @@ export function CerereForm({ categories }: CerereFormProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function handlePhotosChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotosChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
     const valid = files.slice(0, 5 - selectedFiles.length)
     if (!valid.length) return
-    const newPreviews = valid.map((f) => URL.createObjectURL(f))
-    setSelectedFiles((prev) => [...prev, ...valid].slice(0, 5))
+    const compressed = await Promise.all(valid.map((f) => compressImage(f)))
+    const newPreviews = compressed.map((f) => URL.createObjectURL(f))
+    setSelectedFiles((prev) => [...prev, ...compressed].slice(0, 5))
     setPreviews((prev) => [...prev, ...newPreviews].slice(0, 5))
     e.target.value = ""
   }

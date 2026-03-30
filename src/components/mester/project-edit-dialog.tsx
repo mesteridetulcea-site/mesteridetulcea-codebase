@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { compressImage } from "@/lib/utils/compress-image"
 import { useRouter } from "next/navigation"
 import { Pencil, Loader2, Plus, X } from "lucide-react"
 import { updateProject, addProjectPhoto, deleteProjectPhoto } from "@/actions/projects"
@@ -81,7 +82,7 @@ export function ProjectEditDialog({
     const file = e.target.files?.[0]
     if (!file) return
     setUploadingPhoto(true)
-    const result = await addProjectPhoto(projectId, file)
+    const result = await addProjectPhoto(projectId, await compressImage(file))
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })
     } else {

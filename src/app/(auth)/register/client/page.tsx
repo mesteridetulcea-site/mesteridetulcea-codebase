@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { compressImage } from "@/lib/utils/compress-image"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -107,6 +108,10 @@ export default function RegisterClientPage() {
       return
     }
 
+    const avatarFile = formData.get("avatar") as File | null
+    if (avatarFile && avatarFile.size > 0) {
+      formData.set("avatar", await compressImage(avatarFile))
+    }
     const result = await signUpClient(formData)
     if (result?.error) {
       setError(result.error)
