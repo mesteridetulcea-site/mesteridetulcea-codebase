@@ -53,19 +53,19 @@ export function Footer() {
               <div className="flex items-center gap-2.5 text-sm text-white/30">
                 <Mail className="h-3.5 w-3.5 text-primary/45 shrink-0" />
                 <a
-                  href="mailto:contact@mesteritulcea.ro"
+                  href="mailto:contact@mesteridetulcea.ro"
                   className="hover:text-primary/65 transition-colors duration-200"
                 >
-                  contact@mesteritulcea.ro
+                  contact@mesteridetulcea.ro
                 </a>
               </div>
               <div className="flex items-center gap-2.5 text-sm text-white/30">
                 <Phone className="h-3.5 w-3.5 text-primary/45 shrink-0" />
                 <a
-                  href="tel:+40712345678"
+                  href="tel:+40758065244"
                   className="hover:text-primary/65 transition-colors duration-200"
                 >
-                  0712 345 678
+                  0758 065 244
                 </a>
               </div>
             </div>

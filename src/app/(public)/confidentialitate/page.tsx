@@ -14,7 +14,7 @@ const COMPANY_NAME    = "WORLD TEAM INSTAL S.R.L."
 const COMPANY_CUI     = "CUI: RO49712990"
 const COMPANY_REG     = "Nr. Reg. Com.: J2024000138363"
 const COMPANY_ADDRESS = "Strada Nalbelor Nr. 26, Municipiul Tulcea, Județul Tulcea, România"
-const COMPANY_EMAIL   = "contact@mesteritulcea.ro"
+const COMPANY_EMAIL   = "contact@mesteridetulcea.ro"
 // ─────────────────────────────────────────────────────────────────────────────
 
 const sections = [

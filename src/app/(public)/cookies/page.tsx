@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const LAST_UPDATED = "1 martie 2025"
-const COMPANY_EMAIL = "contact@mesteritulcea.ro"
+const COMPANY_EMAIL = "contact@mesteridetulcea.ro"
 
 const sections = [
   { id: "ce-sunt",     label: "1. Ce sunt cookie-urile" },

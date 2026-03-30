@@ -244,7 +244,7 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
                 <Lock style={{ width: "11px", height: "11px", color: "#a07828", marginTop: "2px", flexShrink: 0 }} />
                 <p className="font-condensed tracking-wide leading-relaxed" style={{ fontSize: "11px", color: "#8a6848" }}>
                   Categoriile principale pot fi modificate doar prin contact direct.{" "}
-                  <a href="mailto:contact@mesteritulcea.ro?subject=Modificare%20categorii%20profil" className="underline underline-offset-2" style={{ color: "#a07828" }}>
+                  <a href="mailto:contact@mesteridetulcea.ro?subject=Modificare%20categorii%20profil" className="underline underline-offset-2" style={{ color: "#a07828" }}>
                     Trimite un email
                   </a>
                   .
@@ -356,7 +356,7 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
                 style={{ paddingLeft: "36px" }}
                 value={formData.whatsappNumber}
                 onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                placeholder="40712345678"
+                placeholder="40758065244"
               />
             </div>
           </div>

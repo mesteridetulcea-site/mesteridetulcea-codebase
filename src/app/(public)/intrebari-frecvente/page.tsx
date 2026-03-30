@@ -29,8 +29,8 @@ const faq: { id: string; category: string; items: { q: string; a: React.ReactNod
         a: (
           <>
             Ne poți scrie la{" "}
-            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
-              contact@mesteritulcea.ro
+            <a href="mailto:contact@mesteridetulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
+              contact@mesteridetulcea.ro
             </a>
             . Răspundem de obicei în 1–2 zile lucrătoare.
           </>
@@ -69,7 +69,7 @@ const faq: { id: string; category: string; items: { q: string; a: React.ReactNod
       },
       {
         q: "Ce fac dacă am o problemă cu un meșter?",
-        a: "Soluționarea disputelor este responsabilitatea ta și a meșterului — platforma nu este parte contractantă și nu poate interveni în litigii. Poți lăsa o recenzie pentru a informa alți utilizatori. Dacă un profil conține informații false sau înșelătoare, scrie-ne la contact@mesteritulcea.ro.",
+        a: "Soluționarea disputelor este responsabilitatea ta și a meșterului — platforma nu este parte contractantă și nu poate interveni în litigii. Poți lăsa o recenzie pentru a informa alți utilizatori. Dacă un profil conține informații false sau înșelătoare, scrie-ne la contact@mesteridetulcea.ro.",
       },
     ],
   },
@@ -140,8 +140,8 @@ const faq: { id: string; category: string; items: { q: string; a: React.ReactNod
         a: (
           <>
             Scrie-ne la{" "}
-            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
-              contact@mesteritulcea.ro
+            <a href="mailto:contact@mesteridetulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
+              contact@mesteridetulcea.ro
             </a>{" "}
             cu subiectul „Ștergere cont" de pe adresa asociată contului. Vom procesa cererea în
             termen de 30 de zile conform GDPR.
@@ -188,7 +188,7 @@ export default function IntrebariFrecventePage() {
             style={{ fontSize: "15px", color: "rgba(255,255,255,0.4)", maxWidth: "480px", lineHeight: 1.7 }}
           >
             Nu găsești răspunsul?{" "}
-            <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
+            <a href="mailto:contact@mesteridetulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
               Scrie-ne
             </a>{" "}
             și răspundem în 1–2 zile lucrătoare.
@@ -321,7 +321,7 @@ export default function IntrebariFrecventePage() {
                   </p>
                 </div>
                 <a
-                  href="mailto:contact@mesteritulcea.ro"
+                  href="mailto:contact@mesteridetulcea.ro"
                   className="font-condensed tracking-[0.14em] uppercase shrink-0 transition-colors duration-200"
                   style={{
                     background: "#a07828",
@@ -330,7 +330,7 @@ export default function IntrebariFrecventePage() {
                     fontSize: "12px",
                   }}
                 >
-                  contact@mesteritulcea.ro
+                  contact@mesteridetulcea.ro
                 </a>
               </div>
 

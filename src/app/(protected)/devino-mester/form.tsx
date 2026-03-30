@@ -164,7 +164,7 @@ export default function BecomeMesterForm({ categories }: Props) {
               <Input
                 name="whatsappNumber"
                 type="tel"
-                placeholder="0712 345 678"
+                placeholder="0758 065 244"
                 className={inp}
               />
             </div>

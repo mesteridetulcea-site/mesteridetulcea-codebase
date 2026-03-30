@@ -284,7 +284,7 @@ export default function MesterProfilePage() {
                     <Input
                       className={inputCls}
                       type="tel"
-                      placeholder="40712345678"
+                      placeholder="40758065244"
                       value={formData.whatsappNumber}
                       onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
                     />

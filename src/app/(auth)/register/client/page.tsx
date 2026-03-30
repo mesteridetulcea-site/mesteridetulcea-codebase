@@ -348,7 +348,7 @@ export default function RegisterClientPage() {
                   </MobileFieldBox>
 
                   <MobileFieldBox label="Telefon (opțional)">
-                    <Input name="phone" type="tel" placeholder="0712 345 678" autoComplete="tel"
+                    <Input name="phone" type="tel" placeholder="0758 065 244" autoComplete="tel"
                       className="h-12 px-4 bg-transparent border-0 text-white text-[15px] placeholder:text-white/22 font-sans rounded-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                   </MobileFieldBox>
 
@@ -482,7 +482,7 @@ export default function RegisterClientPage() {
               </DesktopFieldBox>
 
               <DesktopFieldBox label="Telefon (opțional)">
-                <Input name="phone" type="tel" placeholder="0712 345 678" autoComplete="tel"
+                <Input name="phone" type="tel" placeholder="0758 065 244" autoComplete="tel"
                   className="h-10 px-4 pb-2.5 pt-0.5 bg-transparent border-0 text-white placeholder:text-white/16 font-sans text-sm rounded-none focus-visible:ring-0 focus-visible:ring-offset-0" />
               </DesktopFieldBox>
 

@@ -331,8 +331,8 @@ export default function DesprePage() {
             </div>
             <p className="mt-8 font-condensed tracking-wide" style={{ fontSize: "12px", color: "rgba(255,255,255,0.25)" }}>
               Ai întrebări?{" "}
-              <a href="mailto:contact@mesteritulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
-                contact@mesteritulcea.ro
+              <a href="mailto:contact@mesteridetulcea.ro" style={{ color: "#a07828" }} className="hover:underline">
+                contact@mesteridetulcea.ro
               </a>
             </p>
           </div>

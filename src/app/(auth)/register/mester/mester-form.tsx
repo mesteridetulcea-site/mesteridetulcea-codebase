@@ -325,7 +325,7 @@ export default function MesterRegisterForm({ categories }: Props) {
                       <Input name="email" type="email" placeholder="email@exemplu.ro" required autoComplete="email" className={minp} />
                     </MF>
                     <MF label="Telefon">
-                      <Input name="phone" type="tel" placeholder="0712 345 678" autoComplete="tel" className={minp} />
+                      <Input name="phone" type="tel" placeholder="0758 065 244" autoComplete="tel" className={minp} />
                     </MF>
                   </div>
 
@@ -375,7 +375,7 @@ export default function MesterRegisterForm({ categories }: Props) {
                       <Input name="experienceYears" type="number" placeholder="ex. 10" min={0} max={60} className={minp} />
                     </MF>
                     <MF label="WhatsApp">
-                      <Input name="whatsappNumber" type="tel" placeholder="0712 345 678" className={minp} />
+                      <Input name="whatsappNumber" type="tel" placeholder="0758 065 244" className={minp} />
                     </MF>
                   </div>
 
@@ -486,7 +486,7 @@ export default function MesterRegisterForm({ categories }: Props) {
                   <Input name="fullName" type="text" placeholder="Ion Popescu" required autoComplete="name" className={dinp} />
                 </F>
                 <F label="Telefon">
-                  <Input name="phone" type="tel" placeholder="0712 345 678" autoComplete="tel" className={dinp} />
+                  <Input name="phone" type="tel" placeholder="0758 065 244" autoComplete="tel" className={dinp} />
                 </F>
               </div>
 
@@ -533,7 +533,7 @@ export default function MesterRegisterForm({ categories }: Props) {
                   <Input name="experienceYears" type="number" placeholder="ex. 10" min={0} max={60} className={dinp} />
                 </F>
                 <F label="WhatsApp">
-                  <Input name="whatsappNumber" type="tel" placeholder="0712 345 678" className={dinp} />
+                  <Input name="whatsappNumber" type="tel" placeholder="0758 065 244" className={dinp} />
                 </F>
               </div>
 
