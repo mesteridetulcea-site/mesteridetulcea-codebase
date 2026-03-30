@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: mesters } = await supabase
     .from("mester_profiles")
     .select("id, updated_at")
-    .eq("approval_status", "approved")
+    .eq("approval_status", "approved") as { data: { id: string; updated_at: string }[] | null }
 
   const mesterRoutes: MetadataRoute.Sitemap = (mesters || []).map((m) => ({
     url: `${baseUrl}/mester/${m.id}`,
