@@ -50,9 +50,9 @@ export async function updateSession(request: NextRequest) {
   const authPaths = ["/login", "/register"]
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path))
 
-  // Fetch profile once for all authenticated users
+  // Only fetch profile when actually needed (admin routes or ban check on protected routes)
   let profile: { role: string; is_banned: boolean } | null = null
-  if (user) {
+  if (user && (isAdminPath || isProtectedPath)) {
     const { data } = await supabase
       .from("profiles")
       .select("role, is_banned")

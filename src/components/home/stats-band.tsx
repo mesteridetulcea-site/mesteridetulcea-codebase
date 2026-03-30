@@ -1,5 +1,10 @@
 import { Layers, Users } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { unstable_cache } from "next/cache"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+
+function createPublicClient() {
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+}
 
 function fmt(n: number): string {
   if (n >= 100) return `${Math.floor(n / 100) * 100}+`
@@ -8,7 +13,7 @@ function fmt(n: number): string {
 }
 
 async function getStats() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const [mestersRes, categoriesRes] = await Promise.all([
     supabase
@@ -26,8 +31,10 @@ async function getStats() {
   }
 }
 
+const getCachedStats = unstable_cache(getStats, ["homepage-stats"], { revalidate: 3600 })
+
 export async function StatsBand() {
-  const { mesters, categories } = await getStats()
+  const { mesters, categories } = await getCachedStats()
 
   const stats = [
     { value: fmt(mesters),    label: "Meșteri verificați",    icon: Users  },

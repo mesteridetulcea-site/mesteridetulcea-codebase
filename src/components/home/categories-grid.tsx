@@ -14,7 +14,12 @@ import {
   Scissors,
   LayoutGrid,
 } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { unstable_cache } from "next/cache"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+
+function createPublicClient() {
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+}
 
 const GRID_LIMIT = 8
 
@@ -62,7 +67,7 @@ const categoryImages: Record<string, string> = {
 }
 
 async function getCategories() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from("categories")
     .select("*")
@@ -71,8 +76,10 @@ async function getCategories() {
   return data || []
 }
 
+const getCachedCategories = unstable_cache(getCategories, ["homepage-categories"], { revalidate: 86400 })
+
 export async function CategoriesGrid() {
-  const categories = await getCategories()
+  const categories = await getCachedCategories()
 
   const defaultCategories = [
     { id: "1", name: "Electricieni", slug: "electrician", icon: "electrician" },

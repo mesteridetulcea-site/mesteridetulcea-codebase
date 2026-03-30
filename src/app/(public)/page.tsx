@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { HeroSearch } from "@/components/home/hero-search"
 import { StatsBand } from "@/components/home/stats-band"
 import { CategoriesGrid } from "@/components/home/categories-grid"
@@ -35,10 +36,16 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <HeroSearch />
-      <StatsBand />
-      <CategoriesGrid />
+      <Suspense fallback={<div className="h-24 bg-[#faf6ef]" />}>
+        <StatsBand />
+      </Suspense>
+      <Suspense fallback={<div className="h-96 bg-white" />}>
+        <CategoriesGrid />
+      </Suspense>
       <WhyUs />
-      <FeaturedMesters />
+      <Suspense fallback={null}>
+        <FeaturedMesters />
+      </Suspense>
       <HowItWorks />
       <CtaSection />
     </>

@@ -1,12 +1,17 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { unstable_cache } from "next/cache"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+
+function createPublicClient() {
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+}
 import { Button } from "@/components/ui/button"
 import { MesterCard } from "@/components/mester/mester-card"
 import type { MesterWithCategory } from "@/types/database"
 
 async function getFeaturedMesters() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: mesters } = await supabase
     .from("mester_profiles")
@@ -33,8 +38,10 @@ async function getFeaturedMesters() {
   return { mesters: mesters || [], photoMap }
 }
 
+const getCachedFeaturedMesters = unstable_cache(getFeaturedMesters, ["homepage-featured-mesters"], { revalidate: 1800 })
+
 export async function FeaturedMesters() {
-  const { mesters, photoMap } = await getFeaturedMesters()
+  const { mesters, photoMap } = await getCachedFeaturedMesters()
 
   if (mesters.length === 0) {
     return null

@@ -84,38 +84,28 @@ async function getMester(id: string) {
 
   if (!mester) return null
 
-  // Hide profile if the user account is banned (admins can still see it)
-  if (!isAdmin) {
-    const { data: ownerProfile } = await regularClient
-      .from("profiles")
-      .select("is_banned")
-      .eq("id", mester.user_id)
-      .single() as { data: { is_banned: boolean } | null }
-    if (ownerProfile?.is_banned) return null
-  }
+  // Run ban check, photos and reviews in parallel
+  const reviewsQuery = isAdmin
+    ? supabase.from("reviews").select("*").eq("mester_id", mester.id).order("created_at", { ascending: false }).limit(10).neq("approval_status", "rejected")
+    : supabase.from("reviews").select("*").eq("mester_id", mester.id).order("created_at", { ascending: false }).limit(10).eq("approval_status", "approved")
 
-  const { data: photos } = await supabase
-    .from("mester_photos")
-    .select("*")
-    .eq("mester_id", mester.id)
-    .eq("approval_status", "approved")
-    .order("sort_order") as { data: PhotoData[] | null }
+  const [ownerProfileRes, photosRes, rawReviewsRes] = await Promise.all([
+    !isAdmin
+      ? regularClient.from("profiles").select("is_banned").eq("id", mester.user_id).single()
+      : Promise.resolve({ data: null as { is_banned: boolean } | null }),
+    supabase.from("mester_photos").select("*").eq("mester_id", mester.id).eq("approval_status", "approved").order("sort_order"),
+    reviewsQuery,
+  ])
 
-  const adminClient2 = await createAdminClient()
-  const reviewsBase = supabase
-    .from("reviews")
-    .select("*")
-    .eq("mester_id", mester.id)
-    .order("created_at", { ascending: false })
-    .limit(10)
-  const { data: rawReviews } = await (isAdmin
-    ? reviewsBase.neq("approval_status", "rejected")
-    : reviewsBase.eq("approval_status", "approved")
-  ) as { data: Omit<ReviewWithUser, "profile">[] | null }
+  if (!isAdmin && (ownerProfileRes.data as { is_banned: boolean } | null)?.is_banned) return null
+
+  const photos = (photosRes.data as PhotoData[] | null) || []
+  const rawReviews = (rawReviewsRes.data as Omit<ReviewWithUser, "profile">[] | null) || []
 
   let reviews: ReviewWithUser[] = []
-  if (rawReviews && rawReviews.length > 0) {
+  if (rawReviews.length > 0) {
     const clientIds = [...new Set(rawReviews.map((r) => r.client_id))]
+    const adminClient2 = await createAdminClient()
     const { data: profiles } = await adminClient2
       .from("profiles")
       .select("id, full_name, avatar_url")
@@ -129,14 +119,12 @@ async function getMester(id: string) {
     }))
   }
 
+  // Fire-and-forget — don't await, doesn't block page render
   if (!isAdmin) {
-    await regularClient
-      .from("mester_profiles")
-      .update({ views_count: mester.views_count + 1 } as never)
-      .eq("id", mester.id)
+    regularClient.from("mester_profiles").update({ views_count: mester.views_count + 1 } as never).eq("id", mester.id)
   }
 
-  return { mester, photos: photos || [], reviews, isAdmin, isOwner: currentUserId === mester.user_id }
+  return { mester, photos, reviews, isAdmin, isOwner: currentUserId === mester.user_id }
 }
 
 export async function generateMetadata({ params }: PageProps) {

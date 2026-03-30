@@ -360,7 +360,7 @@ export default async function MesteriPage(props: PageProps) {
 
           {/* Subtitle */}
           <p className="mt-5 text-white/35 font-condensed tracking-[0.22em] text-xs uppercase">
-            Electricieni &nbsp;·&nbsp; Instalatori &nbsp;·&nbsp; Zidari &nbsp;·&nbsp; Zugravii &nbsp;·&nbsp; Tâmplari
+            Electricieni &nbsp;·&nbsp; Instalatori &nbsp;·&nbsp; Zidari &nbsp;·&nbsp; Zugravi &nbsp;·&nbsp; Tâmplari
           </p>
         </div>
       </section>
