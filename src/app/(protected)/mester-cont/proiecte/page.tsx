@@ -32,6 +32,31 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
+async function compressImage(file: File): Promise<File> {
+  const MAX_WIDTH = 1920
+  const QUALITY = 0.82
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1
+      const canvas = document.createElement("canvas")
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext("2d")!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(
+        (blob) => resolve(blob ? new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }) : file),
+        "image/jpeg",
+        QUALITY
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+    img.src = url
+  })
+}
+
 export default function ProiectePage() {
   const [projects, setProjects]             = useState<ProjectWithPhotos[]>([])
   const [loading, setLoading]               = useState(true)
@@ -53,10 +78,17 @@ export default function ProiectePage() {
     setLoading(false)
   }
 
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCreate(e: { currentTarget: HTMLFormElement; preventDefault(): void }) {
     e.preventDefault()
     setSubmitting(true)
-    const formData = new FormData(e.currentTarget)
+    const raw = new FormData(e.currentTarget)
+    const formData = new FormData()
+    formData.set("title", raw.get("title") as string)
+    formData.set("description", raw.get("description") as string)
+    const files = raw.getAll("photos") as File[]
+    await Promise.all(files.filter(f => f.size > 0).map(async (f) => {
+      formData.append("photos", await compressImage(f))
+    }))
     const result = await createProject(formData)
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })
@@ -105,7 +137,8 @@ export default function ProiectePage() {
 
   async function handleAddPhoto(projectId: string, file: File) {
     setUploadingFor(projectId)
-    const result = await addProjectPhoto(projectId, file)
+    const compressed = await compressImage(file)
+    const result = await addProjectPhoto(projectId, compressed)
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })
     } else {
@@ -199,7 +232,7 @@ export default function ProiectePage() {
                   />
                 </div>
                 <div>
-                  <FieldLabel>Poze (opțional · max 10)</FieldLabel>
+                  <FieldLabel>Poze (opțional · max 3)</FieldLabel>
                   <Input
                     className={inputCls + " file:text-[#8a6848] file:bg-transparent file:border-0 file:font-condensed file:text-xs cursor-pointer"}
                     name="photos"
@@ -207,7 +240,6 @@ export default function ProiectePage() {
                     accept="image/jpeg,image/png,image/webp"
                     multiple
                   />
-                  <p className="text-xs text-[#b8956a] mt-1.5">Max 2 MB per poză · JPEG, PNG, WebP</p>
                 </div>
                 <div className="flex gap-3 pt-3" style={{ borderTop: "1px solid #e0c99a" }}>
                   <Button

@@ -1,6 +1,31 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+
+async function compressImage(file: File): Promise<File> {
+  const MAX_WIDTH = 1920
+  const QUALITY = 0.82
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1
+      const canvas = document.createElement("canvas")
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext("2d")!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(
+        (blob) => resolve(blob ? new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }) : file),
+        "image/jpeg",
+        QUALITY
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+    img.src = url
+  })
+}
 import { Loader2, Camera, User, Briefcase, MessageCircle, MapPin, Clock, FileText, Lock, Plus } from "lucide-react"
 import Link from "next/link"
 import { updateMesterProfile } from "@/actions/mester"
@@ -90,7 +115,7 @@ export function MesterSettingsForm({ avatarUrl: initialAvatarUrl, categories, in
     Object.entries(formData).forEach(([key, value]) => form.append(key, value))
     ;[...lockedCategoryIds, ...extraCategoryIds].forEach((id) => form.append("categoryId", id))
     const file = fileInputRef.current?.files?.[0]
-    if (file) form.append("avatar", file)
+    if (file) form.append("avatar", await compressImage(file))
     const result = await updateMesterProfile(form)
     if (result.error) {
       toast({ title: "Eroare", description: result.error, variant: "destructive" })

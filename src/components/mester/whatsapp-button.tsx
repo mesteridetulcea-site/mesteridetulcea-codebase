@@ -39,7 +39,10 @@ export function WhatsAppButton({
     }
 
     // Format phone number for WhatsApp
-    const formattedNumber = whatsappNumber.replace(/\D/g, "")
+    const hasCountryCode = whatsappNumber.trim().startsWith("+")
+    let formattedNumber = whatsappNumber.replace(/\D/g, "")
+    if (!hasCountryCode && formattedNumber.startsWith("0"))
+      formattedNumber = "40" + formattedNumber.slice(1)
     const message = encodeURIComponent(
       `Bună ziua! Am găsit profilul dumneavoastră pe Meșteri de Tulcea și aș dori să discut despre o lucrare.`
     )
