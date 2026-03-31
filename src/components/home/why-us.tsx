@@ -25,7 +25,7 @@ const benefits = [
   {
     icon: MapPin,
     title: "Meșteri locali",
-    description: "Conectăm exclusiv meșteri din Tulcea și zona limitrofă. Prezență locală, răspuns rapid, fără drumuri lungi.",
+    description: "Găsești meșteri verificați din Tulcea — electricieni, instalatori, zidari, zugravi și mulți alții. Contact direct, fără să pierzi timpul.",
     num: "04",
   },
 ]
