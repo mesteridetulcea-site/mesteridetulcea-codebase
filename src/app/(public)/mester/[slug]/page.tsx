@@ -190,8 +190,30 @@ export default async function MesterProfilePage({ params }: PageProps) {
   const firstName = nameParts[0]
   const restName = nameParts.slice(1).join(" ")
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: mester.display_name,
+    description: mester.bio || `${mester.display_name} — ${primaryCategory?.name || "Meșter"} în ${mester.city || "Tulcea"}`,
+    areaServed: { "@type": "City", name: mester.city || "Tulcea", addressCountry: "RO" },
+    address: { "@type": "PostalAddress", addressLocality: mester.city || "Tulcea", addressCountry: "RO" },
+    ...(mester.whatsapp_number && { telephone: mester.whatsapp_number }),
+    ...(coverPhoto && { image: coverPhoto.public_url }),
+    ...(mester.avg_rating > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: mester.avg_rating.toFixed(1),
+        reviewCount: mester.reviews_count,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
+    url: `https://mesteridetulcea.ro/mester/${mester.id}`,
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* ═══════════════════════════════════════════════
           HERO — dark identity band, pulled behind navbar
           Contains: back link, photo, name, meta, CTA
